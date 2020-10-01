@@ -20,7 +20,7 @@ def connect_sql(script_path, server, database):
 		
 	return pymssql.connect(server = server, user = sql_login, password = sql_pass, database = database)
 
-conn = connect_sql(script_path,db_name)
+conn = connect_sql(script_path, db_server, db_name)
 print('k')
 
 '''
