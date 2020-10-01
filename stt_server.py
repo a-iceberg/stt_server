@@ -14,7 +14,7 @@ def connect_sql(script_path, server, database):
 		sql_login=file.read().replace('\n', '')
 		file.close()
 	
-	with open(script_path+'sql.password','r') as file:
+	with open(script_path+'sql.pass','r') as file:
 		sql_pass=file.read().replace('\n', '')
 		file.close()
 		
