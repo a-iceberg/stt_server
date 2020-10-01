@@ -9,7 +9,7 @@ db_login = 'ICECORP\\1c_sql'
 #audio_path = '/mnt/share/audio_call/RXTX_2020-10/01/in_4953621465_2020-10-01-09-41-34rxtx.wav'
 #splitted_file_path = get_file_splitted(audio_path,script_path)
 
-def connect_sql(script_path, server, database):
+def connect_sql(script_path, server, database, login):
 	'''
 	with open(script_path+'sql.login','r') as file:
 		sql_login=file.read().replace('\n', '')
@@ -20,7 +20,7 @@ def connect_sql(script_path, server, database):
 		file.close()
 		
 	#sql_pass = 'dpCEoF1e4A6XPOL'
-	return pymssql.connect(server = server, user = sql_login, password = sql_pass, database = database)
+	return pymssql.connect(server = server, user = login, password = sql_pass, database = database)
 
 conn = connect_sql(script_path, db_server, db_name, db_login)
 print('k')
