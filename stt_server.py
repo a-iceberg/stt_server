@@ -4,24 +4,25 @@ from stt_miner import get_file_splitted
 script_path = '/home/alex/projects/call_centre_stt_server/'
 db_name = 'voice_ai'
 db_server = '10.2.4.124'
+db_login = 'ICECORP\\1c_sql'
 
 #audio_path = '/mnt/share/audio_call/RXTX_2020-10/01/in_4953621465_2020-10-01-09-41-34rxtx.wav'
 #splitted_file_path = get_file_splitted(audio_path,script_path)
 
 def connect_sql(script_path, server, database):
-	
+	'''
 	with open(script_path+'sql.login','r') as file:
 		sql_login=file.read().replace('\n', '')
 		file.close()
-	
+	'''
 	with open(script_path+'sql.pass','r') as file:
 		sql_pass=file.read().replace('\n', '')
 		file.close()
-	sql_login = 'ICECORP\\1c_sql'
-	sql_pass = 'dpCEoF1e4A6XPOL'
+		
+	#sql_pass = 'dpCEoF1e4A6XPOL'
 	return pymssql.connect(server = server, user = sql_login, password = sql_pass, database = database)
 
-conn = connect_sql(script_path, db_server, db_name)
+conn = connect_sql(script_path, db_server, db_name, db_login)
 print('k')
 
 '''
