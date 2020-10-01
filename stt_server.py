@@ -17,7 +17,8 @@ def connect_sql(script_path, server, database):
 	with open(script_path+'sql.pass','r') as file:
 		sql_pass=file.read().replace('\n', '')
 		file.close()
-		
+	sql_login = 'ICECORP\\1c_sql'
+	sql_pass = 'dpCEoF1e4A6XPOL'
 	return pymssql.connect(server = server, user = sql_login, password = sql_pass, database = database)
 
 conn = connect_sql(script_path, db_server, db_name)
