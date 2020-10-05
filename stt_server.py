@@ -18,14 +18,15 @@ def connect_sql(script_path, server, database, login):
 	return pymssql.connect(server = server, user = login, password = sql_pass, database = database)
 
 conn = connect_sql(script_path, db_server, db_name, db_login)
-print('k')
 
-'''
 cursor = conn.cursor()	
-query = "SELECT lat,lon,info,color,fill_color,fill_opacity FROM geo_map.dbo.requests where request_id='"+request_id+"';"
+#query = "SELECT lat,lon,info,color,fill_color,fill_opacity FROM geo_map.dbo.requests where request_id='"+request_id+"';"
+query = "show tables;"
 cursor.execute(query)
 data = []
 for row in cursor.fetchall():
+	print('row',row)
+	'''
 	record	= {
 		'lat':row[0],
 		'lon':row[1],
@@ -35,8 +36,9 @@ for row in cursor.fetchall():
 		'fill_opacity':row[5]
 		}
 	data.append(record)
+	'''
 #conn.close()
-query ="delete from geo_map.dbo.requests where request_id='"+request_id+"';"
-cursor.execute(query)
-conn.commit()
-'''
+#query ="delete from geo_map.dbo.requests where request_id='"+request_id+"';"
+#cursor.execute(query)
+#conn.commit()
+print('k')
