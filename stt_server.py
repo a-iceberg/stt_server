@@ -21,7 +21,7 @@ conn = connect_sql(script_path, db_server, db_name, db_login)
 
 cursor = conn.cursor()	
 #query = "SELECT lat,lon,info,color,fill_color,fill_opacity FROM geo_map.dbo.requests where request_id='"+request_id+"';"
-query = "show tables;"
+query = "select * from queue;"
 cursor.execute(query)
 data = []
 for row in cursor.fetchall():
@@ -38,7 +38,7 @@ for row in cursor.fetchall():
 	data.append(record)
 	'''
 #conn.close()
-#query ="delete from geo_map.dbo.requests where request_id='"+request_id+"';"
+#query ="select from geo_map.dbo.requests where request_id='"+request_id+"';"
 #cursor.execute(query)
 #conn.commit()
 print('k')
