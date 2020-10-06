@@ -65,8 +65,9 @@ for filename in fs_files_list:
 	if not filename in complete_files:
 		print('new',filename)
 		add_queue(conn, settings, filepath, filename, date_y, date_m, date_d)
+		break
 	else:
 		print('completed',filename)
-	break
+	
 
 print('k')
