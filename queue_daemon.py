@@ -24,9 +24,11 @@ def get_files_list(settings, date_y, date_m, date_d):
 
 def get_today_ymd():	
 	
-	return datetime.datetime.today().strftime('%Y'),
-		datetime.datetime.today().strftime('%m'),
-		datetime.datetime.today().strftime('%d')
+	date_y	= datetime.datetime.today().strftime('%Y')
+	date_m	= datetime.datetime.today().strftime('%m')
+	date_d	= datetime.datetime.today().strftime('%d')
+	
+	return date_y, date_m, date_d
 
 settings = server_settings()
 
