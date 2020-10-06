@@ -20,7 +20,7 @@ def get_fs_files_list(settings, date_y, date_m, date_d):
 		files_list.extend(filenames)
 		break
 
-	return files_list
+	return today_path, files_list
 
 def get_today_ymd():	
 	
@@ -41,9 +41,8 @@ def get_sql_complete_files(conn): 				# <<< === TODO: union recognized filenames
 	
 	return complete_files
 
-def add_queue(conn, settings, filename, date_y, date_m, date_d):
-	
-	filepath = settings.filepath
+def add_queue(conn, settings, filepath, filename, date_y, date_m, date_d):
+		
 	cpu_id   = settings.cpu_id
 	cursor = conn.cursor()
 	current_date = datetime.datetime.now().strftime('%Y-%m-%dT%H:%M:%S')
@@ -61,11 +60,11 @@ conn = connect_sql(settings)
 complete_files	= get_sql_complete_files(conn)
 
 # list files
-fs_files_list	= get_fs_files_list(settings, date_y, date_m, date_d)
+filepath, fs_files_list	= get_fs_files_list(settings, date_y, date_m, date_d)
 for filename in fs_files_list:
 	if not filename in complete_files:
 		print('new',filename)
-		add_queue(conn, settings, filename, date_y, date_m, date_d)
+		add_queue(conn, settings, filepath, filename, date_y, date_m, date_d)
 	else:
 		print('completed',filename)
 	break
