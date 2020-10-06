@@ -65,7 +65,7 @@ def shortest_queue_cpu(conn, settings):
 
 	INSERT INTO #tmp_cpu_queue_len 
 	'''
-	for i in range( 0, len(settings.cpu_cores_count) ):
+	for i in range( 0, settings.cpu_cores_count ):
 		if i==0:
 			sql_query += 'select 0 as cpu_id, 0 as files_count '
 		else:
