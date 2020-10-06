@@ -33,7 +33,7 @@ def get_today_ymd():
 def get_sql_complete_files(conn): 				# <<< === TODO: union recognized filenames
 	
 	cursor = conn.cursor()
-	query = "select filename from queue where date_y='"+date_y+"' and date_m='"+date_m+"' and date_y='"+date_d+"' order by filename';"
+	query = "select filename from queue where date_y='"+date_y+"' and date_m='"+date_m+"' and date_y='"+date_d+"' order by filename;"
 	cursor.execute(query)
 	complete_files = []
 	for row in cursor.fetchall():
