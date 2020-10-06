@@ -46,7 +46,7 @@ def add_queue(conn, filepath, filename, cpu_id, date_y, date_m, date_d):
 	cursor = conn.cursor()
 	current_date = datetime.datetime.now().strftime('%Y-%m-%dT%H:%M:%S')
 	sql_query = "insert into queue (filepath, filename, cpu_id, date, date_y, date_m, date_d) "
-	sql_query += "values ('"+filepath+"','"+filename+"','"+cpu_id+"','"+current_date+"','"+date_y+"','"+date_m+"','"+date_d+"');"
+	sql_query += "values ('"+filepath+"','"+filename+"','"+str(cpu_id)+"','"+current_date+"','"+date_y+"','"+date_m+"','"+date_d+"');"
 	cursor.execute(sql_query)
 	conn.commit()
 
@@ -95,6 +95,7 @@ for filename in fs_files_list:
 	if not filename in complete_files:
 		print('new',filename)
 		cpu_id	= shortest_queue_cpu;
+		print('cpu_id',cpu_id)	# debug
 		add_queue(conn, filepath, filename, cpu_id, date_y, date_m, date_d)
 		break
 	else:
