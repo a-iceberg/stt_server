@@ -43,7 +43,7 @@ def get_sql_complete_files(conn): 				# <<< === TODO: union recognized filenames
 
 def add_queue(conn, settings, filepath, filename, date_y, date_m, date_d):
 		
-	cpu_id   = settings.cpu_id
+	cpu_id   = str(settings.cpu_id)
 	cursor = conn.cursor()
 	current_date = datetime.datetime.now().strftime('%Y-%m-%dT%H:%M:%S')
 	sql_query = "insert into queue (filepath, filename, cpu_id, date, date_y, date_m, date_d) "
