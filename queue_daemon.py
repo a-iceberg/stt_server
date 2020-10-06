@@ -73,7 +73,7 @@ def shortest_queue_cpu(conn, settings):
 	sql_query += 'union all	select cpu_id, count(filename) from queue group by cpu_id; '
 	sql_query += 'select top 1 cpu_id, max(files_count)  from #tmp_cpu_queue_len group by cpu_id order by max(files_count);'	
 	print(sql_query) # debug
-	exit()
+	return 0
 	cursor.execute(sql_query)
 	result = -1
 	for row in cursor.fetchall():
