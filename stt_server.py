@@ -1,5 +1,7 @@
 import pymssql
+
 from stt_miner import get_file_splitted
+from init_server import server_settings
 
 script_path = '/home/alex/projects/call_centre_stt_server/'
 db_name = 'voice_ai'
