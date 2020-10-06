@@ -36,6 +36,7 @@ date_y, date_m, date_d	= get_today_ymd()
 
 # get filenames in today's queue 				<<< === TODO: union recognized filenames
 conn = connect_sql(settings)
+cursor = conn.cursor()
 query = "select filename from queue where date_y='"+date_y+"' and date_m='"+date_m+"' and date_y='"+date_d+"';"
 cursor.execute(query)
 complete_files = []
