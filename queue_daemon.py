@@ -33,17 +33,16 @@ def get_today_ymd():
 def get_sql_complete_files(conn): 				# <<< === TODO: union recognized filenames
 	
 	cursor = conn.cursor()
-	query = "select filename from queue where date_y='"+date_y+"' and date_m='"+date_m+"' and date_d='"+date_d+"' order by filename;"
-	cursor.execute(query)
+	sql_query = "select filename from queue where date_y='"+date_y+"' and date_m='"+date_m+"' and date_d='"+date_d+"' order by filename;"
+	cursor.execute(sql_query)
 	complete_files = []
 	for row in cursor.fetchall():
 		complete_files.append(row[0])
 	
 	return complete_files
 
-def add_queue(conn, settings, filepath, filename, date_y, date_m, date_d):
-		
-	cpu_id   = str(settings.cpu_id)
+def add_queue(conn, filepath, filename, cpu_id, date_y, date_m, date_d):
+			
 	cursor = conn.cursor()
 	current_date = datetime.datetime.now().strftime('%Y-%m-%dT%H:%M:%S')
 	sql_query = "insert into queue (filepath, filename, cpu_id, date, date_y, date_m, date_d) "
@@ -51,7 +50,38 @@ def add_queue(conn, settings, filepath, filename, date_y, date_m, date_d):
 	cursor.execute(sql_query)
 	conn.commit()
 
-settings = server_settings(0)					# <<< === TODO: get cpuid from param
+def shortest_queue_cpu(conn, settings):
+			
+	cursor = conn.cursor()
+	sql_query = '''
+	IF OBJECT_ID('tempdb..#tmp_cpu_queue_len') IS NOT NULL
+    DROP TABLE #tmp_cpu_queue_len;
+
+	CREATE TABLE #tmp_cpu_queue_len
+	(
+	cpu_id INT,
+	files_count int
+	);
+
+	INSERT INTO #tmp_cpu_queue_len 
+	'''
+	for i in range( 0, len(settings.cpu_cores_count) ):
+		if i==0:
+			sql_query += 'select 0 as cpu_id, 0 as files_count '
+		else:
+			sql_query += 'union all select '+str(i)+',0 '
+	sql_query += 'union all	select cpu_id, count(filename) from queue group by cpu_id; '
+	sql_query += 'select top 1 cpu_id, max(files_count)  from #tmp_cpu_queue_len group by cpu_id order by max(files_count);'	
+	cursor.execute(sql_query)
+	result = -1
+	for row in cursor.fetchall():
+		result = int(row[0])
+	if result==-1:
+		print('error: unable to get shortest_queue_cpu')
+		result = 0
+	return result
+	
+settings = server_settings()
 
 date_y, date_m, date_d	= get_today_ymd()
 
@@ -64,10 +94,10 @@ filepath, fs_files_list	= get_fs_files_list(settings, date_y, date_m, date_d)
 for filename in fs_files_list:
 	if not filename in complete_files:
 		print('new',filename)
-		add_queue(conn, settings, filepath, filename, date_y, date_m, date_d)
+		cpu_id	= shortest_queue_cpu;
+		add_queue(conn, filepath, filename, cpu_id, date_y, date_m, date_d)
 		break
 	else:
-		print('completed',filename)
-	
+		print('completed',filename)	
 
 print('k')

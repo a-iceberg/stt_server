@@ -1,6 +1,6 @@
 class server_settings:
 
-	def __init__(self, cpu_id):
+	def __init__(self):
 
 		self.script_path		= '/home/alex/projects/call_centre_stt_server/'
 		self.audio_storage_path	= '/mnt/share/audio_call/'
@@ -8,8 +8,7 @@ class server_settings:
 		self.db_name			= 'voice_ai'
 		self.db_server			= '10.2.4.124'
 		self.db_login			= 'ICECORP\\1c_sql'
-		self.cpu_cores_count	= 1
-		self.cpu_id				= cpu_id
+		self.cpu_cores_count	= 3
 
 		#store pass in file, to prevent pass publication on git
 		with open(self.script_path+'sql.pass','r') as file:
