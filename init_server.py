@@ -8,7 +8,9 @@ class server_settings:
 		self.db_name			= 'voice_ai'
 		self.db_server			= '10.2.4.124'
 		self.db_login			= 'ICECORP\\1c_sql'
+		self.cpu_cores_count	= 1
 
+		#store pass in file, to prevent pass publication on git
 		with open(self.script_path+'sql.pass','r') as file:
 			self.db_pass		= file.read().replace('\n', '')
 			file.close()
