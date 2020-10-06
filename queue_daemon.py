@@ -96,7 +96,7 @@ filepath, fs_files_list	= get_fs_files_list(settings, date_y, date_m, date_d)
 for filename in fs_files_list:
 	if not filename in complete_files:
 		print('new',filename)
-		cpu_id	= shortest_queue_cpu();
+		cpu_id	= shortest_queue_cpu(conn, settings);
 		print('cpu_id',cpu_id)	# debug
 		add_queue(conn, filepath, filename, cpu_id, date_y, date_m, date_d)
 		break
