@@ -72,8 +72,8 @@ def shortest_queue_cpu(conn, settings):
 			sql_query += 'union all select '+str(i)+',0 '
 	sql_query += 'union all	select cpu_id, count(filename) from queue group by cpu_id; '
 	sql_query += 'select top 1 cpu_id, max(files_count)  from #tmp_cpu_queue_len group by cpu_id order by max(files_count);'	
-	print(sql_query) # debug
-	return 0
+	#print(sql_query) # debug
+	#return 0
 	cursor.execute(sql_query)
 	result = -1
 	for row in cursor.fetchall():
@@ -96,7 +96,7 @@ filepath, fs_files_list	= get_fs_files_list(settings, date_y, date_m, date_d)
 for filename in fs_files_list:
 	if not filename in complete_files:
 		print('new',filename)
-		cpu_id	= shortest_queue_cpu;
+		cpu_id	= shortest_queue_cpu();
 		print('cpu_id',cpu_id)	# debug
 		add_queue(conn, filepath, filename, cpu_id, date_y, date_m, date_d)
 		break
