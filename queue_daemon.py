@@ -22,10 +22,9 @@ def get_files_list(settings, date_y, date_m, date_d):
 
 	return files_list
 
-def get_today_ymd():
+def get_today_ymd():	
 	
-	return
-		datetime.datetime.today().strftime('%Y'),
+	return datetime.datetime.today().strftime('%Y'),
 		datetime.datetime.today().strftime('%m'),
 		datetime.datetime.today().strftime('%d')
 
