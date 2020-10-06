@@ -12,7 +12,7 @@ def connect_sql(settings):
 		database	= settings.db_name
 	)
 
-def get_files_list(settings, date_y, date_m, date_d):
+def get_fs_files_list(settings, date_y, date_m, date_d):
 
 	today_path = settings.audio_storage_path + settings.audio_path_prefix + date_y + '-' + date_m + '/'	+ date_d + '/'	
 	files_list = []
@@ -30,24 +30,42 @@ def get_today_ymd():
 	
 	return date_y, date_m, date_d
 
-settings = server_settings()
+def get_sql_complete_files(conn): 				# <<< === TODO: union recognized filenames
+	
+	cursor = conn.cursor()
+	query = "select filename from queue where date_y='"+date_y+"' and date_m='"+date_m+"' and date_y='"+date_d+" order by filename';"
+	cursor.execute(query)
+	complete_files = []
+	for row in cursor.fetchall():
+		complete_files.append(row[0])
+	
+	return complete_files
+
+def add_queue(conn, settings, filename, date_y, date_m, date_d):
+	
+	filepath = settings.filepath
+	cpu_id   = settings.cpu_id
+	cursor = conn.cursor()
+	current_date = datetime.datetime.now().strftime('%Y-%m-%dT%H:%M:%S')
+	sql_query = "insert into queue (filepath, filename, cpu_id, date, date_y, date_m, date_d) "
+	sql_query += "values ('"+filepath+"','"+filename+"','"+cpu_id+"','"+current_date+"','"+date_y+"','"+date_m+"','"+date_d+"');"
+	cursor.execute(sql_query)
+	conn.commit()
+
+settings = server_settings(0)					# <<< === TODO: get cpuid from param
 
 date_y, date_m, date_d	= get_today_ymd()
 
-# get filenames in today's queue 				<<< === TODO: union recognized filenames
+# get filenames in today's queue
 conn = connect_sql(settings)
-cursor = conn.cursor()
-query = "select filename from queue where date_y='"+date_y+"' and date_m='"+date_m+"' and date_y='"+date_d+"';"
-cursor.execute(query)
-complete_files = []
-for row in cursor.fetchall():
-	complete_files.append(row[0])
+complete_files	= get_sql_complete_files(conn)
 
 # list files
-files_list	= get_files_list(settings, date_y, date_m, date_d)
-for filename in files_list:
+fs_files_list	= get_fs_files_list(settings, date_y, date_m, date_d)
+for filename in fs_files_list:
 	if not filename in complete_files:
 		print('new',filename)
+		add_queue(conn, settings, filename, date_y, date_m, date_d)
 	else:
 		print('completed',filename)
 	break
