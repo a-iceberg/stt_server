@@ -19,7 +19,7 @@ date_y = datetime.datetime.today().strftime('%Y')
 date_m = datetime.datetime.today().strftime('%m')
 date_d = datetime.datetime.today().strftime('%d')
 
-today_path = 
+today_path = ''+
 	settings.audio_storage_path + 
 	settings.audio_path_prefix + 
 	date_y + '-'
