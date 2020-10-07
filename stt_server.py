@@ -1,6 +1,8 @@
 import sys
 from stt_miner import get_file_splitted
-from init_server import server_settings, connect_sql
+from stt_miner import mine_task
+from init_server import server_settings
+from init_server import connect_sql
 
 cpu_id = sys.argv[1]
 settings = server_settings()
