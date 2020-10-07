@@ -36,6 +36,6 @@ while True:
 			os.remove(temp_storage_path+splitted_file_name+'_r.wav')
 			print('=== === ===',filename_original)
 		except Exception as e:
-			print("### error:",str(e))
+			print("### error:",str(e),'file:',filename_original)
 	print(cpu_id,datetime.datetime.now().strftime('%Y-%m-%dT%H:%M:%S'), 'sleeping 10s..')
 	time.sleep(10)
