@@ -30,8 +30,8 @@ def transcribe_to_sql(filepath, filename, conn, settings, side, date_y, date_m, 
 			accept = json.loads(rec.Result())
 			if accept['text'] !='':
 				
-				accept_start = accept['result'][0]['start']
-				accept_text = accept['text']
+				accept_start	= str(accept['result'][0]['start'])
+				accept_text		= str(accept['text'])
 				
 				# save to sql
 				cursor = conn.cursor()
