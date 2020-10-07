@@ -98,8 +98,8 @@ def get_file_splitted(audio_path,script_path):
 	temp_storage_path = script_path+'files/'
 	filename = str(uuid.uuid4())
 
-	os.system('ffmpeg -i '+audio_path+' -ar 16000 -af "pan=mono|c0=FL" '+temp_storage_path+out_path+'_l.wav')
-	os.system('ffmpeg -i '+audio_path+' -ar 16000 -af "pan=mono|c0=FR" '+temp_storage_path+out_path+'_r.wav')
+	os.system('ffmpeg -i '+audio_path+' -ar 16000 -af "pan=mono|c0=FL" '+temp_storage_path+filename+'_l.wav')
+	os.system('ffmpeg -i '+audio_path+' -ar 16000 -af "pan=mono|c0=FR" '+temp_storage_path+filename+'_r.wav')
 
-	return out_path
+	return filename
 	
