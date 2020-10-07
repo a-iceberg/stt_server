@@ -8,7 +8,7 @@ import uuid
 
 model_path = '/home/alex/projects/vosk-api/python/example/model'
 
-def get_stt_df(filename,side,model_path, script_path):
+def get_stt_df(filename,side,model_path):
 
 		# prepare dataframe
 		index = ['','','','']
@@ -17,7 +17,7 @@ def get_stt_df(filename,side,model_path, script_path):
 		df = df.dropna()
 
 		# read file
-		wf = wave.open(script_path+filename, "rb")
+		wf = wave.open(filename, "rb")
 		if wf.getnchannels() != 1 or wf.getsampwidth() != 2 or wf.getcomptype() != "NONE":
 				print ("Audio file must be WAV format mono PCM.")
 				exit (1)
@@ -46,11 +46,11 @@ def get_stt_df(filename,side,model_path, script_path):
 
 		return df
 
-def mine_task(file_path, script_path):
+def mine_task(file_path):
 
 	# recognize
-	df_a = get_stt_df(file_path+'_l.wav','>>',model_path, script_path)
-	df_b = get_stt_df(file_path+'_r.wav','<<',model_path, script_path)
+	df_a = get_stt_df(file_path+'_l.wav','>>',model_path)
+	df_b = get_stt_df(file_path+'_r.wav','<<',model_path)
 
 	# merge and sort
 	df_c = pd.concat([df_a, df_b]).sort_values('start')
