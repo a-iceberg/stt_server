@@ -20,7 +20,7 @@ def get_today_ymd():
 	
 	return date_y, date_m, date_d
 
-def get_sql_complete_files(conn):
+def get_sql_complete_files(conn, date_y, date_m, date_d):
 	
 	cursor = conn.cursor()
 	sql_query =		"select filename from queue where date_y='"+date_y+"' and date_m='"+date_m+"' and date_d='"+date_d+"' union all"
@@ -77,11 +77,11 @@ settings = server_settings()
 conn = connect_sql(settings)
 
 # cycle ++
+date_y, date_m, date_d	= get_today_ymd()
 # get filenames in today's queue
-complete_files	= get_sql_complete_files(conn)
+complete_files	= get_sql_complete_files(conndate_y, date_m, date_d)
 
 # list files
-date_y, date_m, date_d	= get_today_ymd()
 filepath, fs_files_list	= get_fs_files_list(settings, date_y, date_m, date_d)
 for filename in fs_files_list:
 	if not filename in complete_files:
