@@ -39,8 +39,8 @@ def transcribe_to_sql(filepath, filename, conn, settings, side, date_y, date_m, 
 				
 				save_result(conn, file_name_original, transcribation_date, date_y, date_m, date_d, accept_text, accept_start, side)
 		
-		if phrases_count == 0:			
-			save_result(conn, file_name_original, transcribation_date, date_y, date_m, date_d, '', '0', side)
+	if phrases_count == 0:			
+		save_result(conn, file_name_original, transcribation_date, date_y, date_m, date_d, '', '0', side)
 				
 def save_result(conn, file_name_original, transcribation_date, date_y, date_m, date_d, accept_text, accept_start, side):
 	
@@ -84,8 +84,6 @@ def get_stt_df(filename,side,model_path):
 							df.loc[current_frame] = [accept_start,'end',accept_text,side]
 							print(current_frame)
 							current_frame+=1
-							#if current_frame>3: # debug
-							#       break
 
 		return df
 

@@ -1,4 +1,5 @@
 import datetime
+import time
 from os import walk
 from init_server import server_settings
 from init_server import connect_sql
@@ -81,7 +82,10 @@ for filename in fs_files_list:
 	if not filename in complete_files:
 		cpu_id	= shortest_queue_cpu(conn, settings);
 		add_queue(conn, filepath, filename, cpu_id, date_y, date_m, date_d)
-# cycle --		
+		
 		break # debug
+print(datetime.datetime.now().strftime('%Y-%m-%dT%H:%M:%S'), 'sleeping 10s..')
+time.sleep(10)
+# cycle --
 
 print('ok exit')
