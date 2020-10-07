@@ -34,3 +34,10 @@ def get_today_ymd():
 	date_d	= datetime.datetime.today().strftime('%d')
 	
 	return date_y, date_m, date_d
+
+def delete_queue(conn, filename):
+			
+	cursor = conn.cursor()
+	sql_query = "delete from queue where filename = '"+filename+"';"	
+	cursor.execute(sql_query)
+	conn.commit()
