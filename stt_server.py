@@ -1,8 +1,8 @@
 from stt_miner import get_file_splitted
 from init_server import server_settings, connect_sql
 
-conn = connect_sql(settings)
 settings = server_settings()
+conn = connect_sql(settings)
 
 cursor = conn.cursor()
 sql_query =		"select filepath, filename, date_y, date_m, date_d from queue where cpu_id='"+cpu_id+"' order by date;"
