@@ -12,7 +12,7 @@ class server_settings:
 		self.db_name			= 'voice_ai'
 		self.db_server			= '10.2.4.124'
 		self.db_login			= 'ICECORP\\1c_sql'
-		self.cpu_cores			= [i for i in range(0,4)]
+		self.cpu_cores			= [i for i in range(0,3)]
 
 		#store pass in file, to prevent pass publication on git
 		with open(self.script_path+'sql.pass','r') as file:
