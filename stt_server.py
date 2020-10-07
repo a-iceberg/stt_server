@@ -33,8 +33,8 @@ while True:
 			temp_storage_path = settings.script_path+'files/'
 			if os.path.isfile(temp_storage_path+splitted_file_name+'_l.wav') and os.path.isfile(temp_storage_path+splitted_file_name+'_r.wav'):
 				# transcribe
-				transcribe_to_sql(temp_storage_path, splitted_file_name+'_l.wav', conn, settings, 0, date_y, date_m, date_d, filename_original)	
-				transcribe_to_sql(temp_storage_path, splitted_file_name+'_r.wav', conn, settings, 1, date_y, date_m, date_d, filename_original)
+				#transcribe_to_sql(temp_storage_path, splitted_file_name+'_l.wav', conn, settings, 0, date_y, date_m, date_d, filename_original)	
+				#transcribe_to_sql(temp_storage_path, splitted_file_name+'_r.wav', conn, settings, 1, date_y, date_m, date_d, filename_original)
 				# delete from queue
 				delete_queue(conn,filename_original)
 				# remove temporary splitted audio files
@@ -42,6 +42,7 @@ while True:
 				print('+++',filename_original)
 			else:
 				print('---',filename_original)
+				exit()
 		except Exception as e:
 			print("### error:",str(e),'file:',filename_original)
 	print(cpu_id,datetime.datetime.now().strftime('%Y-%m-%dT%H:%M:%S'), 'sleeping 10s..')
