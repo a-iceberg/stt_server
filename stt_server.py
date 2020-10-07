@@ -1,6 +1,7 @@
 import sys
 import os
 import time
+import datetime
 from stt_miner import get_file_splitted
 from stt_miner import transcribe_to_sql
 from init_server import server_settings
@@ -33,4 +34,5 @@ while True
 		os.remove(temp_storage_path+splitted_file_name+'_l.wav')
 		os.remove(temp_storage_path+splitted_file_name+'_r.wav')
 		print('=== === ===',filename)
+	print(datetime.datetime.now().strftime('%Y-%m-%dT%H:%M:%S'), 'sleeping 10s..')
 	time.sleep(10)
