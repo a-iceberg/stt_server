@@ -20,11 +20,12 @@ for row in cursor.fetchall():
 	date_m		= row[3]
 	date_d		= row[4]
 	# split channels
-	splitted_file_path = get_file_splitted(filepath+filename, settings.script_path)
+	splitted_file_name = get_file_splitted(filepath+filename, settings.script_path)
+	temp_storage_path = settings.script_path+'files/'
 	# transcribe
 	#transcribation = mine_task(splitted_file_path)
 	#print(transcribation)
-	transcribe_to_sql(filepath, splitted_file_path+'_l.wav', conn, settings, 0)
+	transcribe_to_sql(temp_storage_path, filename+'_l.wav', conn, settings, 0)
 	# delete from queue
 	# remove splitted_file_path+'_l.wav'
 	# remove splitted_file_path+'_r.wav'
