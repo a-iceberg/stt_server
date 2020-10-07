@@ -14,7 +14,7 @@ conn = connect_sql(settings)
 cursor = conn.cursor()
 sql_query =		"select filepath, filename, date_y, date_m, date_d from queue where cpu_id='"+cpu_id+"' order by date;"
 
-while True
+while True:
 	cursor.execute(sql_query)
 	for row in cursor.fetchall():
 		filepath	= row[0]
