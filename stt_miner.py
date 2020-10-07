@@ -37,12 +37,12 @@ def transcribe_to_sql(filepath, filename, conn, settings, side, date_y, date_m, 
 				accept_start	= str(accept['result'][0]['start'])
 				accept_text		= str(accept['text'])
 				
-				save_result(con, file_name_original, transcribation_date, date_y, date_m, date_d, accept_text, accept_start, side)
+				save_result(conn, file_name_original, transcribation_date, date_y, date_m, date_d, accept_text, accept_start, side)
 		
 		if phrases_count == 0:			
-			save_result(con, file_name_original, transcribation_date, date_y, date_m, date_d, '', '0', side)
+			save_result(conn, file_name_original, transcribation_date, date_y, date_m, date_d, '', '0', side)
 				
-def save_result(con, file_name_original, transcribation_date, date_y, date_m, date_d, accept_text, accept_start, side):
+def save_result(conn, file_name_original, transcribation_date, date_y, date_m, date_d, accept_text, accept_start, side):
 	
 	cursor = conn.cursor()				
 	sql_query = "insert into transcribations (audio_file_name, transcribation_date, date_y, date_m, date_d, text, start, side) "
