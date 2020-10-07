@@ -23,7 +23,7 @@ def get_today_ymd():
 def get_sql_complete_files(conn, date_y, date_m, date_d):
 	
 	cursor = conn.cursor()
-	sql_query =		"select filename from queue where date_y='"+date_y+"' and date_m='"+date_m+"' and date_d='"+date_d+"' union all"
+	sql_query =		"select filename from queue where date_y='"+date_y+"' and date_m='"+date_m+"' and date_d='"+date_d+"' union all "
 	sql_query +=	"select filename from transcribations where date_y='"+date_y+"' and date_m='"+date_m+"' and date_d='"+date_d+"' "
 	sql_query +=	"order by filename;"
 	cursor.execute(sql_query)
