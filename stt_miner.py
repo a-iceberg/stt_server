@@ -46,7 +46,7 @@ def get_stt_df(filename,side,model_path, script_path):
 
 		return df
 
-def mine_task(file_path):
+def mine_task(file_path, script_path):
 
 	# recognize
 	df_a = get_stt_df(file_path+'_l.wav','>>',model_path, script_path)
