@@ -25,7 +25,7 @@ for row in cursor.fetchall():
 	# transcribe
 	#transcribation = mine_task(splitted_file_path)
 	#print(transcribation)
-	transcribe_to_sql(temp_storage_path, filename+'_l.wav', conn, settings, 0)
+	transcribe_to_sql(temp_storage_path, splitted_file_name+'_l.wav', conn, settings, 0)
 	# delete from queue
 	# remove splitted_file_path+'_l.wav'
 	# remove splitted_file_path+'_r.wav'
