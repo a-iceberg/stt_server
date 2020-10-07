@@ -71,21 +71,19 @@ def shortest_queue_cpu(conn, settings):
 settings = server_settings()
 conn = connect_sql(settings)
 
-# cycle ++
-date_y, date_m, date_d	= get_today_ymd()
-# get filenames in today's queue
-complete_files	= get_sql_complete_files(conn, date_y, date_m, date_d)
 
-# list files
-filepath, fs_files_list	= get_fs_files_list(settings, date_y, date_m, date_d)
-for filename in fs_files_list:
-	if not filename in complete_files:
-		cpu_id	= shortest_queue_cpu(conn, settings);
-		add_queue(conn, filepath, filename, cpu_id, date_y, date_m, date_d)
-		
-		break # debug
-print(datetime.datetime.now().strftime('%Y-%m-%dT%H:%M:%S'), 'sleeping 10s..')
-time.sleep(10)
-# cycle --
+while True:
+	date_y, date_m, date_d	= get_today_ymd()
+	# get filenames in today's queue
+	complete_files	= get_sql_complete_files(conn, date_y, date_m, date_d)
 
-print('ok exit')
+	# list files
+	filepath, fs_files_list	= get_fs_files_list(settings, date_y, date_m, date_d)
+	for filename in fs_files_list:
+		if not filename in complete_files:
+			cpu_id	= shortest_queue_cpu(conn, settings);
+			add_queue(conn, filepath, filename, cpu_id, date_y, date_m, date_d)
+
+			break # debug
+	print(datetime.datetime.now().strftime('%Y-%m-%dT%H:%M:%S'), 'sleeping 10s..')
+	time.sleep(10)
