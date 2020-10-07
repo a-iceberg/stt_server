@@ -5,6 +5,7 @@ class server_settings:
 	def __init__(self):
 
 		self.script_path		= '/home/alex/projects/call_centre_stt_server/'
+		self.model_path			= '/home/alex/projects/vosk-api/python/example/model'
 		self.audio_storage_path	= '/mnt/share/audio_call/'
 		self.audio_path_prefix	= 'RXTX_'
 		self.db_name			= 'voice_ai'
@@ -25,3 +26,11 @@ def connect_sql(settings):
 		password	= settings.db_pass,
 		database	= settings.db_name
 	)
+
+def get_today_ymd():
+	
+	date_y	= datetime.datetime.today().strftime('%Y')
+	date_m	= datetime.datetime.today().strftime('%m')
+	date_d	= datetime.datetime.today().strftime('%d')
+	
+	return date_y, date_m, date_d

@@ -1,6 +1,8 @@
 import datetime
 from os import walk
-from init_server import server_settings, connect_sql
+from init_server import server_settings
+from init_server import connect_sql
+from init_server import get_today_ymd
 
 def get_fs_files_list(settings, date_y, date_m, date_d):
 
@@ -11,14 +13,6 @@ def get_fs_files_list(settings, date_y, date_m, date_d):
 		break
 
 	return today_path, files_list
-
-def get_today_ymd():	
-	
-	date_y	= datetime.datetime.today().strftime('%Y')
-	date_m	= datetime.datetime.today().strftime('%m')
-	date_d	= datetime.datetime.today().strftime('%d')
-	
-	return date_y, date_m, date_d
 
 def get_sql_complete_files(conn, date_y, date_m, date_d):
 	

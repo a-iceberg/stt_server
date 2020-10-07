@@ -8,6 +8,38 @@ import uuid
 
 model_path = '/home/alex/projects/vosk-api/python/example/model'
 
+def transcribe_to_sql(filepath, filename, conn, settings, side):
+		
+	# read file
+	wf = wave.open(filepath+filename, "rb")
+
+	# read model
+	model = Model(model_path)
+	rec = KaldiRecognizer(model, wf.getframerate())
+
+	# recognizing
+	current_frame = 0
+
+	while True:
+		data = wf.readframes(4000)
+		if len(data) == 0:
+			break
+		if rec.AcceptWaveform(data):
+			accept = json.loads(rec.Result())
+			if accept['text'] !='':
+				
+				accept_start = accept['result'][0]['start']
+				accept_text = accept['text']
+				
+				# save to sql
+				cursor = conn.cursor()
+				current_date = datetime.datetime.now().strftime('%Y-%m-%dT%H:%M:%S')
+				sql_query = "insert into transcribations (filename, date, date_y, date_m, date_d, text, start, side) "
+				sql_query += "values ('"+filename+"','"+current_date+"','"+date_y+"','"+date_m+"','"+date_d+"','"+accept_text+"','"+accept_start+"',"+str(side)+");"
+				cursor.execute(sql_query)
+				conn.commit()
+				
+
 def get_stt_df(filename,side,model_path):
 
 		# prepare dataframe
@@ -30,19 +62,19 @@ def get_stt_df(filename,side,model_path):
 		current_frame = 0
 
 		while True:
-				data = wf.readframes(4000)
-				if len(data) == 0:
-						break
-				if rec.AcceptWaveform(data):
-						accept = json.loads(rec.Result())
-						if accept['text'] !='':
-								accept_start = accept['result'][0]['start']
-								accept_text = accept['text']
-								df.loc[current_frame] = [accept_start,'end',accept_text,side]
-								print(current_frame)
-								current_frame+=1
-								#if current_frame>3: # debug
-								#       break
+			data = wf.readframes(4000)
+			if len(data) == 0:
+					break
+			if rec.AcceptWaveform(data):
+					accept = json.loads(rec.Result())
+					if accept['text'] !='':
+							accept_start = accept['result'][0]['start']
+							accept_text = accept['text']
+							df.loc[current_frame] = [accept_start,'end',accept_text,side]
+							print(current_frame)
+							current_frame+=1
+							#if current_frame>3: # debug
+							#       break
 
 		return df
 
