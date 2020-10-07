@@ -8,7 +8,7 @@ import uuid
 
 model_path = '/home/alex/projects/vosk-api/python/example/model'
 
-def get_stt_df(filename,side,model_path):
+def get_stt_df(filename,side,model_path, script_path):
 
 		# prepare dataframe
 		index = ['','','','']
@@ -49,8 +49,8 @@ def get_stt_df(filename,side,model_path):
 def mine_task(file_path):
 
 	# recognize
-	df_a = get_stt_df(file_path+'_l.wav','>>',model_path)
-	df_b = get_stt_df(file_path+'_r.wav','<<',model_path)
+	df_a = get_stt_df(file_path+'_l.wav','>>',model_path, script_path)
+	df_b = get_stt_df(file_path+'_r.wav','<<',model_path, script_path)
 
 	# merge and sort
 	df_c = pd.concat([df_a, df_b]).sort_values('start')

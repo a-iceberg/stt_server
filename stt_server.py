@@ -18,9 +18,9 @@ for row in cursor.fetchall():
 	date_m		= row[3]
 	date_d		= row[4]
 	# split channels
-	splitted_file_path = get_file_splitted(filepath+filename,settings.script_path)
+	splitted_file_path = get_file_splitted(filepath+filename, settings.script_path)
 	# transcribe
-	transcribation = mine_task(splitted_file_path)
+	transcribation = mine_task(splitted_file_path, settings.script_path)
 	print(transcribation)
 	# save to transcribations
 	# delete from queue
