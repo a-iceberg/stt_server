@@ -79,7 +79,7 @@ conn = connect_sql(settings)
 # cycle ++
 date_y, date_m, date_d	= get_today_ymd()
 # get filenames in today's queue
-complete_files	= get_sql_complete_files(conndate_y, date_m, date_d)
+complete_files	= get_sql_complete_files(conn, date_y, date_m, date_d)
 
 # list files
 filepath, fs_files_list	= get_fs_files_list(settings, date_y, date_m, date_d)
