@@ -35,10 +35,11 @@ def transcribe_to_sql(filepath, filename, conn, settings, side, date_y, date_m, 
 				accept_start	= str(accept['result'][0]['start'])
 				accept_text		= str(accept['text'])
 				
+				print(accept_start) # debug
 				# save to sql
 				cursor = conn.cursor()				
 				sql_query = "insert into transcribations (filename, date, date_y, date_m, date_d, text, start, side) "
-				sql_query += "values ('"+filename+"','"+current_date+"','"+date_y+"','"+date_m+"','"+date_d+"','"+accept_text+"',"+accept_start+","+str(side)+");"
+				sql_query += "values ('"+filename+"','"+current_date+"','"+date_y+"','"+date_m+"','"+date_d+"','"+accept_text+"','"+accept_start+"',"+str(side)+");"
 				cursor.execute(sql_query)
 				conn.commit()
 				
