@@ -38,6 +38,7 @@ def transcribe_to_sql(filepath, filename, conn, settings, side, date_y, date_m, 
 				accept_text		= str(accept['text'])
 				
 				save_result(conn, file_name_original, transcribation_date, date_y, date_m, date_d, accept_text, accept_start, side)
+				phrases_count+=1
 		
 	if phrases_count == 0:			
 		save_result(conn, file_name_original, transcribation_date, date_y, date_m, date_d, '', '0', side)
