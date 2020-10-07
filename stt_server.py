@@ -34,5 +34,5 @@ while True:
 		os.remove(temp_storage_path+splitted_file_name+'_l.wav')
 		os.remove(temp_storage_path+splitted_file_name+'_r.wav')
 		print('=== === ===',filename)
-	print(datetime.datetime.now().strftime('%Y-%m-%dT%H:%M:%S'), 'sleeping 10s..')
+	print(cpu_id,datetime.datetime.now().strftime('%Y-%m-%dT%H:%M:%S'), 'sleeping 10s..')
 	time.sleep(10)
