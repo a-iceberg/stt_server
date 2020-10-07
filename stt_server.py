@@ -1,6 +1,6 @@
 import sys
 from stt_miner import get_file_splitted
-from stt_miner import mine_task
+from stt_miner import transcribe_to_sql
 from init_server import server_settings
 from init_server import connect_sql
 from init_server import get_today_ymd
