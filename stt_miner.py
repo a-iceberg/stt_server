@@ -46,13 +46,11 @@ def get_stt_df(filename,side,model_path):
 
 		return df
 
-def mine_task():
-	
-	start_time = time.time()
+def mine_task(file_path):
 
 	# recognize
-	df_a = get_stt_df('call_l.wav','>>',model_path)
-	df_b = get_stt_df('call_r.wav','<<',model_path)
+	df_a = get_stt_df(file_path+'_l.wav','>>',model_path)
+	df_b = get_stt_df(file_path+'_r.wav','<<',model_path)
 
 	# merge and sort
 	df_c = pd.concat([df_a, df_b]).sort_values('start')
@@ -61,19 +59,11 @@ def mine_task():
 		row = df_c.iloc()[i]
 		result += row.side+' '+row.text+'\n'
 
-	# save to file
-	with open('result.txt','w') as file:
-			file.write(result)
-
-	file.close()
-
-	end_time = time.time()
-
-	print(end_time - start_time)
+	return result
 	
-def get_file_splitted(audio_path):
+def get_file_splitted(audio_path,script_path):
 	
-	temp_storage_path = 'files/'
+	temp_storage_path = script_path+'files/'
 	out_path = temp_storage_path+str(uuid.uuid4())
 
 	os.system('ffmpeg -i '+audio_path+' -ar 16000 -af "pan=mono|c0=FL" '+out_path+'_l.wav')

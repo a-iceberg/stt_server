@@ -1,16 +1,7 @@
 import datetime
 from os import walk
 import pymssql
-from init_server import server_settings
-
-def connect_sql(settings):
-	
-	return pymssql.connect(
-		server		= settings.db_server, 
-		user		= settings.db_login, 
-		password	= settings.db_pass,
-		database	= settings.db_name
-	)
+from init_server import server_settings, connect_sql
 
 def get_fs_files_list(settings, date_y, date_m, date_d):
 
@@ -30,10 +21,12 @@ def get_today_ymd():
 	
 	return date_y, date_m, date_d
 
-def get_sql_complete_files(conn): 				# <<< === TODO: union recognized filenames
+def get_sql_complete_files(conn):
 	
 	cursor = conn.cursor()
-	sql_query = "select filename from queue where date_y='"+date_y+"' and date_m='"+date_m+"' and date_d='"+date_d+"' order by filename;"
+	sql_query =		"select filename from queue where date_y='"+date_y+"' and date_m='"+date_m+"' and date_d='"+date_d+"' union all"
+	sql_query +=	"select filename from transcribations where date_y='"+date_y+"' and date_m='"+date_m+"' and date_d='"+date_d+"' "
+	sql_query +=	"order by filename;"
 	cursor.execute(sql_query)
 	complete_files = []
 	for row in cursor.fetchall():
@@ -82,19 +75,20 @@ def shortest_queue_cpu(conn, settings):
 	return result
 	
 settings = server_settings()
-
-date_y, date_m, date_d	= get_today_ymd()
-
-# get filenames in today's queue
 conn = connect_sql(settings)
+
+# cycle ++
+# get filenames in today's queue
 complete_files	= get_sql_complete_files(conn)
 
 # list files
+date_y, date_m, date_d	= get_today_ymd()
 filepath, fs_files_list	= get_fs_files_list(settings, date_y, date_m, date_d)
 for filename in fs_files_list:
 	if not filename in complete_files:
 		cpu_id	= shortest_queue_cpu(conn, settings);
 		add_queue(conn, filepath, filename, cpu_id, date_y, date_m, date_d)
-		break
+# cycle --		
+		break # debug
 
 print('ok exit')

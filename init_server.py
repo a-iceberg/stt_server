@@ -14,3 +14,12 @@ class server_settings:
 		with open(self.script_path+'sql.pass','r') as file:
 			self.db_pass		= file.read().replace('\n', '')
 			file.close()
+			
+def connect_sql(settings):
+	
+	return pymssql.connect(
+		server		= settings.db_server, 
+		user		= settings.db_login, 
+		password	= settings.db_pass,
+		database	= settings.db_name
+	)
