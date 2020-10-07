@@ -11,9 +11,9 @@ import datetime
 model_path = '/home/alex/projects/vosk-api/python/example/model'
 
 def transcribe_to_sql(filepath, filename, conn, settings, side, date_y, date_m, date_d):
-		
-	current_date = datetime.datetime.now().strftime('%Y-%m-%dT%H:%M:%S')
-		
+
+	transcribation_date = datetime.datetime.now().strftime('%Y-%m-%dT%H:%M:%S')
+	
 	# read file
 	wf = wave.open(filepath+filename, "rb")
 
@@ -38,8 +38,8 @@ def transcribe_to_sql(filepath, filename, conn, settings, side, date_y, date_m, 
 				print(accept_start) # debug
 				# save to sql
 				cursor = conn.cursor()				
-				sql_query = "insert into transcribations (filename, date, date_y, date_m, date_d, text, start, side) "
-				sql_query += "values ('"+filename+"','"+current_date+"','"+date_y+"','"+date_m+"','"+date_d+"','"+accept_text+"','"+accept_start+"',"+str(side)+");"
+				sql_query = "insert into transcribations (audio_file_name, transcribation_date, date_y, date_m, date_d, text, start, side) "
+				sql_query += "values ('"+filename+"','"+transcribation_date+"','"+date_y+"','"+date_m+"','"+date_d+"','"+accept_text+"','"+accept_start+"',"+str(side)+");"
 				cursor.execute(sql_query)
 				conn.commit()
 				
