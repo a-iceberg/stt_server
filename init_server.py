@@ -1,3 +1,5 @@
+import pymssql
+
 class server_settings:
 
 	def __init__(self):

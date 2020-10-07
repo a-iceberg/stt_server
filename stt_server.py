@@ -1,5 +1,3 @@
-import pymssql
-
 from stt_miner import get_file_splitted
 from init_server import server_settings, connect_sql
 

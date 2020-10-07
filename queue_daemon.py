@@ -1,6 +1,5 @@
 import datetime
 from os import walk
-import pymssql
 from init_server import server_settings, connect_sql
 
 def get_fs_files_list(settings, date_y, date_m, date_d):
