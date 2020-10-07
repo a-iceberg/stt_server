@@ -84,6 +84,5 @@ while True:
 			cpu_id	= shortest_queue_cpu(conn, settings);
 			add_queue(conn, filepath, filename, cpu_id, date_y, date_m, date_d)
 
-			break # debug
 	print(datetime.datetime.now().strftime('%Y-%m-%dT%H:%M:%S'), 'sleeping 10s..')
 	time.sleep(10)
