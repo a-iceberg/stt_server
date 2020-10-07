@@ -3,7 +3,7 @@ from stt_miner import get_file_splitted
 from stt_miner import transcribe_to_sql
 from init_server import server_settings
 from init_server import connect_sql
-from init_server import get_today_ymd
+#from init_server import get_today_ymd
 
 cpu_id = sys.argv[1]
 settings = server_settings()
@@ -25,7 +25,7 @@ for row in cursor.fetchall():
 	# transcribe
 	#transcribation = mine_task(splitted_file_path)
 	#print(transcribation)
-	transcribe_to_sql(temp_storage_path, splitted_file_name+'_l.wav', conn, settings, 0)
+	transcribe_to_sql(temp_storage_path, splitted_file_name+'_l.wav', conn, settings, 0, date_y, date_m, date_d)
 	# delete from queue
 	# remove splitted_file_path+'_l.wav'
 	# remove splitted_file_path+'_r.wav'

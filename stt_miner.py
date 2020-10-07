@@ -10,7 +10,7 @@ import datetime
 
 model_path = '/home/alex/projects/vosk-api/python/example/model'
 
-def transcribe_to_sql(filepath, filename, conn, settings, side):
+def transcribe_to_sql(filepath, filename, conn, settings, side, date_y, date_m, date_d):
 		
 	# read file
 	wf = wave.open(filepath+filename, "rb")
