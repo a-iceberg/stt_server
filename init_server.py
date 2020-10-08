@@ -5,7 +5,8 @@ import json
 import pymssql
 import datetime
 import os
-import os.path
+#import os.path
+#from os import walk
 
 class stt_server:
 
@@ -154,7 +155,7 @@ class stt_server:
 
 		self.original_file_path = self.original_storage_path + self.original_storage_prefix + self.date_y + '-' + self.date_m + '/'	+ self.date_d + '/'	
 		files_list = []
-		for (dirpath, dirnames, filenames) in walk(self.original_file_path):
+		for (dirpath, dirnames, filenames) in os.walk(self.original_file_path):
 			files_list.extend(filenames)
 			break
 
