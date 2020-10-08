@@ -8,10 +8,10 @@ server_object = stt_server(0)
 server_object.set_today_ymd()
 #complete_files	= server_object.get_sql_complete_files()
 cpu_id = 0
-for filename in server_object.get_fs_files_list():
-	
-#	if not filename in complete_files:
+for filename in server_object.get_fs_files_list():	
+	#	if not filename in complete_files:
 	#server_object.set_shortest_queue_cpu()
+	server_object.cpu_id = cpu_id
 	server_object.original_file_name = filename
 	server_object.add_queue()
 	cpu_id += 1
