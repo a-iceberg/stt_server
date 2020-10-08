@@ -5,8 +5,6 @@ import json
 import pymssql
 import datetime
 import os
-#import os.path
-#from os import walk
 
 class stt_server:
 
@@ -53,9 +51,6 @@ class stt_server:
 		# crop '.wav' & append postfix
 		self.temp_file_name = self.original_file_name[:-4]+('_R' if side else '_L')+'.wav'
 
-		#temp_storage_path = script_path+'files/'
-		#filename = str(uuid.uuid4())
-		#print('***',audio_path,'***',temp_storage_path+filename+'_l.wav')
 		os_cmd 	= 'ffmpeg -i '
 		os_cmd += self.original_file_path
 		os_cmd += self.original_file_name
@@ -65,11 +60,8 @@ class stt_server:
 		os_cmd += self.temp_file_path
 		os_cmd += self.temp_file_name
 
-		#os.system('ffmpeg -i '+audio_path+' -ar 16000 -af "pan=mono|c0=FL" '+temp_storage_path+filename+'_l.wav')
-		#os.system('ffmpeg -i '+audio_path+' -ar 16000 -af "pan=mono|c0=FR" '+temp_storage_path+filename+'_r.wav')
 		try:
 			os.system(os_cmd)
-			#return filename
 		except Exception as e:
 			print('make_file_splitted error:',str(e))
 		return os.path.isfile(self.temp_file_path + self.temp_file_name)
@@ -80,8 +72,6 @@ class stt_server:
 		self.date_m	= datetime.datetime.today().strftime('%m')
 		self.date_d	= datetime.datetime.today().strftime('%d')
 
-		#return date_y, date_m, date_d
-
 	def delete_current_queue(self):
 
 		cursor = self.conn.cursor()
@@ -90,7 +80,6 @@ class stt_server:
 		self.conn.commit()
 		
 	def transcribe_to_sql(self,side):
-		#filepath, filename, conn, settings, side, date_y, date_m, date_d, file_name_original
 
 		transcribation_date = datetime.datetime.now().strftime('%Y-%m-%dT%H:%M:%S')
 
@@ -117,16 +106,13 @@ class stt_server:
 					accept_start	= str(accept['result'][0]['start'])
 					accept_text		= str(accept['text'])
 
-					#save_result(conn, file_name_original, transcribation_date, date_y, date_m, date_d, accept_text, accept_start, side)
 					self.save_result(accept_text, accept_start, side, transcribation_date)
 					phrases_count+=1
 
 		if phrases_count == 0:			
-			#save_result(conn, file_name_original, transcribation_date, date_y, date_m, date_d, '', '0', side)
 			self.save_result('', '0', side, transcribation_date)
 
 	def save_result(self, accept_text, accept_start, side, transcribation_date):
-		#conn, file_name_original, transcribation_date, date_y, date_m, date_d, accept_text, accept_start, side
 	
 		cursor = self.conn.cursor()				
 		sql_query = "insert into transcribations (audio_file_name, transcribation_date, date_y, date_m, date_d, text, start, side) "
@@ -141,8 +127,8 @@ class stt_server:
 	def get_sql_complete_files(self):
 	
 		cursor = self.conn.cursor()
-		sql_query =		"select filename from queue where date_y='"+self.date_y+"' and date_m='"+self.date_m+"' and date_d='"+self.date_d+"' union all "
-		sql_query +=	"select audio_file_name as filename from transcribations where date_y='"+self.date_y+"' and date_m='"+self.date_m+"' and date_d='"+self.date_d+"' "
+		sql_query =		"select distinct filename from queue where date_y='"+self.date_y+"' and date_m='"+self.date_m+"' and date_d='"+self.date_d+"' union all "
+		sql_query +=	"select distinct audio_file_name from transcribations where date_y='"+self.date_y+"' and date_m='"+self.date_m+"' and date_d='"+self.date_d+"' "
 		sql_query +=	"order by filename;"
 		cursor.execute(sql_query)
 		complete_files = []
@@ -162,7 +148,7 @@ class stt_server:
 		return files_list
 	
 	def set_shortest_queue_cpu(self):
-		# conn, settings
+		
 		cursor = self.conn.cursor()
 		sql_query = '''
 		IF OBJECT_ID('tempdb..#tmp_cpu_queue_len') IS NOT NULL
@@ -193,7 +179,7 @@ class stt_server:
 			self.cpu_id = 0
 	
 	def add_queue(self):
-		#conn, filepath, filename, cpu_id, date_y, date_m, date_d			
+		
 		cursor = self.conn.cursor()
 		current_date = datetime.datetime.now().strftime('%Y-%m-%dT%H:%M:%S')
 		sql_query = "insert into queue (filepath, filename, cpu_id, date, date_y, date_m, date_d) "
