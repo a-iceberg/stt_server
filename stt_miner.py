@@ -8,49 +8,7 @@ import os
 import uuid
 import datetime
 
-model_path = '/home/alex/projects/vosk-api/python/example/model'
-
-def transcribe_to_sql(filepath, filename, conn, settings, side, date_y, date_m, date_d, file_name_original):
-
-	transcribation_date = datetime.datetime.now().strftime('%Y-%m-%dT%H:%M:%S')
-	
-	# read file
-	wf = wave.open(filepath+filename, "rb")
-
-	# read model
-	model = Model(model_path)
-	rec = KaldiRecognizer(model, wf.getframerate())
-
-	# recognizing
-	phrases_count = 0
-
-	while True:
-		
-		data = wf.readframes(4000)
-		if len(data) == 0:
-			break
-			
-		if rec.AcceptWaveform(data):
-			accept = json.loads(rec.Result())
-			if accept['text'] !='':
-				
-				accept_start	= str(accept['result'][0]['start'])
-				accept_text		= str(accept['text'])
-				
-				save_result(conn, file_name_original, transcribation_date, date_y, date_m, date_d, accept_text, accept_start, side)
-				phrases_count+=1
-		
-	if phrases_count == 0:			
-		save_result(conn, file_name_original, transcribation_date, date_y, date_m, date_d, '', '0', side)
-				
-def save_result(conn, file_name_original, transcribation_date, date_y, date_m, date_d, accept_text, accept_start, side):
-	
-	cursor = conn.cursor()				
-	sql_query = "insert into transcribations (audio_file_name, transcribation_date, date_y, date_m, date_d, text, start, side) "
-	sql_query += "values ('"+file_name_original+"','"+transcribation_date+"','"+date_y+"','"+date_m+"','"+date_d+"','"+accept_text+"','"+accept_start+"',"+str(side)+");"
-	cursor.execute(sql_query)
-	conn.commit()
-				
+model_path = '/home/alex/projects/vosk-api/python/example/model'		
 
 def get_stt_df(filename,side,model_path):
 
@@ -102,16 +60,4 @@ def mine_task(file_path):
 		result += row.side+' '+row.text+'\n'
 
 	return result
-	
-def get_file_splitted(audio_path,script_path):
-	
-	temp_storage_path = script_path+'files/'
-	filename = str(uuid.uuid4())
-	
-	print('***',audio_path,'***',temp_storage_path+filename+'_l.wav')
-
-	os.system('ffmpeg -i '+audio_path+' -ar 16000 -af "pan=mono|c0=FL" '+temp_storage_path+filename+'_l.wav')
-	os.system('ffmpeg -i '+audio_path+' -ar 16000 -af "pan=mono|c0=FR" '+temp_storage_path+filename+'_r.wav')
-
-	return filename
 	
