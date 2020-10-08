@@ -20,7 +20,7 @@ while True:
 	#filepath, fs_files_list	= server_object.get_fs_files_list()
 	for filename in server_object.get_fs_files_list():
 		if not filename in complete_files:
-			server_object.set_shortest_queue_cpu(conn, settings)
+			server_object.set_shortest_queue_cpu()
 			server_object.original_file_name = filename
 			server_object.add_queue()
 			#conn, filepath, filename, cpu_id, date_y, date_m, date_d
