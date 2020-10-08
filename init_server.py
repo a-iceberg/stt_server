@@ -128,7 +128,7 @@ class stt_server:
 		sql_query = "insert into transcribations (audio_file_name, transcribation_date, date_y, date_m, date_d, text, start, side) "
 		sql_query += "values ('"+self.original_file_name+"','"+transcribation_date+"','"+self.date_y+"','"+self.date_m+"','"+self.date_d+"','"+accept_text+"','"+accept_start+"',"+str(side)+");"
 		cursor.execute(sql_query)
-		conn.commit()
+		self.conn.commit()
 			
 	def remove_temporary_file(self):
 		print('removing',self.temp_file_path + self.temp_file_name)
