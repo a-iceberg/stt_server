@@ -14,7 +14,7 @@ for filename in server_object.get_fs_files_list():
 	#server_object.set_shortest_queue_cpu()
 	server_object.original_file_name = filename
 	server_object.add_queue()
-	cpu_id++
+	cpu_id += 1
 	id cpu_id>len(server_object.cpu_cores):
 		cpu_id = 0
 
