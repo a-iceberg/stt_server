@@ -95,7 +95,7 @@ class stt_server:
 		transcribation_date = datetime.datetime.now().strftime('%Y-%m-%dT%H:%M:%S')
 
 		# read file
-		wf = wave.open(self.original_file_path + self.original_file_name, "rb")
+		wf = wave.open(self.temp_file_path + self.temp_file_name, "rb")
 
 		# read model
 		model = Model(self.model_path)
