@@ -33,7 +33,7 @@ class stt_server:
 			self.db_pass		= file.read().replace('\n', '')
 			file.close()
 			
-		self.conn				= connect_sql()
+		self.conn				= self.connect_sql()
 			
 	def connect_sql(self):
 
