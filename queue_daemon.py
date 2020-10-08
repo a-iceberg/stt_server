@@ -1,7 +1,7 @@
 import datetime
 import time
 from os import walk
-#from init_server import server_settings
+from init_server import stt_server
 #from init_server import connect_sql
 #from init_server import get_today_ymd
 	
