@@ -135,7 +135,7 @@ class stt_server:
 			
 	def remove_temporary_file(self):
 		print('removing',self.temp_file_path + self.temp_file_name)
-		#os.remove(self.temp_file_path + self.temp_file_name)
+		os.remove(self.temp_file_path + self.temp_file_name)
 		
 	def get_sql_complete_files(self):
 	
