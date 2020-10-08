@@ -187,10 +187,10 @@ class stt_server:
 		result = 0
 		for row in cursor.fetchall():
 			result+=1
-			server_object.cpu_id = int(row[0])
+			self.cpu_id = int(row[0])
 		if result==0:
 			print('error: unable to get shortest_queue_cpu')
-			server_object.cpu_id = 0
+			self.cpu_id = 0
 	
 	def add_queue(self):
 		#conn, filepath, filename, cpu_id, date_y, date_m, date_d			
