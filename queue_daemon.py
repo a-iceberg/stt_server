@@ -1,88 +1,30 @@
 import datetime
 import time
 from os import walk
-from init_server import server_settings
-from init_server import connect_sql
-from init_server import get_today_ymd
-
-def get_fs_files_list(settings, date_y, date_m, date_d):
-
-	today_path = settings.audio_storage_path + settings.audio_path_prefix + date_y + '-' + date_m + '/'	+ date_d + '/'	
-	files_list = []
-	for (dirpath, dirnames, filenames) in walk(today_path):
-		files_list.extend(filenames)
-		break
-
-	return today_path, files_list
-
-def get_sql_complete_files(conn, date_y, date_m, date_d):
+#from init_server import server_settings
+#from init_server import connect_sql
+#from init_server import get_today_ymd
 	
-	cursor = conn.cursor()
-	sql_query =		"select filename from queue where date_y='"+date_y+"' and date_m='"+date_m+"' and date_d='"+date_d+"' union all "
-	sql_query +=	"select audio_file_name as filename from transcribations where date_y='"+date_y+"' and date_m='"+date_m+"' and date_d='"+date_d+"' "
-	sql_query +=	"order by filename;"
-	cursor.execute(sql_query)
-	complete_files = []
-	for row in cursor.fetchall():
-		complete_files.append(row[0])
-	
-	return complete_files
-
-def add_queue(conn, filepath, filename, cpu_id, date_y, date_m, date_d):
-			
-	cursor = conn.cursor()
-	current_date = datetime.datetime.now().strftime('%Y-%m-%dT%H:%M:%S')
-	sql_query = "insert into queue (filepath, filename, cpu_id, date, date_y, date_m, date_d) "
-	sql_query += "values ('"+filepath+"','"+filename+"','"+str(cpu_id)+"','"+current_date+"','"+date_y+"','"+date_m+"','"+date_d+"');"
-	cursor.execute(sql_query)
-	conn.commit()
-
-def shortest_queue_cpu(conn, settings):
-			
-	cursor = conn.cursor()
-	sql_query = '''
-	IF OBJECT_ID('tempdb..#tmp_cpu_queue_len') IS NOT NULL
-    DROP TABLE #tmp_cpu_queue_len;
-
-	CREATE TABLE #tmp_cpu_queue_len
-	(
-	cpu_id INT,
-	files_count int
-	);
-
-	INSERT INTO #tmp_cpu_queue_len 
-	'''
-	for i in settings.cpu_cores:
-		if i==0:
-			sql_query += 'select 0 as cpu_id, 0 as files_count '
-		else:
-			sql_query += 'union all select '+str(i)+',0 '
-	sql_query += 'union all	select cpu_id, count(filename) from queue group by cpu_id; '
-	sql_query += 'select top 1 cpu_id, max(files_count)  from #tmp_cpu_queue_len group by cpu_id order by max(files_count), cpu_id;'	
-	cursor.execute(sql_query)
-	result = -1
-	for row in cursor.fetchall():
-		result = int(row[0])
-	if result==-1:
-		print('error: unable to get shortest_queue_cpu')
-		result = 0
-	return result
-	
-settings = server_settings()
-conn = connect_sql(settings)
+#settings = server_settings()
+server_object = stt_server(0)
+#conn = connect_sql(settings)
 
 
 while True:
-	date_y, date_m, date_d	= get_today_ymd()
+	#date_y, date_m, date_d	= get_today_ymd()
+	server_object.set_today_ymd()
 	# get filenames in today's queue
-	complete_files	= get_sql_complete_files(conn, date_y, date_m, date_d)
+	complete_files	= server_object.get_sql_complete_files()
 
 	# list files
-	filepath, fs_files_list	= get_fs_files_list(settings, date_y, date_m, date_d)
-	for filename in fs_files_list:
+	#filepath, fs_files_list	= get_fs_files_list(settings, date_y, date_m, date_d)
+	#filepath, fs_files_list	= server_object.get_fs_files_list()
+	for filename in server_object.get_fs_files_list():
 		if not filename in complete_files:
-			cpu_id	= shortest_queue_cpu(conn, settings);
-			add_queue(conn, filepath, filename, cpu_id, date_y, date_m, date_d)
+			server_object.set_shortest_queue_cpu(conn, settings)
+			server_object.original_file_name = filename
+			server_object.add_queue()
+			#conn, filepath, filename, cpu_id, date_y, date_m, date_d
 
 	print(datetime.datetime.now().strftime('%Y-%m-%dT%H:%M:%S'), 'sleeping 10s..')
 	time.sleep(10)
