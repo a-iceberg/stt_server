@@ -70,13 +70,13 @@ class stt_server:
 			print('make_file_splitted error:',str(e))
 		return os.path.isfile(self.temp_file_path + self.temp_file_name)
 
-	def get_today_ymd():
+	def set_today_ymd():
 
-		date_y	= datetime.datetime.today().strftime('%Y')
-		date_m	= datetime.datetime.today().strftime('%m')
-		date_d	= datetime.datetime.today().strftime('%d')
+		self.date_y	= datetime.datetime.today().strftime('%Y')
+		self.date_m	= datetime.datetime.today().strftime('%m')
+		self.date_d	= datetime.datetime.today().strftime('%d')
 
-		return date_y, date_m, date_d
+		#return date_y, date_m, date_d
 
 	def delete_current_queue(self):
 
@@ -114,12 +114,12 @@ class stt_server:
 					accept_text		= str(accept['text'])
 
 					#save_result(conn, file_name_original, transcribation_date, date_y, date_m, date_d, accept_text, accept_start, side)
-					save_result(accept_text, accept_start, side, transcribation_date)
+					self.save_result(accept_text, accept_start, side, transcribation_date)
 					phrases_count+=1
 
 		if phrases_count == 0:			
 			#save_result(conn, file_name_original, transcribation_date, date_y, date_m, date_d, '', '0', side)
-			save_result('', '0', side, transcribation_date)
+			self.save_result('', '0', side, transcribation_date)
 
 	def save_result(self, accept_text, accept_start, side, transcribation_date):
 		#conn, file_name_original, transcribation_date, date_y, date_m, date_d, accept_text, accept_start, side
