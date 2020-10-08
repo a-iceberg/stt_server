@@ -73,7 +73,7 @@ class stt_server:
 			print('make_file_splitted error:',str(e))
 		return os.path.isfile(self.temp_file_path + self.temp_file_name)
 
-	def set_today_ymd():
+	def set_today_ymd(self):
 
 		self.date_y	= datetime.datetime.today().strftime('%Y')
 		self.date_m	= datetime.datetime.today().strftime('%m')
