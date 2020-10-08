@@ -5,6 +5,8 @@ import json
 import pymssql
 import datetime
 import os
+import wave
+import contextlib
 
 class stt_server:
 
@@ -25,7 +27,8 @@ class stt_server:
 		
 		self.temp_file_name			= ''
 		self.original_file_path		= ''
-		self.original_file_name		= ''		
+		self.original_file_name		= ''
+		self.original_file_duration	= 0
 		self.date_y					= ''
 		self.date_m					= ''
 		self.date_d					= ''		
@@ -180,9 +183,31 @@ class stt_server:
 	
 	def add_queue(self):
 		
+		self.calculate_file_length()
+		
 		cursor = self.conn.cursor()
-		current_date = datetime.datetime.now().strftime('%Y-%m-%dT%H:%M:%S')
-		sql_query = "insert into queue (filepath, filename, cpu_id, date, date_y, date_m, date_d) "
-		sql_query += "values ('"+self.original_file_path+"','"+self.original_file_name+"','"+str(self.cpu_id)+"','"+current_date+"','"+self.date_y+"','"+self.date_m+"','"+self.date_d+"');"
+		current_date = datetime.datetime.now().strftime('%Y-%m-%dT%H:%M:%S')		
+		
+		sql_query = "insert into queue (filepath, filename, cpu_id, date, date_y, date_m, date_d, duration) "
+		sql_query += "values ('"
+		sql_query += self.original_file_path+"','"
+		sql_query += self.original_file_name+"','"
+		sql_query += str(self.cpu_id)+"','"
+		sql_query += current_date+"','"
+		sql_query += self.date_y+"','"
+		sql_query += self.date_m+"','"
+		sql_query += self.date_d+"','"
+		sql_query += str(self.original_file_duration)+"');"
+		
 		cursor.execute(sql_query)
 		self.conn.commit()
+		
+	def calculate_file_length(self):
+
+		self.original_file_duration = 0
+		fname = self.original_file_path + self.original_file_name
+		with contextlib.closing(wave.open(fname,'r')) as f:
+			frames = f.getnframes()
+			rate = f.getframerate()
+			self.original_file_duration = frames / float(rate)
+	
