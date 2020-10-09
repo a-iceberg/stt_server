@@ -33,8 +33,8 @@ while True:
 				files_converted+=1
 				
 			if files_converted==0:
-				print(server_object.cpu_id,datetime.datetime.now().strftime('%Y-%m-%dT%H:%M:%S'), 'No converted files found. exit..')
-				exit();
+				#print(server_object.cpu_id,datetime.datetime.now().strftime('%Y-%m-%dT%H:%M:%S'), 'No converted files found. exit..')
+				sys.exit(server_object.cpu_id,datetime.datetime.now().strftime('%Y-%m-%dT%H:%M:%S'), 'No converted files found. exit..')
 			
 		else:
 			
