@@ -5,7 +5,12 @@ server_object = stt_server(0)
 
 #while True:
 	
-server_object.set_today_ymd()
+#server_object.set_today_ymd()
+
+server_object.date_y = sys.argv[1]
+server_object.date_m = sys.argv[2]
+server_object.date_d = sys.argv[3]
+
 complete_files	= server_object.get_sql_complete_files()
 cpu_id = 0
 files_count = 0
