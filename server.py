@@ -20,13 +20,20 @@ while True:
 		
 		if server_object.original_file_duration>5:
 		
+			files_converted = 0
+		
 			if server_object.make_file_splitted(0):
 				server_object.transcribe_to_sql(0)
 				server_object.remove_temporary_file()
+				files_converted+=1
 
 			if server_object.make_file_splitted(1):
 				server_object.transcribe_to_sql(1)
 				server_object.remove_temporary_file()			
+				files_converted+=1
+				
+			if files_converted==0:
+				exit();
 			
 		else:
 			
