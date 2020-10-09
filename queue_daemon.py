@@ -20,6 +20,8 @@ for filename in server_object.get_fs_files_list():
 		if cpu_id>len(server_object.cpu_cores)-1:
 			cpu_id = 0
 		files_count+=1
+	else:
+		print('complete:',filename)
 
 #print(datetime.datetime.now().strftime('%Y-%m-%dT%H:%M:%S'), 'sleeping 10s..')
 #time.sleep(10)
