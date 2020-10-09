@@ -21,7 +21,7 @@ while True:
 			#server_object.set_shortest_queue_cpu()
 			server_object.cpu_id = cpu_id
 			server_object.original_file_name = filename
-			server_object.add_queue()
+			#server_object.add_queue()
 			#print(incomplete_count,cpu_id,filename)
 			cpu_id += 1
 			if cpu_id>len(server_object.cpu_cores)-1:
