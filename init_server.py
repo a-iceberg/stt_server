@@ -121,7 +121,7 @@ class stt_server:
 					phrases_count+=1
 
 		if phrases_count == 0:			
-			self.save_result('', '0', side, transcribation_date, 0)
+			self.save_result('', '0', side, transcribation_date, '1')
 
 	def save_result(self, accept_text, accept_start, side, transcribation_date, conf_mid):
 	
