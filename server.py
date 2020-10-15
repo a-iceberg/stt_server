@@ -39,8 +39,9 @@ while True:
 		else:
 			
 			trans_date = datetime.datetime.now().strftime('%Y-%m-%dT%H:%M:%S')
-			server_object.save_result('', '0', 0, trans_date)
-			server_object.save_result('', '0', 1, trans_date)
+			server_object.save_result('', '0', '0', 0, trans_date, '0')
+			server_object.save_result('', '0', '0', 1, trans_date, '0')
+			#self.save_result('', '0', '0', side, transcribation_date, '1')
 			
 		server_object.delete_current_queue()
 			
