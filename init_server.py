@@ -109,25 +109,26 @@ class stt_server:
 				if accept['text'] !='':
 
 					accept_start	= str(accept['result'][0]['start'])
+					accept_end   	= accept['result'][-1:][0]['end']
 					accept_text		= str(accept['text'])
 					
 					for result_rec in accept['result']:
 						conf_score.append(float(result_rec['conf']))
 					conf_mid = str(sum(conf_score)/len(conf_score))
-					conf_score = []					
+					conf_score = []
 					
-					self.save_result(accept_text, accept_start, side, transcribation_date, conf_mid)
+					self.save_result(accept_text, accept_start, accept_end, side, transcribation_date, conf_mid)
 					
 					phrases_count+=1
 
 		if phrases_count == 0:			
-			self.save_result('', '0', side, transcribation_date, '1')
+			self.save_result('', '0', '0', side, transcribation_date, '1')
 
-	def save_result(self, accept_text, accept_start, side, transcribation_date, conf_mid):
+	def save_result(self, accept_text, accept_start, accept_end, side, transcribation_date, conf_mid):
 	
 		cursor = self.conn.cursor()				
-		sql_query = "insert into transcribations (audio_file_name, transcribation_date, date_y, date_m, date_d, text, start, side, conf) "
-		sql_query += "values ('"+self.original_file_name+"','"+transcribation_date+"','"+self.date_y+"','"+self.date_m+"','"+self.date_d+"','"+accept_text+"','"+accept_start+"',"+str(side)+","+conf_mid+");"
+		sql_query = "insert into transcribations (audio_file_name, transcribation_date, date_y, date_m, date_d, text, start, end_time, side, conf) "
+		sql_query += "values ('"+self.original_file_name+"','"+transcribation_date+"','"+self.date_y+"','"+self.date_m+"','"+self.date_d+"','"+accept_text+"','"+accept_start+"','"+accept_end+"',"+str(side)+","+conf_mid+");"
 		cursor.execute(sql_query)
 		self.conn.commit()
 			
