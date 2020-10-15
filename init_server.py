@@ -122,13 +122,13 @@ class stt_server:
 					phrases_count+=1
 
 		if phrases_count == 0:			
-			self.save_result('', '0', '0', side, transcribation_date, '0')
+			self.save_result('', '0', '0', side, transcribation_date, 0)
 
 	def save_result(self, accept_text, accept_start, accept_end, side, transcribation_date, conf_mid):
 	
-		cursor = self.conn.cursor()				
+		cursor = self.conn.cursor()
 		sql_query = "insert into transcribations (audio_file_name, transcribation_date, date_y, date_m, date_d, text, start, end_time, side, conf) "
-		sql_query += "values ('"+self.original_file_name+"','"+transcribation_date+"','"+self.date_y+"','"+self.date_m+"','"+self.date_d+"','"+accept_text+"','"+accept_start+"','"+accept_end+"',"+str(side)+","+conf_mid+");"
+		sql_query += "values ('"+self.original_file_name+"','"+transcribation_date+"','"+self.date_y+"','"+self.date_m+"','"+self.date_d+"','"+accept_text+"','"+accept_start+"','"+accept_end+"',"+str(side)+","+str(conf_mid)+");"
 		cursor.execute(sql_query)
 		self.conn.commit()
 			
