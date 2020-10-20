@@ -4,6 +4,7 @@
 from deeppavlov import build_model, configs
 import pandas as pd
 from init_server import stt_server
+import time
 
 BATCH_SIZE = 1000
 
@@ -44,12 +45,14 @@ while True:
 		"""
 
 	df = pd.read_sql(query, server_object.conn)
-	print( str(line)+': solving '+str(len(df))+' records' )
-	#TODO: move model over the cycle (test)
-	model = build_model(configs.classifiers.rusentiment_bert, download=False) #download first time
-	df['sentiment'] = model(df.text)
+	if len(df)==0:
+		print(datetime.datetime.now().strftime('%Y-%m-%dT%H:%M:%S'), 'sleeping 10s..')
+		time.sleep(10)
+	else:
+		print( solving '+str(len(df))+' records' )
 
-	update_record(server_object, df)
-	line+=1
+		#TODO: move model over the cycle (test)
+		model = build_model(configs.classifiers.rusentiment_bert, download=False) #download first time
+		df['sentiment'] = model(df.text)
 
-print('Happy end! exit..')
+		update_record(server_object, df)
