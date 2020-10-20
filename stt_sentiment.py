@@ -5,7 +5,7 @@ from deeppavlov import build_model, configs
 import pandas as pd
 from init_server import stt_server
 
-BATCH_SIZE = 10
+BATCH_SIZE = 1000
 
 #"update transcribations set sentiment = 'test', sentiment_pos = 0, sentiment_neg = 1 where audio_file_name='in_9163652085_2020-10-09-07-11-39rxtx.wav' and side = 0 and start = 10.83 and transcribation_date='2020-10-09 08:36:55':
 #"select top 10 * from transcribations where sentiment is NULL and text!=''"
@@ -27,7 +27,7 @@ def update_record(server_object, df):
 		query += "sentiment_pos = "+str(pos)+" "
 		query += "where id = "+str(row.id)+";"
 	
-	print(query)
+	#print(query)
 	cursor = server_object.conn.cursor()
 	cursor.execute(query)
 	server_object.conn.commit()
