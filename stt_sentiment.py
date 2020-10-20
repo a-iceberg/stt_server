@@ -49,7 +49,7 @@ while True:
 		print(datetime.datetime.now().strftime('%Y-%m-%dT%H:%M:%S'), 'sleeping 10s..')
 		time.sleep(10)
 	else:
-		print( solving '+str(len(df))+' records' )
+		print( 'solving '+str(len(df))+' records' )
 
 		#TODO: move model over the cycle (test)
 		model = build_model(configs.classifiers.rusentiment_bert, download=False) #download first time
