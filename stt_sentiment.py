@@ -7,9 +7,6 @@ from init_server import stt_server
 
 BATCH_SIZE = 1000
 
-#"update transcribations set sentiment = 'test', sentiment_pos = 0, sentiment_neg = 1 where audio_file_name='in_9163652085_2020-10-09-07-11-39rxtx.wav' and side = 0 and start = 10.83 and transcribation_date='2020-10-09 08:36:55':
-#"select top 10 * from transcribations where sentiment is NULL and text!=''"
-
 def update_record(server_object, df):
 	
 	query = ''
@@ -27,7 +24,6 @@ def update_record(server_object, df):
 		query += "sentiment_pos = "+str(pos)+" "
 		query += "where id = "+str(row.id)+";"
 	
-	#print(query)
 	cursor = server_object.conn.cursor()
 	cursor.execute(query)
 	server_object.conn.commit()
@@ -35,20 +31,25 @@ def update_record(server_object, df):
 
 server_object = stt_server(0)
 
-query = """
-	select top """+str(BATCH_SIZE)+""" 
-	id,	text, sentiment
-	from transcribations 
-	where sentiment is NULL and text!=''
-	order by transcribation_date, start
-	"""
+line = 0
 
-print('solving..')
-df = pd.read_sql(query, server_object.conn)
-model = build_model(configs.classifiers.rusentiment_bert, download=False) #download first time
-res = model(df.text)
-df['sentiment'] = model(df.text)
+while True:
+	
+	query = """
+		select top """+str(BATCH_SIZE)+""" 
+		id,	text, sentiment
+		from transcribations 
+		where sentiment is NULL and text!=''
+		order by transcribation_date, start
+		"""
 
-update_record(server_object, df)
+	df = pd.read_sql(query, server_object.conn)
+	print( str(line)+': solving '+str(len(df))+' records' )
+	#TODO: move model over the cycle (test)
+	model = build_model(configs.classifiers.rusentiment_bert, download=False) #download first time
+	df['sentiment'] = model(df.text)
+
+	update_record(server_object, df)
+	line+=1
 
 print('Happy end! exit..')
