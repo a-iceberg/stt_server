@@ -23,10 +23,22 @@ query = """
 
 print('solving..')
 df = pd.read_sql(query, server_object.conn)
-model = build_model(configs.classifiers.rusentiment_bert, download=True) #download first time
+model = build_model(configs.classifiers.rusentiment_bert, download=False) #download first time
 res = model(df.text)
 df['sentiment'] = model(df.text)
 
-print(df)
+for index, row in df.iterrows():
+    if row.sentiment == 'negative':
+        neg = 1
+        pos = 0
+    else:
+        neg = 0
+        pos = 1
+    query = "update transcribations set "
+    query += "sentiment = '"+row.sentiment+"', "
+    query += "sentiment_neg = "+str(neg)+", "
+    query += "sentiment_pos = "+str(pos)+" "
+    query += "where id = "+str(row.id)
+	print(query)
 
 print('Happy end! exit..')
