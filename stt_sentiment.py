@@ -49,6 +49,6 @@ model = build_model(configs.classifiers.rusentiment_bert, download=False) #downl
 res = model(df.text)
 df['sentiment'] = model(df.text)
 
-update_record(df)
+update_record(server_object, df)
 
 print('Happy end! exit..')
