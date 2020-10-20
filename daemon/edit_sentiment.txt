@@ -1,0 +1,13 @@
+[Unit]
+Description=call stt sentiment
+
+[Service]
+WorkingDirectory=/home/alex/projects/call_centre_stt_server/
+Type=simple
+ExecStart=/usr/bin/env python3 /home/alex/projects/call_centre_stt_server/stt_sentiment.py
+Restart=on-failure
+
+User=alex
+
+[Install]
+WantedBy=multi-user.target
