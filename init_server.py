@@ -7,6 +7,7 @@ import datetime
 import os
 import wave
 import contextlib
+import pandas as pd
 
 class stt_server:
 

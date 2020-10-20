@@ -14,6 +14,10 @@ wget https://alphacephei.com/vosk/models/vosk-model-ru-0.10.zip
 unzip vosk-model-ru-0.10.zip   
 mv vosk-model-ru-0.10 model  
 ```  
+additional libraries:   
+```
+python3 -m pip install pymssql
+```
 
 #### Run
 
