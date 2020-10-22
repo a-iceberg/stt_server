@@ -46,8 +46,8 @@ while True:
 
 	df = pd.read_sql(query, server_object.conn)
 	if len(df)==0:
-		print(datetime.datetime.now().strftime('%Y-%m-%dT%H:%M:%S'), 'sleeping 10s..')
-		time.sleep(10)
+		print(datetime.datetime.now().strftime('%Y-%m-%dT%H:%M:%S'), 'sleeping 600s..')
+		time.sleep(600)
 	else:
 		print( 'solving '+str(len(df))+' records' )
 
