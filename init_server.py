@@ -67,13 +67,13 @@ class stt_server:
 	def connect_mysql(self):
 
 		return mysql.connect(
-			server		= self.mysql_server, 
-			user		= self.mysql_login, 
-			password	= self.mysql_pass,
-			database	= self.mysql_name
+			self.mysql_server, 
+			self.mysql_login, 
+			self.mysql_pass,
+			self.mysql_name
 		)
 	
-	def linkedid_by_filename():		
+	def linkedid_by_filename():
 		
 		filename = self.original_file_name.replace('rxtx.wav','')
 		
