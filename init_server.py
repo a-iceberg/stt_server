@@ -77,10 +77,10 @@ class stt_server:
 		
 		filename = self.original_file_name.replace('rxtx.wav','')
 		
-		date_from = datetime(int(self.date_y),int(self.date_m),int(self.date_d))
-		date_toto = date_from+timedelta(days=1)
-		date_from = datetime.strptime(str(date_from), '%Y-%m-%d %H:%M:%S').strftime('%Y-%m-%dT%H:%M:%S')
-		date_toto = datetime.strptime(str(date_toto), '%Y-%m-%d %H:%M:%S').strftime('%Y-%m-%dT%H:%M:%S')
+		date_from = datetime.datetime(int(self.date_y),int(self.date_m),int(self.date_d))
+		date_toto = date_from+datetime.timedelta(days=1)
+		date_from = datetime.datetime.strptime(str(date_from), '%Y-%m-%d %H:%M:%S').strftime('%Y-%m-%dT%H:%M:%S')
+		date_toto = datetime.datetime.strptime(str(date_toto), '%Y-%m-%d %H:%M:%S').strftime('%Y-%m-%dT%H:%M:%S')
 		with self.mysql_conn:
 			query = """
 			select
