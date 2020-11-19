@@ -73,7 +73,7 @@ class stt_server:
 			self.mysql_name
 		)
 	
-	def linkedid_by_filename():
+	def linkedid_by_filename(self):
 		
 		filename = self.original_file_name.replace('rxtx.wav','')
 		
