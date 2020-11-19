@@ -11,12 +11,14 @@ while True:
 	cursor.execute(sql_query)
 	for row in cursor.fetchall():
 
-		server_object.original_file_path	= row[0]			
+		server_object.original_file_path	= row[0]
 		server_object.original_file_name	= row[1]
 		server_object.date_y				= row[2]
 		server_object.date_m				= row[3]
 		server_object.date_d				= row[4]
 		server_object.original_file_duration= row[5]
+		
+		linkedid = server_object.linkedid_by_filename()
 		
 		if server_object.original_file_duration>5:
 		
@@ -38,8 +40,8 @@ while True:
 		else:
 			
 			trans_date = datetime.datetime.now().strftime('%Y-%m-%dT%H:%M:%S')
-			server_object.save_result('', '0', '0', 0, trans_date, 0)
-			server_object.save_result('', '0', '0', 1, trans_date, 0)
+			server_object.save_result('', '0', '0', 0, trans_date, 0, linkedid)
+			server_object.save_result('', '0', '0', 1, trans_date, 0, linkedid)
 			
 		server_object.delete_current_queue()
 			

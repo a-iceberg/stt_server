@@ -3,6 +3,7 @@ import wave
 import json
 
 import pymssql
+import pymysql as mysql
 import datetime
 import os
 import wave
@@ -16,9 +17,17 @@ class stt_server:
 		# settings ++
 		self.cpu_id					= cpu_id
 		self.cpu_cores				= [i for i in range(0,4)]
-		self.db_name				= 'voice_ai'
-		self.db_server				= '10.2.4.124'
-		self.db_login				= 'ICECORP\\1c_sql'
+		
+		# ms sql
+		self.sql_name				= 'voice_ai'
+		self.sql_server				= '10.2.4.124'
+		self.sql_login				= 'ICECORP\\1c_sql'
+		
+		# mysql
+		self.mysql_name				= 'MICO_96'
+		self.mysql_server			= '10.2.4.146'
+		self.mysql_login			= 'asterisk'
+		
 		self.script_path			= '/home/alex/projects/call_centre_stt_server/'
 		self.model_path				= '/home/alex/projects/vosk-api/python/example/model'
 		self.original_storage_path	= '/mnt/share/audio_call/'
@@ -36,19 +45,59 @@ class stt_server:
 
 		#store pass in file, to prevent pass publication on git
 		with open(self.script_path+'sql.pass','r') as file:
-			self.db_pass		= file.read().replace('\n', '')
+			self.sql_pass		= file.read().replace('\n', '')
+			file.close()
+			
+		with open(self.script_path+'mysql.pass','r') as file:
+			self.mysql_pass		= file.read().replace('\n', '')
 			file.close()
 			
 		self.conn				= self.connect_sql()
+		self.mysql_conn			= self.connect_mysql()
 			
 	def connect_sql(self):
 
 		return pymssql.connect(
-			server		= self.db_server, 
-			user		= self.db_login, 
-			password	= self.db_pass,
-			database	= self.db_name
+			server		= self.sql_server, 
+			user		= self.sql_login, 
+			password	= self.sql_pass,
+			database	= self.sql_name
 		)
+	
+	def connect_mysql(self):
+
+		return mysql.connect(
+			server		= self.mysql_server, 
+			user		= self.mysql_login, 
+			password	= self.mysql_pass,
+			database	= self.mysql_name
+		)
+	
+	def linkedid_by_filename():		
+		
+		filename = self.original_file_name.replace('rxtx.wav','')
+		
+		date_from = datetime(int(self.date_y),int(self.date_m),int(self.date_d))
+		date_toto = date_from+timedelta(days=1)
+		date_from = datetime.strptime(str(date_from), '%Y-%m-%d %H:%M:%S').strftime('%Y-%m-%dT%H:%M:%S')
+		date_toto = datetime.strptime(str(date_toto), '%Y-%m-%d %H:%M:%S').strftime('%Y-%m-%dT%H:%M:%S')
+		with self.mysql_conn:
+			query = """
+			select
+				linkedid
+				from PT1C_cdr_MICO as PT1C_cdr_MICO
+				where 
+					calldate>'"""+date_from+"""' and 
+					calldate<'"""+date_toto+"""' and 
+					PT1C_cdr_MICO.recordingfile LIKE '%"""+filename+"""%' 
+					limit 1
+			"""
+
+			cursor = self.mysql_conn.cursor()
+			cursor.execute(query)
+			for row in cursor.fetchall():
+				return row[0]
+		return ''
 	
 	def make_file_splitted(self,side):
 			
@@ -83,7 +132,7 @@ class stt_server:
 		cursor.execute(sql_query)
 		self.conn.commit()
 		
-	def transcribe_to_sql(self,side):
+	def transcribe_to_sql(self,side,linkedid):
 
 		transcribation_date = datetime.datetime.now().strftime('%Y-%m-%dT%H:%M:%S')
 
@@ -118,18 +167,18 @@ class stt_server:
 					conf_mid = str(sum(conf_score)/len(conf_score))
 					conf_score = []
 					
-					self.save_result(accept_text, accept_start, accept_end, side, transcribation_date, conf_mid)
+					self.save_result(accept_text, accept_start, accept_end, side, transcribation_date, conf_mid, linkedid)
 					
 					phrases_count+=1
 
 		if phrases_count == 0:
-			self.save_result('', '0', '0', side, transcribation_date, 0)
+			self.save_result('', '0', '0', side, transcribation_date, 0, linkedid)
 
-	def save_result(self, accept_text, accept_start, accept_end, side, transcribation_date, conf_mid):
+	def save_result(self, accept_text, accept_start, accept_end, side, transcribation_date, conf_mid, linkedid):
 	
 		cursor = self.conn.cursor()
-		sql_query = "insert into transcribations (audio_file_name, transcribation_date, date_y, date_m, date_d, text, start, end_time, side, conf) "
-		sql_query += "values ('"+self.original_file_name+"','"+transcribation_date+"','"+self.date_y+"','"+self.date_m+"','"+self.date_d+"','"+accept_text+"','"+str(accept_start)+"','"+str(accept_end)+"',"+str(side)+","+str(conf_mid)+");"
+		sql_query = "insert into transcribations (audio_file_name, transcribation_date, date_y, date_m, date_d, text, start, end_time, side, conf, linkedid) "
+		sql_query += "values ('"+self.original_file_name+"','"+transcribation_date+"','"+self.date_y+"','"+self.date_m+"','"+self.date_d+"','"+accept_text+"','"+str(accept_start)+"','"+str(accept_end)+"',"+str(side)+","+str(conf_mid)+","+str(linkedid)+");"
 		cursor.execute(sql_query)
 		self.conn.commit()
 			
