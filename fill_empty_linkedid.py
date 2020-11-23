@@ -64,10 +64,10 @@ def read_file_name():
         print('empty filename. exit')
         exit()
 
-    return file_name
+    return file_name, date_y, date_m, date_d
 
 
-def read_linkedid(file_name):
+def read_linkedid(file_name, date_y, date_m, date_d):
     my_sql_conn = connect_mysql()
     # read linkedid from CDR
     linkedid = ''
@@ -143,8 +143,8 @@ def main():
     print('job len', job_len)
 
     while(True):
-        file_name = read_file_name()
-        linkedid = read_linkedid(file_name)
+        file_name, date_y, date_m, date_d = read_file_name()
+        linkedid = read_linkedid(file_name, date_y, date_m, date_d)
         update_transcribations(file_name, linkedid)
 
 
