@@ -71,7 +71,7 @@ with my_sql_conn:
         PT1C_cdr_MICO.recordingfile LIKE '%"""+filename+"""%'
         limit 1"""
 
-	cursor = self.mysql_conn.cursor()
+    cursor = self.mysql_conn.cursor()
     cursor.execute(query)
     for row in cursor.fetchall():
         linkedid = row[0]
