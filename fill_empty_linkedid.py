@@ -133,7 +133,7 @@ def update_transcribations(file_name, linkedid):
         query = """update transcribations
         set linkedid = '"""+linkedid+"""'
         where audio_file_name='"""+file_name+"';"
-        cursor.execute(sql_query)
+        cursor.execute(query)
         ms_sql_conn.commit()
 
 
