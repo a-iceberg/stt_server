@@ -1,8 +1,7 @@
 import pymssql as ms_sql
 import pymysql as my_sql
 import datetime
-from ipywidgets import IntProgress
-from IPython.display import display
+import progressbar
 
 
 def connect_mysql():
@@ -141,15 +140,15 @@ def main():
 
     job_len = read_job_len()
 
-    prgBar = IntProgress(min=0, max=job_len)
-    display(prgBar)
-
+    bar = progressbar.ProgressBar(maxval=job_len).start()
+    step = 0
     while(True):
+        bar.update(step)
         file_name, date_y, date_m, date_d = read_file_name()
         linkedid = read_linkedid(file_name, date_y, date_m, date_d)
         update_transcribations(file_name, linkedid)
-        prgBar.value = prgBar.value + 1
-        if prgBar.value > 100:
+        step+=1
+        if step > 3:
             print('treshold is reached. exit')
             exit()
 
