@@ -149,7 +149,7 @@ def main():
         linkedid = read_linkedid(file_name, date_y, date_m, date_d)
         update_transcribations(file_name, linkedid)
         prgBar.value = prgBar.value + 1
-        if prgBar.value > 3:
+        if prgBar.value > 100:
             print('treshold is reached. exit')
             exit()
 
