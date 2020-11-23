@@ -9,11 +9,11 @@ my_sql_name = 'MICO_96'
 my_sql_server = '10.2.4.146'
 my_sql_login = 'asterisk'
 
-with open(self.script_path+'sql.pass', 'r') as file:
+with open('sql.pass', 'r') as file:
     ms_sql_pass = file.read().replace('\n', '')
     file.close()
 
-with open(self.script_path+'mysql.pass', 'r') as file:
+with open('mysql.pass', 'r') as file:
     my_sql_pass = file.read().replace('\n', '')
     file.close()
 
@@ -52,7 +52,7 @@ if file_name == '':
 # read linkedid from CDR
 linkedid = ''
 filename = file_name.replace('rxtx.wav', '')
-idy, idm, idd = int(self.date_y), int(self.date_m), int(self.date_d)
+idy, idm, idd = int(date_y), int(date_m), int(date_d)
 date_from = datetime.datetime(idy, idm, idd)
 date_toto = date_from+datetime.timedelta(days=1)
 sdf = str(date_from)
