@@ -1,11 +1,11 @@
 import pymssql as ms_sql
 import pymysql as my_sql
 
-ms_sql_name = 'voice_ai'
+ms_sql_base = 'voice_ai'
 ms_sql_server = '10.2.4.124'
 ms_sql_login = 'ICECORP\\1c_sql'
 
-my_sql_name = 'MICO_96'
+my_sql_base = 'MICO_96'
 my_sql_server = '10.2.4.146'
 my_sql_login = 'asterisk'
 
@@ -17,15 +17,15 @@ with open('mysql.pass', 'r') as file:
     my_sql_pass = file.read().replace('\n', '')
     file.close()
 
-ms_sql_conn = ms_sql.connect(ms_sql_name,
+ms_sql_conn = ms_sql.connect(ms_sql_server,
                              ms_sql_login,
                              ms_sql_pass,
-                             ms_sql_server)
+                             ms_sql_base)
 
-my_sql_conn = my_sql.connect(my_sql_name,
+my_sql_conn = my_sql.connect(my_sql_server,
                              my_sql_login,
                              my_sql_pass,
-                             my_sql_server)
+                             my_sql_base)
 
 file_name = ''
 # read filename from transcribations
