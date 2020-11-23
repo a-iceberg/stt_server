@@ -69,7 +69,6 @@ f_1 = '%Y-%m-%dT%H:%M:%S'
 date_from = datetime.datetime.strptime(sdf, f_0).strftime(f_1)
 date_toto = datetime.datetime.strptime(str(date_toto), f_0).strftime(f_1)
 with my_sql_conn:
-    cursor = my_sql_conn.cursor()
     query = """select
         linkedid
         from PT1C_cdr_MICO as PT1C_cdr_MICO
@@ -78,8 +77,7 @@ with my_sql_conn:
         calldate<'"""+date_toto+"""' and
         PT1C_cdr_MICO.recordingfile LIKE '%"""+filename+"""%'
         limit 1"""
-
-    cursor = self.mysql_conn.cursor()
+    cursor = my_sql_conn.cursor()
     cursor.execute(query)
     for row in cursor.fetchall():
         linkedid = row[0]
@@ -88,8 +86,8 @@ if linkedid == '':
     exit()
 
 # update transcribations
-with my_sql_conn:
-    cursor = my_sql_conn.cursor()
+with ms_sql_conn:
+    # cursor = ms_sql_conn.cursor()
     query = """update transcribations
     set linkedid = """+linkedid+"""
     where audio_file_name="""+file_name+';'
