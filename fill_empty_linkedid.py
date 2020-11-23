@@ -3,7 +3,38 @@ import pymysql as my_sql
 import datetime
 
 
-def read_file_name(ms_sql_conn):
+def connect_mysql():
+    my_sql_base = 'MICO_96'
+    my_sql_server = '10.2.4.146'
+    my_sql_login = 'asterisk'
+
+    with open('mysql.pass', 'r') as file:
+        my_sql_pass = file.read().replace('\n', '')
+        file.close()
+
+    return my_sql.connect(my_sql_server,
+                          my_sql_login,
+                          my_sql_pass,
+                          my_sql_base)
+
+
+def connect_mssql():
+    ms_sql_base = 'voice_ai'
+    ms_sql_server = '10.2.4.124'
+    ms_sql_login = 'ICECORP\\1c_sql'
+
+    with open('sql.pass', 'r') as file:
+        ms_sql_pass = file.read().replace('\n', '')
+        file.close()
+
+    return ms_sql.connect(ms_sql_server,
+                          ms_sql_login,
+                          ms_sql_pass,
+                          ms_sql_base)
+
+
+def read_file_name():
+    ms_sql_conn = connect_mssql()
     file_name = ''
     # read filename from transcribations
     with ms_sql_conn:
@@ -36,7 +67,8 @@ def read_file_name(ms_sql_conn):
     return file_name
 
 
-def read_linkedid(my_sql_conn, file_name):
+def read_linkedid(file_name):
+    my_sql_conn = connect_mysql()
     # read linkedid from CDR
     linkedid = ''
     filename = file_name.replace('rxtx.wav', '')
@@ -69,7 +101,8 @@ def read_linkedid(my_sql_conn, file_name):
     return linkedid
 
 
-def read_job_len(ms_sql_conn):
+def read_job_len():
+    ms_sql_conn = connect_mssql()
     # read job length
     job_len = 0
     with ms_sql_conn:
@@ -91,7 +124,8 @@ def read_job_len(ms_sql_conn):
     return job_len
 
 
-def update_transcribations(ms_sql_conn, file_name, linkedid):
+def update_transcribations(file_name, linkedid):
+    ms_sql_conn = connect_mssql()
     with ms_sql_conn:
         # cursor = ms_sql_conn.cursor()
         query = """update transcribations
@@ -105,38 +139,13 @@ def update_transcribations(ms_sql_conn, file_name, linkedid):
 
 def main():
 
-    ms_sql_base = 'voice_ai'
-    ms_sql_server = '10.2.4.124'
-    ms_sql_login = 'ICECORP\\1c_sql'
-
-    my_sql_base = 'MICO_96'
-    my_sql_server = '10.2.4.146'
-    my_sql_login = 'asterisk'
-
-    with open('sql.pass', 'r') as file:
-        ms_sql_pass = file.read().replace('\n', '')
-        file.close()
-
-    with open('mysql.pass', 'r') as file:
-        my_sql_pass = file.read().replace('\n', '')
-        file.close()
-
-    ms_sql_conn = ms_sql.connect(ms_sql_server,
-                                 ms_sql_login,
-                                 ms_sql_pass,
-                                 ms_sql_base)
-
-    my_sql_conn = my_sql.connect(my_sql_server,
-                                 my_sql_login,
-                                 my_sql_pass,
-                                 my_sql_base)
-
-    job_len = read_job_len(ms_sql_conn)
+    job_len = read_job_len()
+    print('job len', job_len)
 
     while(True):
-        file_name = read_file_name(ms_sql_conn)
-        linkedid = read_linkedid(my_sql_conn, file_name)
-        update_transcribations(ms_sql_conn, file_name, linkedid)
+        file_name = read_file_name()
+        linkedid = read_linkedid(file_name)
+        update_transcribations(file_name, linkedid)
 
 
 if __name__ == '__main__':
