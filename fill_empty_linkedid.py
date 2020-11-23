@@ -17,8 +17,15 @@ with open('mysql.pass', 'r') as file:
     my_sql_pass = file.read().replace('\n', '')
     file.close()
 
-ms_sql_conn = connect_sql()
-my_sql_conn = connect_mysql()
+ms_sql_conn = ms_sql.connect(ms_sql_name,
+                             ms_sql_login,
+                             ms_sql_pass,
+                             ms_sql_server)
+
+my_sql_conn = my_sql.connect(my_sql_name,
+                             my_sql_login,
+                             my_sql_pass,
+                             my_sql_server)
 
 file_name = ''
 # read filename from transcribations
