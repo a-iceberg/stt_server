@@ -147,11 +147,7 @@ def main():
         file_name, date_y, date_m, date_d = read_file_name()
         linkedid = read_linkedid(file_name, date_y, date_m, date_d)
         update_transcribations(file_name, linkedid)
-        step+=1
-        if step > 3:
-            print('treshold is reached. exit')
-            exit()
-
+        step += 1
 
 if __name__ == '__main__':
     main()
