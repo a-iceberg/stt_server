@@ -1,6 +1,8 @@
 import pymssql as ms_sql
 import pymysql as my_sql
 import datetime
+from ipywidgets import IntProgress
+from IPython.display import display
 
 
 def connect_mysql():
@@ -129,7 +131,7 @@ def update_transcribations(file_name, linkedid):
     with ms_sql_conn:
         # cursor = ms_sql_conn.cursor()
         query = """update transcribations
-        set linkedid = """+linkedid+"""
+        set linkedid = '"""+linkedid+"""'
         where audio_file_name='"""+file_name+"';"
         print(query)
         exit()
@@ -140,12 +142,15 @@ def update_transcribations(file_name, linkedid):
 def main():
 
     job_len = read_job_len()
-    print('job len', job_len)
+
+    prgBar = IntProgress(min=0, max=job_len)
+    display(prgBar)
 
     while(True):
         file_name, date_y, date_m, date_d = read_file_name()
         linkedid = read_linkedid(file_name, date_y, date_m, date_d)
         update_transcribations(file_name, linkedid)
+        prgBar.value = prgBar.value + 1
 
 
 if __name__ == '__main__':
