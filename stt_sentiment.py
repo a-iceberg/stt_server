@@ -75,7 +75,7 @@ while True:
 			update_record(server_object, df)
 
 		print(datetime.datetime.now().strftime('%Y-%m-%dT%H:%M:%S'), 'sleeping 600s..')
-		time.sleep(600)
+		time.sleep(10)
 
 	except Exception as e:
 		send_to_telegram('106129214',str(datetime.datetime.now())+' stt sentiment error: '+str(e))
