@@ -74,7 +74,7 @@ while True:
 
 			update_record(server_object, df)
 
-		print(datetime.datetime.now().strftime('%Y-%m-%dT%H:%M:%S'), 'sleeping 600s..')
+		print(datetime.datetime.now().strftime('%Y-%m-%dT%H:%M:%S'), 'sleeping 10s..')
 		time.sleep(10)
 
 	except Exception as e:
