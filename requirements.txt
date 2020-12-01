@@ -3,3 +3,4 @@ PyMySQL
 pymssql
 deeppavlov
 vosk
+git+https://github.com/deepmipt/bert.git@feat/multi_gpu
