@@ -1,4 +1,5 @@
 progressbar2
 PyMySQL
 pymssql
-
+deeppavlov
+vosk
