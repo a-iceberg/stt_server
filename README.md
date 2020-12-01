@@ -18,6 +18,7 @@ pip3 install -r requirements.txt
 additional libraries:   
 ```
 python3 -m pip install pymssql
+pip install -U gast==0.2.2
 ```
 
 #### Run
