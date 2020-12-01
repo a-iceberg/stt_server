@@ -13,6 +13,7 @@ cd call_centre_stt_server
 wget https://alphacephei.com/vosk/models/vosk-model-ru-0.10.zip   
 unzip vosk-model-ru-0.10.zip   
 mv vosk-model-ru-0.10 model  
+pip3 install -r requirements.txt
 ```  
 additional libraries:   
 ```
