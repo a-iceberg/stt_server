@@ -202,9 +202,9 @@ class stt_server:
 					 str(accept_end) + "'," + \
 					 str(side) + "," + \
 					 str(conf_mid) + "," + \
-					 str(linkedid) + "," + \
+					 str(linkedid) + ",'" + \
 					 str(dst) + \
-					 ");"
+					 "');"
 		print('query',sql_query) # DEBUG
 		cursor.execute(sql_query)
 		self.conn.commit()
