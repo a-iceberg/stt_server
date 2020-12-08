@@ -15,8 +15,8 @@ class stt_server:
 	def __init__(self, cpu_id):
 
 		# settings ++
-		self.cpu_id					= cpu_id
-		self.cpu_cores				= [i for i in range(0,11)]
+		self.cpu_id				= cpu_id
+		self.cpu_cores				= [i for i in range(0,16)]
 		
 		# ms sql
 		self.sql_name				= 'voice_ai'
