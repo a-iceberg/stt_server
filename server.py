@@ -29,6 +29,7 @@ if True:
 			files_converted = 0
 		
 			if server_object.make_file_splitted(0):
+				print('transcribe_to_sql', linkedid, dst) # DEBUG
 				server_object.transcribe_to_sql(0,linkedid, dst)
 				server_object.remove_temporary_file()
 				files_converted+=1

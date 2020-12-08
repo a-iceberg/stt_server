@@ -1,4 +1,4 @@
-from vosk import Model, KaldiRecognizer, SetLogLevel
+save_resultfrom vosk import Model, KaldiRecognizer, SetLogLevel
 import wave
 import json
 
@@ -205,6 +205,7 @@ class stt_server:
 					 str(linkedid) + "," + \
 					 str(dst) + \
 					 ");"
+		print('query',sql_query) # DEBUG
 		cursor.execute(sql_query)
 		self.conn.commit()
 			
