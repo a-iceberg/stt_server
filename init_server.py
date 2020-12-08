@@ -8,7 +8,7 @@ import datetime
 import os
 import wave
 import contextlib
-import pandas as pd
+#import pandas as pd
 
 class stt_server:
 
@@ -205,7 +205,7 @@ class stt_server:
 					 str(linkedid) + ",'" + \
 					 str(dst) + \
 					 "');"
-		print('query',sql_query) # DEBUG
+		# print('query',sql_query) # DEBUG
 		cursor.execute(sql_query)
 		self.conn.commit()
 			
