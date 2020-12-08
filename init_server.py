@@ -105,7 +105,7 @@ class stt_server:
 		# crop '.wav' & append postfix
 		self.temp_file_name = self.original_file_name[:-4]+('_R' if side else '_L')+'.wav'
 
-		os_cmd 	= 'ffmpeg -i '
+		os_cmd 	= 'ffmpeg -y -i '
 		os_cmd += self.original_file_path
 		os_cmd += self.original_file_name
 		os_cmd += ' -ar 16000 -af "pan=mono|c0=F'		
