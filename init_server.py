@@ -84,7 +84,8 @@ class stt_server:
 		with self.mysql_conn:
 			query = """
 			select
-				linkedid
+				linkedid,
+				SUBSTRING(dstchannel, 5, 4)
 				from PT1C_cdr_MICO as PT1C_cdr_MICO
 				where 
 					calldate>'"""+date_from+"""' and 
@@ -96,7 +97,7 @@ class stt_server:
 			cursor = self.mysql_conn.cursor()
 			cursor.execute(query)
 			for row in cursor.fetchall():
-				return row[0]
+				return row[0], row[1]
 		return ''
 	
 	def make_file_splitted(self,side):
@@ -132,7 +133,7 @@ class stt_server:
 		cursor.execute(sql_query)
 		self.conn.commit()
 		
-	def transcribe_to_sql(self,side,linkedid):
+	def transcribe_to_sql(self,side,linkedid, dst):
 
 		transcribation_date = datetime.datetime.now().strftime('%Y-%m-%dT%H:%M:%S')
 
@@ -167,18 +168,43 @@ class stt_server:
 					conf_mid = str(sum(conf_score)/len(conf_score))
 					conf_score = []
 					
-					self.save_result(accept_text, accept_start, accept_end, side, transcribation_date, conf_mid, linkedid)
+					self.save_result(accept_text, accept_start, accept_end, side, transcribation_date, conf_mid, linkedid, dst)
 					
 					phrases_count+=1
 
 		if phrases_count == 0:
-			self.save_result('', '0', '0', side, transcribation_date, 0, linkedid)
+			self.save_result('', '0', '0', side, transcribation_date, 0, linkedid, dst)
 
-	def save_result(self, accept_text, accept_start, accept_end, side, transcribation_date, conf_mid, linkedid):
+	def save_result(self, accept_text, accept_start, accept_end, side, transcribation_date, conf_mid, linkedid, dst):
 	
 		cursor = self.conn.cursor()
-		sql_query = "insert into transcribations (audio_file_name, transcribation_date, date_y, date_m, date_d, text, start, end_time, side, conf, linkedid) "
-		sql_query += "values ('"+self.original_file_name+"','"+transcribation_date+"','"+self.date_y+"','"+self.date_m+"','"+self.date_d+"','"+accept_text+"','"+str(accept_start)+"','"+str(accept_end)+"',"+str(side)+","+str(conf_mid)+","+str(linkedid)+");"
+		sql_query = """insert into transcribations(
+		audio_file_name,
+		transcribation_date,
+		date_y,
+		date_m,
+		date_d,
+		text,
+		start,
+		end_time,
+		side,
+		conf,
+		linkedid,
+		dst) """
+		sql_query += "values ('" + \
+					 self.original_file_name + "','" + \
+					 transcribation_date + "','" + \
+					 self.date_y + "','" + \
+					 self.date_m + "','" + \
+					 self.date_d + "','" + \
+					 accept_text + "','" + \
+					 str(accept_start) + "','" + \
+					 str(accept_end) + "'," + \
+					 str(side) + "," + \
+					 str(conf_mid) + "," + \
+					 str(linkedid) + "," + \
+					 str(dst) + \
+					 ");"
 		cursor.execute(sql_query)
 		self.conn.commit()
 			

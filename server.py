@@ -22,19 +22,19 @@ if True:
 		server_object.date_d				= row[4]
 		server_object.original_file_duration= row[5]
 		
-		linkedid = server_object.linkedid_by_filename()
+		linkedid, dst = server_object.linkedid_by_filename()
 		
 		if server_object.original_file_duration>5:
 		
 			files_converted = 0
 		
 			if server_object.make_file_splitted(0):
-				server_object.transcribe_to_sql(0,linkedid)
+				server_object.transcribe_to_sql(0,linkedid, dst)
 				server_object.remove_temporary_file()
 				files_converted+=1
 
 			if server_object.make_file_splitted(1):
-				server_object.transcribe_to_sql(1,linkedid)
+				server_object.transcribe_to_sql(1,linkedid, dst)
 				server_object.remove_temporary_file()			
 				files_converted+=1
 				
@@ -44,8 +44,8 @@ if True:
 		else:
 			
 			trans_date = datetime.datetime.now().strftime('%Y-%m-%dT%H:%M:%S')
-			server_object.save_result('', '0', '0', 0, trans_date, 0, linkedid)
-			server_object.save_result('', '0', '0', 1, trans_date, 0, linkedid)
+			server_object.save_result('', '0', '0', 0, trans_date, 0, linkedid, dst)
+			server_object.save_result('', '0', '0', 1, trans_date, 0, linkedid, dst)
 			
 		server_object.delete_current_queue()
 	# last_file_name = ''
