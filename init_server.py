@@ -1,4 +1,4 @@
-save_resultfrom vosk import Model, KaldiRecognizer, SetLogLevel
+from vosk import Model, KaldiRecognizer, SetLogLevel
 import wave
 import json
 
