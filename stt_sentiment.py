@@ -42,7 +42,7 @@ def update_record(server_object, df):
                 query += "sentiment_neg = "+str(neg)+", "
                 query += "sentiment_pos = "+str(pos)+" "
                 query += "where id = "+str(row.id)+";"
-                print(row.id, row.sentiment)
+                #print(row.id, row.sentiment)
 
         cursor = server_object.conn.cursor()
         cursor.execute(query)
