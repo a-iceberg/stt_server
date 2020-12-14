@@ -5,7 +5,8 @@ from init_server import stt_server
 
 server_object = stt_server(sys.argv[1])
 cursor = server_object.conn.cursor()
-sql_query =		"select top 1 filepath, filename, date_y, date_m, date_d, duration from queue where cpu_id='"+server_object.cpu_id+"' order by date;"
+sql_query =		"select top 1 filepath, filename, date_y, date_m, date_d, duration from queue where cpu_id='"+\
+				   server_object.cpu_id+"' order by date;"
 #last_file_name = ''
 #while True:
 if True:
@@ -39,10 +40,12 @@ if True:
 				files_converted+=1
 				
 			if files_converted==0:
-				sys.exit( str(server_object.cpu_id)+': '+datetime.datetime.now().strftime('%Y-%m-%dT%H:%M:%S')+' No converted files found. exit..')
+				sys.exit( str(server_object.cpu_id)+': '+datetime.datetime.now().strftime('%Y-%m-%dT%H:%M:%S')+\
+						  ' No converted files found. exit..')
 			
 		else:
-			
+
+			print(server_object.original_file_name, 'duration', server_object.original_file_duration)
 			trans_date = datetime.datetime.now().strftime('%Y-%m-%dT%H:%M:%S')
 			server_object.save_result('', '0', '0', 0, trans_date, 0, linkedid, dst)
 			server_object.save_result('', '0', '0', 1, trans_date, 0, linkedid, dst)
