@@ -7,6 +7,7 @@ from init_server import stt_server
 import requests
 import datetime
 import urllib
+import time
 
 BATCH_SIZE = 1000
 
@@ -50,37 +51,38 @@ def update_record(server_object, df):
 server_object = stt_server(0)
 
 line = 0
-send_to_telegram('-227727734', str(datetime.datetime.now())+' sentiment job started.')
-while True:
+#send_to_telegram('-227727734', str(datetime.datetime.now())+' sentiment job started.')
+#while True:
 
-        try:
+try:
 
-                query = """
-                        select top """+str(BATCH_SIZE)+"""
-                        id,     text, sentiment
-                        from transcribations
-                        where sentiment is NULL and text!=''
-                        order by transcribation_date, start
-                        """
+        query = """
+                select top """+str(BATCH_SIZE)+"""
+                id,     text, sentiment
+                from transcribations
+                where sentiment is NULL and text!=''
+                order by transcribation_date, start
+                """
 
-                df = pd.read_sql(query, server_object.conn)
+        df = pd.read_sql(query, server_object.conn)
 
-                if len(df) > 0:
-                        print('solving '+str(len(df))+' records')
+        if len(df) > 0:
+                print('solving '+str(len(df))+' records')
 
-                        # TODO: move model over the cycle (test)
-                        # download model first time
-                        model = build_model(configs.classifiers.rusentiment_bert, download=False)
-                        df['sentiment'] = model(df.text)
+                # TODO: move model over the cycle (test)
+                # download model first time
+                model = build_model(configs.classifiers.rusentiment_bert, download=False)
+                df['sentiment'] = model(df.text)
 
-                        update_record(server_object, df)
+                update_record(server_object, df)
 
-                else:
-                        print('sentiment: nothing to do. exit..')
-                        send_to_telegram('-227727734', str(datetime.datetime.now())+' sentiment job complete.')
-                        exit()
+        else:
+                print('sentiment: nothing to do. exit..')
+                time.sleep(10)
+                #send_to_telegram('-227727734', str(datetime.datetime.now())+' sentiment job complete.')
+                exit()
 
-                print(datetime.datetime.now().strftime('%Y-%m-%dT%H:%M:%S'), 'next job..')
+        print(datetime.datetime.now().strftime('%Y-%m-%dT%H:%M:%S'), 'next job..')
 
-        except Exception as e:
-                send_to_telegram('-227727734', str(datetime.datetime.now())+' stt sentiment error: '+str(e))
+except Exception as e:
+        send_to_telegram('-227727734', str(datetime.datetime.now())+' stt sentiment error: '+str(e))
