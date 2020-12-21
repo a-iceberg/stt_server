@@ -11,6 +11,7 @@ sql_query =		"select filepath, filename, date_y, date_m, date_d, duration from q
 #last_file_name = ''
 #while True:
 #if True:
+processed = 0
 cursor.execute(sql_query)
 for row in cursor.fetchall():
 
@@ -52,7 +53,9 @@ for row in cursor.fetchall():
 		server_object.save_result('', '0', '0', 0, trans_date, 0, linkedid, dst)
 		server_object.save_result('', '0', '0', 1, trans_date, 0, linkedid, dst)
 		server_object.delete_current_queue()
+	processed += 1
 
 # last_file_name = ''
 print(server_object.cpu_id,datetime.datetime.now().strftime('%Y-%m-%dT%H:%M:%S'), 'exit to next job..')
-#time.sleep(10)
+if processed == 0:
+	time.sleep(60)
