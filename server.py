@@ -45,7 +45,7 @@ for row in cursor.fetchall():
 			sys.exit( str(server_object.cpu_id)+': '+datetime.datetime.now().strftime('%Y-%m-%dT%H:%M:%S')+\
 					  ' No converted files found. exit..')
 		server_object.delete_current_queue()
-		server_object.delete_source_file()
+		# server_object.delete_source_file()
 		break
 	else:
 
@@ -54,7 +54,7 @@ for row in cursor.fetchall():
 		server_object.save_result('', '0', '0', 0, trans_date, 0, linkedid, dst)
 		server_object.save_result('', '0', '0', 1, trans_date, 0, linkedid, dst)
 		server_object.delete_current_queue()
-		server_object.delete_source_file()
+		# server_object.delete_source_file()
 	processed += 1
 
 # last_file_name = ''
