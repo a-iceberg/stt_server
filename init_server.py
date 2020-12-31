@@ -1,14 +1,11 @@
 from vosk import Model, KaldiRecognizer, SetLogLevel
-import wave
 import json
-
 import pymssql
 import pymysql as mysql
 import datetime
 import os
 import wave
 import contextlib
-#import pandas as pd
 
 class stt_server:
 
@@ -43,7 +40,7 @@ class stt_server:
 		self.date_m					= ''
 		self.date_d					= ''		
 
-		#store pass in file, to prevent pass publication on git
+		#store pass in file, to prevent pass publication on gitdelete_current_queue
 		with open(self.script_path+'sql.pass','r') as file:
 			self.sql_pass		= file.read().replace('\n', '')
 			file.close()
@@ -132,6 +129,15 @@ class stt_server:
 		sql_query = "delete from queue where filename = '"+self.original_file_name+"';"	
 		cursor.execute(sql_query)
 		self.conn.commit()
+
+	def delete_source_file(self):
+
+		myfile = self.original_file_path + self.original_file_name
+		try:
+			os.remove(myfile)
+			print('succesfully removed', myfile)
+		except OSError as e:  ## if failed, report it back to the user ##
+			print("Error: %s - %s." % (e.filename, e.strerror))
 		
 	def transcribe_to_sql(self,side,linkedid, dst):
 
