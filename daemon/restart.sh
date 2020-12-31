@@ -14,4 +14,3 @@ sudo systemctl restart call_stt_12.service
 sudo systemctl restart call_stt_13.service
 sudo systemctl restart call_stt_14.service
 sudo systemctl restart call_stt_queue.service
-#sudo systemctl restart call_stt_sentiment.service
