@@ -49,7 +49,7 @@ class stt_server:
 			self.mysql_pass		= file.read().replace('\n', '')
 			file.close()
 			
-		self.conn				= self.connect_sql()
+		self.conn			= self.connect_sql()
 		self.mysql_conn			= self.connect_mysql()
 			
 	def connect_sql(self):
@@ -62,12 +62,12 @@ class stt_server:
 		)
 	
 	def connect_mysql(self):
-
+		
 		return mysql.connect(
-			self.mysql_server, 
-			self.mysql_login, 
-			self.mysql_pass,
-			self.mysql_name
+			host = self.mysql_server, 
+			user = self.mysql_login, 
+			passwd = self.mysql_pass,
+			db = self.mysql_name
 		)
 	
 	def linkedid_by_filename(self):
