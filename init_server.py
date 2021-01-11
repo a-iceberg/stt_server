@@ -312,12 +312,11 @@ class stt_server:
 		crop_date_m = crop_date.strftime("%m")
 		crop_date_d = crop_date.strftime("%d")
 
-		cursor = self.conn.cursor()
-		sql_query = """select COUNT(id) 
-		from transcribations 
-		where date_y<='"""+crop_date_y+"""'
-		and date_m<='"""+crop_date_m+"""'
-		and date_d<='"""+crop_date_d+"""';"""
-		print('query',sql_query) # DEBUG
+		# cursor = self.conn.cursor()
+		sql_query = "delete from transcribations where \
+		date_y<='" + crop_date_y + "' and \
+		date_m<='" + crop_date_m + "' and \
+		date_d<='" + crop_date_d + "';"
+		print('query', sql_query) # DEBUG
 		# cursor.execute(sql_query)
 		# self.conn.commit()
