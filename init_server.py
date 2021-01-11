@@ -302,4 +302,22 @@ class stt_server:
 			frames = f.getnframes()
 			rate = f.getframerate()
 			self.original_file_duration = frames / float(rate)
-	
+
+	def delete_old_results(self):
+
+		cur_date = datetime.datetime.now()
+		DD = datetime.timedelta(days=int(365 / 2))
+		crop_date = cur_date - DD
+		crop_date_y = crop_date.strftime("%Y")
+		crop_date_m = crop_date.strftime("%m")
+		crop_date_d = crop_date.strftime("%d")
+
+		cursor = self.conn.cursor()
+		sql_query = """select COUNT(id) 
+		from transcribations 
+		where date_y<='"""+crop_date_y+"""'
+		and date_m<='"""+crop_date_m+"""'
+		and date_d<='"""+crop_date_d+"""';"""
+		print('query',sql_query) # DEBUG
+		# cursor.execute(sql_query)
+		# self.conn.commit()
