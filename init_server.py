@@ -95,7 +95,8 @@ class stt_server:
 			cursor = self.mysql_conn.cursor()
 			cursor.execute(query)
 			for row in cursor.fetchall():
-				return row[0], row[1]
+				linkedid, dstchannel = row[0], row[1]
+				return linkedid, dstchannel
 		return ''
 	
 	def make_file_splitted(self,side):
