@@ -12,53 +12,54 @@ class stt_server:
 	def __init__(self, cpu_id):
 
 		# settings ++
-		self.cpu_id				= cpu_id
-		self.cpu_cores				= [i for i in range(0,15)]
+		self.cpu_id = cpu_id
+		self.cpu_cores = [i for i in range(0,15)]
 		
 		# ms sql
-		self.sql_name				= 'voice_ai'
-		self.sql_server				= '10.2.4.124'
-		self.sql_login				= 'ICECORP\\1c_sql'
+		self.sql_name = 'voice_ai'
+		self.sql_server = '10.2.4.124'
+		self.sql_login = 'ICECORP\\1c_sql'
 		
 		# mysql
-		self.mysql_name				= 'MICO_96'
-		self.mysql_server			= '10.2.4.146'
-		self.mysql_login			= 'asterisk'
+		self.mysql_name = 'MICO_96'
+		self.mysql_server = '10.2.4.146'
+		self.mysql_login = 'asterisk'
 		
-		self.script_path			= '/home/alex/projects/call_centre_stt_server/'
-		self.model_path				= '/home/alex/projects/vosk-api/python/example/model'
-		self.original_storage_path	= '/mnt/share/audio_call/'
-		self.original_storage_prefix= 'RXTX_'
-		self.temp_file_path			= self.script_path+'files/'
+		self.script_path = '/home/alex/projects/call_centre_stt_server/'
+		self.model_path = '/home/alex/projects/vosk-api/python/example/model'
+		self.original_storage_path = '/mnt/share/audio_call/'
+		self.original_storage_prefix = 'RXTX_'
+		self.temp_file_path = self.script_path+'files/'
 		# settings --
 		
-		self.temp_file_name			= ''
-		self.original_file_path		= ''
-		self.original_file_name		= ''
+		self.temp_file_name = ''
+		self.original_file_path = ''
+		self.original_file_name = ''
 		self.original_file_duration	= 0
-		self.date_y					= ''
-		self.date_m					= ''
-		self.date_d					= ''		
+		self.date_y = ''
+		self.date_m = ''
+		self.date_d = ''
+		self.rec_date = ''
 
 		#store pass in file, to prevent pass publication on gitdelete_current_queue
 		with open(self.script_path+'sql.pass','r') as file:
-			self.sql_pass		= file.read().replace('\n', '')
+			self.sql_pass = file.read().replace('\n', '')
 			file.close()
 			
 		with open(self.script_path+'mysql.pass','r') as file:
-			self.mysql_pass		= file.read().replace('\n', '')
+			self.mysql_pass = file.read().replace('\n', '')
 			file.close()
 			
-		self.conn			= self.connect_sql()
-		self.mysql_conn			= self.connect_mysql()
+		self.conn = self.connect_sql()
+		self.mysql_conn = self.connect_mysql()
 			
 	def connect_sql(self):
 
 		return pymssql.connect(
-			server		= self.sql_server, 
-			user		= self.sql_login, 
-			password	= self.sql_pass,
-			database	= self.sql_name
+			server = self.sql_server,
+			user = self.sql_login,
+			password = self.sql_pass,
+			database = self.sql_name
 		)
 	
 	def connect_mysql(self):
@@ -196,7 +197,8 @@ class stt_server:
 		side,
 		conf,
 		linkedid,
-		dst) """
+		dst,
+		record_date) """
 		sql_query += "values ('" + \
 					 self.original_file_name + "','" + \
 					 transcribation_date + "','" + \
@@ -209,7 +211,8 @@ class stt_server:
 					 str(side) + "," + \
 					 str(conf_mid) + "," + \
 					 str(linkedid) + ",'" + \
-					 str(dst) + \
+					 str(dst) + ",'" + \
+					 str(self.rec_date) + \
 					 "');"
 		# print('query',sql_query) # DEBUG
 		cursor.execute(sql_query)

@@ -2,28 +2,29 @@ import sys
 import time
 import datetime
 from init_server import stt_server
+import re
 
 print('cpu', sys.argv[1])
 server_object = stt_server(sys.argv[1])
 cursor = server_object.conn.cursor()
 sql_query =		"select filepath, filename, date_y, date_m, date_d, duration from queue where cpu_id='"+\
 				   server_object.cpu_id+"' order by date;"
-#job_complete = False
-#last_file_name = ''
-#while True:
-#if True:
 processed = 0
 cursor.execute(sql_query)
 for row in cursor.fetchall():
 
-	server_object.original_file_path	= row[0]
-	server_object.original_file_name	= row[1]
-	#if last_file_name != '' and last_file_name != server_object.original_file_name:
-	#	print(server_object.cpu_id,'next filename. exit')
-	#last_file_name = server_object.original_file_name
-	server_object.date_y				= row[2]
-	server_object.date_m				= row[3]
-	server_object.date_d				= row[4]
+	server_object.original_file_path = row[0]
+	server_object.original_file_name = row[1]
+	server_object.date_y = row[2]
+	server_object.date_m = row[3]
+	server_object.date_d = row[4]
+
+	rec_source_date = re.findall(r'\d{4}-\d{2}-\d{2}-\d{2}-\d{2}-\d{2}', server_object.original_file_name)[0]
+	server_object.rec_date = rec_source_date[:10] + ' ' + rec_source_date[11:].replace('-', ':')
+	if len(re.findall(r'\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}', server_object.rec_date)) ==0:
+		print('Unable to extract date from filename', server_object.original_file_name)
+		server_object.rec_date = 'Null'
+
 	server_object.original_file_duration= row[5]
 
 	linkedid, dst = server_object.linkedid_by_filename()
@@ -58,7 +59,6 @@ for row in cursor.fetchall():
 		# server_object.delete_source_file()
 	processed += 1
 
-# last_file_name = ''
 print(server_object.cpu_id,datetime.datetime.now().strftime('%Y-%m-%dT%H:%M:%S'), 'exit to next job..')
 if processed == 0:
 	time.sleep(60)
