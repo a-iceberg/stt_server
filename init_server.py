@@ -89,13 +89,13 @@ class stt_server:
 					calldate>'"""+date_from+"""' and 
 					calldate<'"""+date_toto+"""' and 
 					PT1C_cdr_MICO.recordingfile LIKE '%"""+filename+"""%' 
-					limit 1
-			"""
+					limit 1;"""
 
 			cursor = self.mysql_conn.cursor()
 			cursor.execute(query)
 			for row in cursor.fetchall():
 				linkedid, dstchannel = row[0], row[1]
+				print('linkedid, dstchannel', linkedid, dstchannel)
 				return linkedid, dstchannel
 		return ''
 	
