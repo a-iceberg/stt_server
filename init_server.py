@@ -211,10 +211,10 @@ class stt_server:
 					 str(side) + "," + \
 					 str(conf_mid) + "," + \
 					 str(linkedid) + ",'" + \
-					 str(dst) + ",'" + \
+					 str(dst) + "','" + \
 					 str(self.rec_date) + \
 					 "');"
-		print('query',sql_query) # DEBUG
+		# print('query',sql_query) # DEBUG
 		cursor.execute(sql_query)
 		self.conn.commit()
 			
