@@ -214,7 +214,7 @@ class stt_server:
 					 str(dst) + ",'" + \
 					 str(self.rec_date) + \
 					 "');"
-		# print('query',sql_query) # DEBUG
+		print('query',sql_query) # DEBUG
 		cursor.execute(sql_query)
 		self.conn.commit()
 			
