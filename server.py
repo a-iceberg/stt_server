@@ -61,4 +61,4 @@ for row in cursor.fetchall():
 
 print(server_object.cpu_id,datetime.datetime.now().strftime('%Y-%m-%dT%H:%M:%S'), 'exit to next job..')
 if processed == 0:
-	time.sleep(60)
+	time.sleep(3)
