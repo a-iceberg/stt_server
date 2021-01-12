@@ -79,7 +79,10 @@ class stt_server:
 		date_toto = date_from+datetime.timedelta(days=1)
 		date_from = datetime.datetime.strptime(str(date_from), '%Y-%m-%d %H:%M:%S').strftime('%Y-%m-%dT%H:%M:%S')
 		date_toto = datetime.datetime.strptime(str(date_toto), '%Y-%m-%d %H:%M:%S').strftime('%Y-%m-%dT%H:%M:%S')
-		with self.mysql_conn:
+
+		mysql_conn = self.connect_mysql()
+
+		with mysql_conn:
 			query = """
 			select
 				linkedid,
