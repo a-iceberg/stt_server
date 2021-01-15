@@ -288,14 +288,14 @@ class stt_server:
 		cursor = self.conn.cursor()
 		current_date = datetime.datetime.now().strftime('%Y-%m-%dT%H:%M:%S')		
 
-		rec_source_date = re.findall(r'\d{4}-\d{2}-\d{2}-\d{2}-\d{2}-\d{2}', server_object.original_file_name)[0]
-		server_object.rec_date = 'Null'
+		rec_source_date = re.findall(r'\d{4}-\d{2}-\d{2}-\d{2}-\d{2}-\d{2}', self.original_file_name)[0]
+		self.rec_date = 'Null'
 		if len(rec_source_date):
-			server_object.rec_date = rec_source_date[:10] + ' ' + rec_source_date[11:].replace('-', ':')
-			if len(re.findall(r'\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}', server_object.rec_date)) == 0:
-				print('1: Unable to extract date from filename', server_object.original_file_name)
+			self.rec_date = rec_source_date[:10] + ' ' + rec_source_date[11:].replace('-', ':')
+			if len(re.findall(r'\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}', self.rec_date)) == 0:
+				print('1: Unable to extract date from filename', self.original_file_name)
 		else:
-			print('0: Unable to extract date from filename', server_object.original_file_name)
+			print('0: Unable to extract date from filename', self.original_file_name)
 
 
 		sql_query = "insert into queue (filepath, filename, cpu_id, date, date_y, date_m, date_d, duration, rec_date) "
