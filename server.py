@@ -8,7 +8,7 @@ print('cpu', sys.argv[1])
 server_object = stt_server(sys.argv[1])
 cursor = server_object.conn.cursor()
 sql_query =		"select filepath, filename, date_y, date_m, date_d, duration from queue where cpu_id='"+\
-				   server_object.cpu_id+"' order by date;"
+				   server_object.cpu_id+"' order by record_date;"
 processed = 0
 cursor.execute(sql_query)
 for row in cursor.fetchall():
