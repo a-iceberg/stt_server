@@ -308,7 +308,7 @@ class stt_server:
 		sql_query += self.date_m+"','"
 		sql_query += self.date_d+"','"
 		sql_query += str(self.original_file_duration)+"','"
-		sql_query += server_object.rec_date+"');"
+		sql_query += self.rec_date+"');"
 		
 		cursor.execute(sql_query)
 		self.conn.commit()
