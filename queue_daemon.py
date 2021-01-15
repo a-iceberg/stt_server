@@ -26,11 +26,13 @@ while True:
 			"""cpu_id += 1
 			if cpu_id>len(server_object.cpu_cores)-1:
 				cpu_id = 0"""
-			#incomplete_count += 1
-			#else:
-			#print(complete_count,'complete:',filename)
-		complete_count += 1
+			incomplete_count += 1
+		else:
+			print(complete_count,'complete:',filename)
+			complete_count += 1
+		# debug ++
 		break
+		# debug --
 	
 	print('incomplete_count',incomplete_count)
 	print('complete_count',complete_count)
