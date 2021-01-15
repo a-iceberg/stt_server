@@ -69,14 +69,15 @@ class stt_server:
 			host = self.mysql_server, 
 			user = self.mysql_login, 
 			passwd = self.mysql_pass,
-			db = self.mysql_name
+			db = self.mysql_name,
+			autocommit = True
 		)
 	
 	def linkedid_by_filename(self):
 		
-		filename = self.original_file_name.replace('rxtx.wav','')
+		filename = self.original_file_name.replace('rxtx.wav', '')
 		
-		date_from = datetime.datetime(int(self.date_y),int(self.date_m),int(self.date_d))
+		date_from = datetime.datetime(int(self.date_y), int(self.date_m), int(self.date_d))
 		date_toto = date_from+datetime.timedelta(days=1)
 		date_from = datetime.datetime.strptime(str(date_from), '%Y-%m-%d %H:%M:%S').strftime('%Y-%m-%dT%H:%M:%S')
 		date_toto = datetime.datetime.strptime(str(date_toto), '%Y-%m-%d %H:%M:%S').strftime('%Y-%m-%dT%H:%M:%S')
@@ -134,7 +135,7 @@ class stt_server:
 		cursor = self.conn.cursor()
 		sql_query = "delete from queue where filename = '"+self.original_file_name+"';"	
 		cursor.execute(sql_query)
-		self.conn.commit()
+		#self.conn.commit() # autocommit
 
 	def delete_source_file(self):
 
@@ -278,7 +279,7 @@ class stt_server:
 			result += 1
 			self.cpu_id = int(row[0])
 			print('selected', self.cpu_id, 'cpu')
-		if result==0:
+		if result == 0:
 			print('error: unable to get shortest_queue_cpu')
 			self.cpu_id = 0
 	
@@ -313,7 +314,7 @@ class stt_server:
 		sql_query += self.rec_date+"');"
 		
 		cursor.execute(sql_query)
-		self.conn.commit()
+		#self.conn.commit() # autocommit
 		
 	def calculate_file_length(self):
 
