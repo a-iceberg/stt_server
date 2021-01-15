@@ -60,7 +60,8 @@ class stt_server:
 			server = self.sql_server,
 			user = self.sql_login,
 			password = self.sql_pass,
-			database = self.sql_name
+			database = self.sql_name,
+			autocommit=True
 		)
 	
 	def connect_mysql(self):
@@ -222,7 +223,7 @@ class stt_server:
 					 "');"
 		# print('query',sql_query) # DEBUG
 		cursor.execute(sql_query)
-		self.conn.commit()
+		#self.conn.commit() # autocommit
 			
 	def remove_temporary_file(self):
 		print('removing',self.temp_file_path + self.temp_file_name)
@@ -343,4 +344,4 @@ class stt_server:
 		date_m<='" + crop_date_m + "' and \
 		date_d<='" + crop_date_d + "';"
 		cursor.execute(sql_query)
-		self.conn.commit()
+		# self.conn.commit() # autocommit
