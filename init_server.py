@@ -275,8 +275,9 @@ class stt_server:
 		cursor.execute(sql_query)
 		result = 0
 		for row in cursor.fetchall():
-			result+=1
+			result += 1
 			self.cpu_id = int(row[0])
+			print('selected', self.cpu_id, 'cpu')
 		if result==0:
 			print('error: unable to get shortest_queue_cpu')
 			self.cpu_id = 0
