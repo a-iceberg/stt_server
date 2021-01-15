@@ -61,7 +61,7 @@ class stt_server:
 			user = self.sql_login,
 			password = self.sql_pass,
 			database = self.sql_name,
-			autocommit=True
+			#autocommit=True
 		)
 	
 	def connect_mysql(self):
@@ -71,7 +71,7 @@ class stt_server:
 			user = self.mysql_login, 
 			passwd = self.mysql_pass,
 			db = self.mysql_name,
-			autocommit = True
+			#autocommit = True
 		)
 	
 	def linkedid_by_filename(self):
@@ -136,7 +136,7 @@ class stt_server:
 		cursor = self.conn.cursor()
 		sql_query = "delete from queue where filename = '"+self.original_file_name+"';"	
 		cursor.execute(sql_query)
-		#self.conn.commit() # autocommit
+		self.conn.commit() # autocommit
 
 	def delete_source_file(self):
 
@@ -223,7 +223,7 @@ class stt_server:
 					 "');"
 		# print('query',sql_query) # DEBUG
 		cursor.execute(sql_query)
-		#self.conn.commit() # autocommit
+		self.conn.commit() # autocommit
 			
 	def remove_temporary_file(self):
 		print('removing',self.temp_file_path + self.temp_file_name)
@@ -275,6 +275,7 @@ class stt_server:
 		sql_query += 'union all	select cpu_id, count(filename) from queue group by cpu_id; '
 		sql_query += 'select top 1 cpu_id, max(files_count)  from #tmp_cpu_queue_len group by cpu_id order by max(files_count), cpu_id;'	
 		cursor.execute(sql_query)
+		self.conn.commit()  # autocommit
 		result = 0
 		for row in cursor.fetchall():
 			result += 1
@@ -318,7 +319,7 @@ class stt_server:
 		sql_query += self.rec_date+"');"
 		
 		cursor.execute(sql_query)
-		#self.conn.commit() # autocommit
+		self.conn.commit() # autocommit
 		
 	def calculate_file_length(self):
 
@@ -344,4 +345,4 @@ class stt_server:
 		date_m<='" + crop_date_m + "' and \
 		date_d<='" + crop_date_d + "';"
 		cursor.execute(sql_query)
-		# self.conn.commit() # autocommit
+		self.conn.commit() # autocommit
