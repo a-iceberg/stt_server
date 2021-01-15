@@ -298,7 +298,8 @@ class stt_server:
 			print('0: Unable to extract date from filename', self.original_file_name)
 
 
-		sql_query = "insert into queue (filepath, filename, cpu_id, date, date_y, date_m, date_d, duration, rec_date) "
+		sql_query = "insert into queue "
+		sql_query += "(filepath, filename, cpu_id, date, date_y, date_m, date_d, duration, record_date) "
 		sql_query += "values ('"
 		sql_query += self.original_file_path+"','"
 		sql_query += self.original_file_name+"','"
