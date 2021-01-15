@@ -13,7 +13,7 @@ else:
 
 while True:
 	complete_files	= server_object.get_sql_complete_files()
-	cpu_id = 0
+	# cpu_id = 0
 	incomplete_count = 0
 	complete_count = 0
 	for filename in server_object.get_fs_files_list():	
@@ -22,7 +22,7 @@ while True:
 			#server_object.cpu_id = cpu_id
 			server_object.original_file_name = filename
 			server_object.add_queue()
-			print(incomplete_count,cpu_id,filename)
+			print(incomplete_count, 'incomplete', server_object.cpu_id, filename)
 			"""cpu_id += 1
 			if cpu_id>len(server_object.cpu_cores)-1:
 				cpu_id = 0"""
