@@ -280,7 +280,7 @@ class stt_server:
 		for row in cursor.fetchall():
 			result += 1
 			self.cpu_id = int(row[0])
-			print('selected', self.cpu_id, 'cpu')
+			# print('selected', self.cpu_id, 'cpu')
 		if result == 0:
 			print('error: unable to get shortest_queue_cpu')
 			self.cpu_id = 0
@@ -302,7 +302,7 @@ class stt_server:
 			print('0: Unable to extract date from filename', self.original_file_name)
 
 		# debug ++
-		print(self.cpu_id, 'self.rec_date', self.rec_date, self.original_file_name)
+		# print(self.cpu_id, 'self.rec_date', self.rec_date, self.original_file_name)
 		# debug --
 
 		sql_query = "insert into queue "
