@@ -31,7 +31,7 @@ while True:
 			# break
 			# debug --
 		else:
-			print(complete_count,'complete:',filename)
+			# print(complete_count,'complete:',filename)
 			complete_count += 1
 	
 	print('incomplete_count',incomplete_count)
