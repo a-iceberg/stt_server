@@ -6,6 +6,7 @@ import datetime
 import os
 import wave
 import contextlib
+import re
 
 class stt_server:
 
