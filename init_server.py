@@ -334,15 +334,11 @@ class stt_server:
 
 		cur_date = datetime.datetime.now()
 		DD = datetime.timedelta(days=int(365 / 2))
-		crop_date = cur_date - DD
-		crop_date_y = crop_date.strftime("%Y")
-		crop_date_m = crop_date.strftime("%m")
-		crop_date_d = crop_date.strftime("%d")
-
+		crop_date = str(cur_date - DD)
+		crop_date = re.findall(r'\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}', crop_date)[0]
+		bottom_limit = datetime.datetime.strptime(str(crop_date), '%Y-%m-%d %H:%M:%S').strftime('%Y-%m-%dT%H:%M:%S')
 		cursor = self.conn.cursor()
-		sql_query = "delete from transcribations where \
-		date_y<='" + crop_date_y + "' and \
-		date_m<='" + crop_date_m + "' and \
-		date_d<='" + crop_date_d + "';"
+		sql_query = "delete from transcribations where record_date<'"+str(bottom_limit)+"';"
 		cursor.execute(sql_query)
 		self.conn.commit() # autocommit
+
