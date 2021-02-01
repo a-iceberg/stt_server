@@ -68,6 +68,18 @@ def transcribed_yesterday():
     return result
 
 
+def sentiment_queue():
+    result = 'Очередь тональности:\n'
+    ms_sql_conn = connect_mssql()
+    with ms_sql_conn:
+        query = "select count(id) from transcribations where sentiment is NULL and text!='';"
+        cursor = ms_sql_conn.cursor()
+        cursor.execute(query)
+        for row in cursor.fetchall():
+            result += str(row[0])
+    return result
+
+
 def send_to_telegram(chat_id, message):
     with open('/home/alex/projects/call_centre_stt_server/telegram_token.key', 'r') as file:
         token = file.read().replace('\n', '')
@@ -81,7 +93,8 @@ def send_to_telegram(chat_id, message):
 msg = 'Состояние системы расшивки аудиозаписей\n'
 msg += transcribed_yesterday() + '\n'
 msg += queue_len() + '\n'
-msg += queue_by_cpu()
+msg += queue_by_cpu() + '\n'
+msg += sentiment_queue()
 print(msg)
 send_to_telegram('-1001443983697', msg)
 
