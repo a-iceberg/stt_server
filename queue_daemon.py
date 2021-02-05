@@ -12,6 +12,7 @@ else:
 	server_object.set_today_ymd()
 
 while True:
+	server_object.source_id = server_object.source['call']
 	complete_files	= server_object.get_sql_complete_files()
 	# cpu_id = 0
 	incomplete_count = 0

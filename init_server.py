@@ -25,11 +25,22 @@ class stt_server:
 		self.mysql_name = 'MICO_96'
 		self.mysql_server = '10.2.4.146'
 		self.mysql_login = 'asterisk'
-		
+
 		self.script_path = '/home/alex/projects/call_centre_stt_server/'
 		self.model_path = '/home/alex/projects/vosk-api/python/example/model'
-		self.original_storage_path = '/mnt/share/audio_call/'
-		self.original_storage_prefix = 'RXTX_'
+		self.source_id = 0
+		self.sources = {
+			'call': 1,
+			'master': 2,
+		}
+		self.original_storage_path = {
+			1: '/mnt/share/audio_call/',
+			2: '/mnt/share/audio_master/REC_IN_OUT/',
+		}
+		self.original_storage_prefix = {
+			1: 'RXTX_',
+			2: '',
+		}
 		self.temp_file_path = self.script_path+'files/'
 		# settings --
 		
@@ -244,7 +255,10 @@ class stt_server:
 	
 	def get_fs_files_list(self):
 
-		self.original_file_path = self.original_storage_path + self.original_storage_prefix + self.date_y + '-' + self.date_m + '/'	+ self.date_d + '/'	
+		self.original_file_path = self.original_storage_path[self.source_id]
+		self.original_file_path	+= self.original_storage_prefix[self.source_id]
+		if self.source_id == self.source['call']:
+			self.original_file_path	+= self.date_y + '-' + self.date_m + '/'	+ self.date_d + '/'
 		files_list = []
 		for (dirpath, dirnames, filenames) in os.walk(self.original_file_path):
 			files_list.extend(filenames)
@@ -306,7 +320,7 @@ class stt_server:
 		# debug --
 
 		sql_query = "insert into queue "
-		sql_query += "(filepath, filename, cpu_id, date, date_y, date_m, date_d, duration, record_date) "
+		sql_query += "(filepath, filename, cpu_id, date, date_y, date_m, date_d, duration, record_date, source_id) "
 		sql_query += "values ('"
 		sql_query += self.original_file_path+"','"
 		sql_query += self.original_file_name+"','"
@@ -316,7 +330,8 @@ class stt_server:
 		sql_query += self.date_m+"','"
 		sql_query += self.date_d+"','"
 		sql_query += str(self.original_file_duration)+"','"
-		sql_query += self.rec_date+"');"
+		sql_query += self.rec_date+"','"
+		sql_query += str(self.source_id)+"');"
 		
 		cursor.execute(sql_query)
 		self.conn.commit() # autocommit
