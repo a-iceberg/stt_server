@@ -216,22 +216,24 @@ class stt_server:
 		conf,
 		linkedid,
 		dst,
-		record_date) """
+		record_date,
+		source_id) """
 		sql_query += "values ('" + \
-					 self.original_file_name + "','" + \
-					 transcribation_date + "','" + \
-					 self.date_y + "','" + \
-					 self.date_m + "','" + \
-					 self.date_d + "','" + \
-					 accept_text + "','" + \
-					 str(accept_start) + "','" + \
-					 str(accept_end) + "'," + \
-					 str(side) + "," + \
-					 str(conf_mid) + "," + \
-					 str(linkedid) + ",'" + \
-					 str(dst) + "','" + \
-					 str(self.rec_date) + \
-					 "');"
+			self.original_file_name + "','" + \
+			transcribation_date + "','" + \
+			self.date_y + "','" + \
+			self.date_m + "','" + \
+			self.date_d + "','" + \
+			accept_text + "','" + \
+			str(accept_start) + "','" + \
+			str(accept_end) + "'," + \
+			str(side) + "," + \
+			str(conf_mid) + "," + \
+			str(linkedid) + ",'" + \
+			str(dst) + "','" + \
+			str(self.rec_date) + "','" + \
+			str(self.source_id) + \
+			"');"
 		# print('query',sql_query) # DEBUG
 		cursor.execute(sql_query)
 		self.conn.commit() # autocommit

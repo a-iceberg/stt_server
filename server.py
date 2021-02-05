@@ -7,7 +7,7 @@ import re
 print('cpu', sys.argv[1])
 server_object = stt_server(sys.argv[1])
 cursor = server_object.conn.cursor()
-sql_query =		"select filepath, filename, date_y, date_m, date_d, duration from queue where cpu_id='"+\
+sql_query =		"select filepath, filename, date_y, date_m, date_d, duration, source_id from queue where cpu_id='"+\
 				   server_object.cpu_id+"' order by record_date;"
 processed = 0
 cursor.execute(sql_query)
@@ -18,6 +18,7 @@ for row in cursor.fetchall():
 	server_object.date_y = row[2]
 	server_object.date_m = row[3]
 	server_object.date_d = row[4]
+	server_object.source_id = row[6]
 
 	rec_source_date = re.findall(r'\d{4}-\d{2}-\d{2}-\d{2}-\d{2}-\d{2}', server_object.original_file_name)[0]
 	server_object.rec_date = rec_source_date[:10] + ' ' + rec_source_date[11:].replace('-', ':')
