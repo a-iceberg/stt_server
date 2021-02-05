@@ -257,7 +257,7 @@ class stt_server:
 
 		self.original_file_path = self.original_storage_path[self.source_id]
 		self.original_file_path	+= self.original_storage_prefix[self.source_id]
-		if self.source_id == self.source['call']:
+		if self.source_id == self.sources['call']:
 			self.original_file_path	+= self.date_y + '-' + self.date_m + '/'	+ self.date_d + '/'
 		files_list = []
 		for (dirpath, dirnames, filenames) in os.walk(self.original_file_path):

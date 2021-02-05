@@ -25,7 +25,8 @@ while True:
 			server_object.add_queue()
 			# print(incomplete_count, 'incomplete', server_object.cpu_id, filename)
 			"""cpu_id += 1
-			if cpu_id>len(server_object.cpu_cores)-1:
+			if cpu_id>len(serv
+			er_object.cpu_cores)-1:
 				cpu_id = 0"""
 			incomplete_count += 1
 		else:
