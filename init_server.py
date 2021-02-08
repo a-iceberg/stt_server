@@ -22,7 +22,11 @@ class stt_server:
 		self.sql_login = 'ICECORP\\1c_sql'
 		
 		# mysql
-		self.mysql_name = 'MICO_96'
+		# mysql
+		self.mysql_name = {
+			1: 'MICO_96',
+			2: 'asterisk',
+		}
 		self.mysql_server = '10.2.4.146'
 		self.mysql_login = 'asterisk'
 
@@ -63,7 +67,10 @@ class stt_server:
 			file.close()
 			
 		self.conn = self.connect_sql()
-		self.mysql_conn = self.connect_mysql()
+		self.mysql_conn = {
+			1: self.connect_mysql(1),
+			2: self.connect_mysql(2),
+		}
 			
 	def connect_sql(self):
 
@@ -74,15 +81,15 @@ class stt_server:
 			database = self.sql_name,
 			#autocommit=True
 		)
-	
-	def connect_mysql(self):
-		
+
+	def connect_mysql(self, source_id):
+
 		return mysql.connect(
-			host = self.mysql_server, 
-			user = self.mysql_login, 
-			passwd = self.mysql_pass,
-			db = self.mysql_name,
-			#autocommit = True
+			host=self.mysql_server,
+			user=self.mysql_login,
+			passwd=self.mysql_pass,
+			db=self.mysql_name[source_id],
+			# autocommit = True
 		)
 	
 	def linkedid_by_filename(self):
@@ -94,9 +101,10 @@ class stt_server:
 		date_from = datetime.datetime.strptime(str(date_from), '%Y-%m-%d %H:%M:%S').strftime('%Y-%m-%dT%H:%M:%S')
 		date_toto = datetime.datetime.strptime(str(date_toto), '%Y-%m-%d %H:%M:%S').strftime('%Y-%m-%dT%H:%M:%S')
 
-		mysql_conn = self.connect_mysql()
+		#mysql_conn = self.connect_mysql(self.source_id)
 
-		with mysql_conn:
+		#with mysql_conn:
+		with self.mysql_conn[self.source_id]:
 			query = """
 			select
 				linkedid,
@@ -108,7 +116,7 @@ class stt_server:
 					PT1C_cdr_MICO.recordingfile LIKE '%"""+filename+"""%' 
 					limit 1;"""
 
-			cursor = self.mysql_conn.cursor()
+			cursor = self.mysql_conn[self.source_id].cursor()
 			cursor.execute(query)
 			for row in cursor.fetchall():
 				linkedid, dstchannel = row[0], row[1]
