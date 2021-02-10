@@ -411,15 +411,12 @@ class stt_server:
 		self.original_file_duration = 0
 		try:
 			fname = self.original_file_path + self.original_file_name
-			print('fname:')
-			print(fname)
 			with contextlib.closing(wave.open(fname,'r')) as f:
 				frames = f.getnframes()
 				rate = f.getframerate()
 				self.original_file_duration = frames / float(rate)
 		except Exception as e:
-			print('calculate_file_length error:', str(e))
-			self.original_file_duration = 60
+			print('file length calculate error:', str(e))
 
 	def delete_old_results(self):
 
