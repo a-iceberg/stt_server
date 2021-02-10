@@ -7,8 +7,10 @@ import re
 print('cpu', sys.argv[1])
 server_object = stt_server(sys.argv[1])
 cursor = server_object.conn.cursor()
-sql_query =		"select filepath, filename, date_y, date_m, date_d, duration, source_id from queue where cpu_id='"+\
-				   server_object.cpu_id+"' order by record_date;"
+sql_query = "select filepath, filename, date_y, date_m, date_d, duration, source_id from queue "
+sql_query += "where cpu_id='"+str(server_object.cpu_id)+"' and "
+sql_query += "source_id = '1' "	# ToDo: REMOVE when stt mrm ready
+sql_query += " order by record_date;"
 processed = 0
 cursor.execute(sql_query)
 for row in cursor.fetchall():
@@ -22,7 +24,7 @@ for row in cursor.fetchall():
 
 	rec_source_date = re.findall(r'\d{4}-\d{2}-\d{2}-\d{2}-\d{2}-\d{2}', server_object.original_file_name)[0]
 	server_object.rec_date = rec_source_date[:10] + ' ' + rec_source_date[11:].replace('-', ':')
-	if len(re.findall(r'\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}', server_object.rec_date)) ==0:
+	if len(re.findall(r'\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}', server_object.rec_date)) == 0:
 		print('Unable to extract date from filename', server_object.original_file_name)
 		server_object.rec_date = 'Null'
 
