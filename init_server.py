@@ -411,6 +411,8 @@ class stt_server:
 
 		self.original_file_duration = 0
 		fname = self.original_file_path + self.original_file_name
+		print('fname:')
+		print(fname)
 		with contextlib.closing(wave.open(fname,'r')) as f:
 			frames = f.getnframes()
 			rate = f.getframerate()
