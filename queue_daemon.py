@@ -14,14 +14,14 @@ else:
 
 while True:
 	for source_id in server_object.sources: # ['call', 'master']
-		#server_object.source_id = server_object.sources['call']
+
 		server_object.source_id = server_object.get_source_id(source_id)
+		#if server_object.source_id == 2: # ToDo: REMOVE when stt mrm ready
+		#	break
 		complete_files	= server_object.get_sql_complete_files()
 		incomplete_count = 0
 		complete_count = 0
 		for filename, rec_date in server_object.get_fs_files_list():
-			#filename = fd['filename']
-			#server_object.rec_date = fd['rec_date']
 			server_object.rec_date = rec_date
 			if not filename in complete_files:
 				server_object.set_shortest_queue_cpu()

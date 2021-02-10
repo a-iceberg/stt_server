@@ -408,15 +408,18 @@ class stt_server:
 		self.conn.commit() # autocommit
 		
 	def calculate_file_length(self):
-
 		self.original_file_duration = 0
-		fname = self.original_file_path + self.original_file_name
-		print('fname:')
-		print(fname)
-		with contextlib.closing(wave.open(fname,'r')) as f:
-			frames = f.getnframes()
-			rate = f.getframerate()
-			self.original_file_duration = frames / float(rate)
+		try:
+			fname = self.original_file_path + self.original_file_name
+			print('fname:')
+			print(fname)
+			with contextlib.closing(wave.open(fname,'r')) as f:
+				frames = f.getnframes()
+				rate = f.getframerate()
+				self.original_file_duration = frames / float(rate)
+		except Exception as e:
+			print('calculate_file_length error:', str(e))
+			self.original_file_duration = 60
 
 	def delete_old_results(self):
 
