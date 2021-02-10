@@ -13,29 +13,26 @@ else:
 	server_object.set_today_ymd()
 
 while True:
-	server_object.source_id = server_object.sources['call']
-	complete_files	= server_object.get_sql_complete_files()
-	# cpu_id = 0
-	incomplete_count = 0
-	complete_count = 0
-	for filename in server_object.get_fs_files_list():	
-		if not filename in complete_files:
-			server_object.set_shortest_queue_cpu()
-			#server_object.cpu_id = cpu_id
-			server_object.original_file_name = filename
-			server_object.add_queue()
-			# print(incomplete_count, 'incomplete', server_object.cpu_id, filename)
-			"""cpu_id += 1
-			if cpu_id>len(serv
-			er_object.cpu_cores)-1:
-				cpu_id = 0"""
-			incomplete_count += 1
-		else:
-			# print(complete_count,'complete:',filename)
-			complete_count += 1
-	
-	print('incomplete_count',incomplete_count)
-	print('complete_count',complete_count)
+	for source_id in server_object.sources: # ['call', 'master']
+		#server_object.source_id = server_object.sources['call']
+		server_object.source_id = source_id
+		complete_files	= server_object.get_sql_complete_files()
+		incomplete_count = 0
+		complete_count = 0
+		for fd in server_object.get_fs_files_list():
+			filename = fd['filename']
+			server_object.rec_date = fd['rec_date']
+			if not filename in complete_files:
+				server_object.set_shortest_queue_cpu()
+				server_object.original_file_name = filename
+				server_object.add_queue()
+				print('id', source_id, 'incomplete', incomplete_count, 'cpu', server_object.cpu_id, 'file', filename)
+				incomplete_count += 1
+			else:
+				complete_count += 1
+
+		print('incomplete_count',incomplete_count)
+		print('complete_count',complete_count)
 	
 	if len(sys.argv)==4:
 		break

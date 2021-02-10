@@ -249,32 +249,78 @@ class stt_server:
 	def remove_temporary_file(self):
 		print('removing',self.temp_file_path + self.temp_file_name)
 		os.remove(self.temp_file_path + self.temp_file_name)
-		
+
 	def get_sql_complete_files(self):
-	
+
 		cursor = self.conn.cursor()
-		sql_query =		"select distinct filename from queue where date_y='"+self.date_y+"' and date_m='"+self.date_m+"' and date_d='"+self.date_d+"' union all "
-		sql_query +=	"select distinct audio_file_name from transcribations where date_y='"+self.date_y+"' and date_m='"+self.date_m+"' and date_d='"+self.date_d+"' "
-		sql_query +=	"order by filename;"
+
+		if self.source_id == self.sources['call']:
+			sql_query = "select distinct filename from queue where "
+			sql_query += "source_id='" + str(self.source_id) + "' and "
+			sql_query += "date_y='" + self.date_y + "' and "
+			sql_query += "date_m='" + self.date_m + "' and "
+			sql_query += "date_d='" + self.date_d + "' "
+			sql_query += "union all "
+			sql_query += "select distinct audio_file_name from transcribations where "
+			sql_query += "date_y='" + self.date_y + "' and "
+			sql_query += "date_m='" + self.date_m + "' and "
+			sql_query += "date_d='" + self.date_d + "' "
+			sql_query += "order by filename;"
+
+		elif self.source_id == self.sources['master']:
+			sql_query = "select distinct filename from queue "
+			sql_query += "where source_id='" + str(self.source_id) + "' "
+			sql_query += "order by filename;"
+
 		cursor.execute(sql_query)
 		complete_files = []
 		for row in cursor.fetchall():
 			complete_files.append(row[0])
 
 		return complete_files
-	
+
 	def get_fs_files_list(self):
 
 		self.original_file_path = self.original_storage_path[self.source_id]
-		self.original_file_path	+= self.original_storage_prefix[self.source_id]
+		self.original_file_path += self.original_storage_prefix[self.source_id]
 		if self.source_id == self.sources['call']:
-			self.original_file_path	+= self.date_y + '-' + self.date_m + '/'	+ self.date_d + '/'
+			self.original_file_path += self.date_y + '-' + self.date_m + '/' + self.date_d + '/'
 		files_list = []
 		for (dirpath, dirnames, filenames) in os.walk(self.original_file_path):
 			files_list.extend(filenames)
 			break
 
-		return files_list
+		# get record date
+		fd_list = []
+		for filename in files_list:
+
+			rec_date = 'Null'
+
+			if self.source_id == self.sources['call']:
+				rec_source_date = re.findall(r'\d{4}-\d{2}-\d{2}-\d{2}-\d{2}-\d{2}', filename)[0]
+				if len(rec_source_date):
+					rec_date = rec_source_date[:10] + ' ' + rec_source_date[11:].replace('-', ':')
+				if len(re.findall(r'\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}', self.rec_date)) == 0:
+					print('1: Unable to extract date from filename', filename)
+				else:
+					print('0: Unable to extract date from filename', filename)
+
+			elif self.source_id == self.sources['master']:
+				uniqueid = re.findall(r'^\d*.\d*', filename)[0]
+				cursor = server_object.mysql_conn[server_object.source_id].cursor()
+				query = "select calldate from cdr where uniqueid = '" + uniqueid + "' limit 1;"
+				cursor.execute(query)
+				for row in cursor.fetchall():
+					rec_date = str(row[0])
+
+			fd_list.append({
+				'filename': filename,
+				'rec_date': rec_date
+			})
+
+			break  # todo: REMOVE
+
+		return fd_list
 	
 	def set_shortest_queue_cpu(self):
 		
@@ -308,7 +354,21 @@ class stt_server:
 		if result == 0:
 			print('error: unable to get shortest_queue_cpu')
 			self.cpu_id = 0
-	
+
+	def get_source_id(self, source_name):
+		for source in self.sources.items():
+			if source[0] == source_name:
+				return source[1]
+		return 0
+
+	get_source_id('master')
+
+	def get_source_name(self, source_id):
+		for source in self.sources.items():
+			if source[1] == source_id:
+				return source[0]
+		return 0
+
 	def add_queue(self):
 		
 		self.calculate_file_length()
@@ -316,14 +376,14 @@ class stt_server:
 		cursor = self.conn.cursor()
 		current_date = datetime.datetime.now().strftime('%Y-%m-%dT%H:%M:%S')		
 
-		rec_source_date = re.findall(r'\d{4}-\d{2}-\d{2}-\d{2}-\d{2}-\d{2}', self.original_file_name)[0]
+		"""rec_source_date = re.findall(r'\d{4}-\d{2}-\d{2}-\d{2}-\d{2}-\d{2}', self.original_file_name)[0]
 		self.rec_date = 'Null'
 		if len(rec_source_date):
 			self.rec_date = rec_source_date[:10] + ' ' + rec_source_date[11:].replace('-', ':')
 			if len(re.findall(r'\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}', self.rec_date)) == 0:
 				print('1: Unable to extract date from filename', self.original_file_name)
 		else:
-			print('0: Unable to extract date from filename', self.original_file_name)
+			print('0: Unable to extract date from filename', self.original_file_name)"""
 
 		# debug ++
 		# print(self.cpu_id, 'self.rec_date', self.rec_date, self.original_file_name)
