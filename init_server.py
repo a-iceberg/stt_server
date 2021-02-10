@@ -361,8 +361,6 @@ class stt_server:
 				return source[1]
 		return 0
 
-	get_source_id('master')
-
 	def get_source_name(self, source_id):
 		for source in self.sources.items():
 			if source[1] == source_id:
