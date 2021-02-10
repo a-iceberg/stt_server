@@ -307,7 +307,7 @@ class stt_server:
 
 			elif self.source_id == self.sources['master']:
 				uniqueid = re.findall(r'^\d*.\d*', filename)[0]
-				cursor = server_object.mysql_conn[server_object.source_id].cursor()
+				cursor = self.mysql_conn[self.source_id].cursor()
 				query = "select calldate from cdr where uniqueid = '" + uniqueid + "' limit 1;"
 				cursor.execute(query)
 				for row in cursor.fetchall():
