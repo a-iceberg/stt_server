@@ -300,9 +300,9 @@ class stt_server:
 			if self.source_id == self.sources['call']:
 				rec_source_date = re.findall(r'\d{4}-\d{2}-\d{2}-\d{2}-\d{2}-\d{2}', filename)[0]
 				if len(rec_source_date):
-					self.rec_date = rec_source_date[:10] + ' ' + rec_source_date[11:].replace('-', ':')
-				if len(re.findall(r'\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}', self.rec_date)) == 0:
-					self.rec_date = 'Null'
+					rec_date = rec_source_date[:10] + ' ' + rec_source_date[11:].replace('-', ':')
+				if len(re.findall(r'\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}', rec_date)) == 0:
+					rec_date = 'Null'
 					print('Unable to extract date from filename', filename)
 
 			elif self.source_id == self.sources['master']:
@@ -318,10 +318,10 @@ class stt_server:
 				'rec_date': rec_date
 			})
 
-			break  # todo: REMOVE
+		# break  # todo: REMOVE
 
 		df = pd.DataFrame(fd_list)
-		df.sort_values(['rec_date', 'filename'], ascending=False, inplace=True)
+		df.sort_values(['rec_date', 'filename'], ascending=True, inplace=True)
 
 		return df.values
 	

@@ -27,11 +27,12 @@ while True:
 				server_object.set_shortest_queue_cpu()
 				server_object.original_file_name = filename
 				server_object.add_queue()
-				print('id', source_id, 'incomplete', incomplete_count, 'cpu', server_object.cpu_id, 'file', filename)
+				# print('id', source_id, 'incomplete', incomplete_count, 'cpu', server_object.cpu_id, 'file', filename)
 				incomplete_count += 1
 			else:
 				complete_count += 1
 
+		print('id', source_id)
 		print('incomplete_count',incomplete_count)
 		print('complete_count',complete_count)
 	
