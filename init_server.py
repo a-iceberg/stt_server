@@ -7,6 +7,7 @@ import os
 import wave
 import contextlib
 import re
+import pandas as pd
 
 class stt_server:
 
@@ -299,11 +300,10 @@ class stt_server:
 			if self.source_id == self.sources['call']:
 				rec_source_date = re.findall(r'\d{4}-\d{2}-\d{2}-\d{2}-\d{2}-\d{2}', filename)[0]
 				if len(rec_source_date):
-					rec_date = rec_source_date[:10] + ' ' + rec_source_date[11:].replace('-', ':')
+					self.rec_date = rec_source_date[:10] + ' ' + rec_source_date[11:].replace('-', ':')
 				if len(re.findall(r'\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}', self.rec_date)) == 0:
-					print('1: Unable to extract date from filename', filename)
-				else:
-					print('0: Unable to extract date from filename', filename)
+					self.rec_date = 'Null'
+					print('Unable to extract date from filename', filename)
 
 			elif self.source_id == self.sources['master']:
 				uniqueid = re.findall(r'^\d*.\d*', filename)[0]
@@ -320,7 +320,10 @@ class stt_server:
 
 			break  # todo: REMOVE
 
-		return fd_list
+		df = pd.DataFrame(fd_list)
+		df.sort_values(['rec_date', 'filename'], ascending=False, inplace=True)
+
+		return df.values
 	
 	def set_shortest_queue_cpu(self):
 		

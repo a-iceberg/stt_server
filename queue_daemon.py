@@ -19,9 +19,10 @@ while True:
 		complete_files	= server_object.get_sql_complete_files()
 		incomplete_count = 0
 		complete_count = 0
-		for fd in server_object.get_fs_files_list():
-			filename = fd['filename']
-			server_object.rec_date = fd['rec_date']
+		for filename, rec_date in server_object.get_fs_files_list():
+			#filename = fd['filename']
+			#server_object.rec_date = fd['rec_date']
+			server_object.rec_date = rec_date
 			if not filename in complete_files:
 				server_object.set_shortest_queue_cpu()
 				server_object.original_file_name = filename
