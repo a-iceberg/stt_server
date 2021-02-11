@@ -248,7 +248,12 @@ class stt_server:
 			self.save_result('', '0', '0', side, transcribation_date, 0)
 
 	def save_result(self, accept_text, accept_start, accept_end, side, transcribation_date, conf_mid):
-	
+
+		if len(re.findall(r'\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}', self.rec_date)) == 0:
+			print('save_result - wrong rec_date:', str(self.rec_date), 'converting to Null..')
+			self.rec_date = 'Null'
+
+
 		cursor = self.conn.cursor()
 		sql_query = "insert into transcribations("
 		sql_query += " audio_file_name,"
