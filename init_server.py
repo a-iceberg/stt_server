@@ -15,7 +15,7 @@ class stt_server:
 
 		# settings ++
 		self.cpu_id = cpu_id
-		self.cpu_cores = [i for i in range(0,15)]
+		self.cpu_cores = [i for i in range(0,31)]
 		
 		# ms sql
 		self.sql_name = 'voice_ai'
@@ -45,6 +45,10 @@ class stt_server:
 		self.original_storage_prefix = {
 			1: 'RXTX_',
 			2: '',
+		}
+		self.source_file_deletion = {
+			1: False,
+			2: True,
 		}
 		self.temp_file_path = self.script_path+'files/'
 		# settings --
@@ -160,12 +164,13 @@ class stt_server:
 
 	def delete_source_file(self):
 
-		myfile = self.original_file_path + self.original_file_name
-		try:
-			os.remove(myfile)
-			print('succesfully removed', myfile)
-		except OSError as e:  ## if failed, report it back to the user ##
-			print("Error: %s - %s." % (e.filename, e.strerror))
+		if self.source_file_deletion[self.source_id]:
+			myfile = self.original_file_path + self.original_file_name
+			try:
+				os.remove(myfile)
+				print('succesfully removed', myfile)
+			except OSError as e:  ## if failed, report it back to the user ##
+				print("Error: %s - %s." % (e.filename, e.strerror))
 		
 	def transcribe_to_sql(self,side,linkedid, dst):
 

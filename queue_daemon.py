@@ -16,8 +16,8 @@ while True:
 	for source_id in server_object.sources: # ['call', 'master']
 
 		server_object.source_id = server_object.get_source_id(source_id)
-		#if server_object.source_id == 2: # ToDo: REMOVE when stt mrm ready
-		#	break
+		if server_object.source_id == 1: # ToDo: REMOVE when stt mrm ready
+			continue
 		complete_files	= server_object.get_sql_complete_files()
 		incomplete_count = 0
 		complete_count = 0

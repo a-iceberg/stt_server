@@ -7,9 +7,9 @@ import re
 print('cpu', sys.argv[1])
 server_object = stt_server(sys.argv[1])
 cursor = server_object.conn.cursor()
-sql_query = "select filepath, filename, date_y, date_m, date_d, duration, source_id from queue "
-sql_query += "where cpu_id='"+str(server_object.cpu_id)+"' and "
-sql_query += "source_id = '1' "	# ToDo: REMOVE when stt mrm ready
+sql_query = "select filepath, filename, date_y, date_m, date_d, duration, source_id from queue"
+sql_query += " where cpu_id='"+str(server_object.cpu_id)+"'"
+#sql_query += " and source_id = '1'"	# ToDo: REMOVE when stt mrm ready
 sql_query += " order by record_date;"
 processed = 0
 cursor.execute(sql_query)
@@ -50,7 +50,7 @@ for row in cursor.fetchall():
 			sys.exit( str(server_object.cpu_id)+': '+datetime.datetime.now().strftime('%Y-%m-%dT%H:%M:%S')+\
 					  ' No converted files found. exit..')
 		server_object.delete_current_queue()
-		# server_object.delete_source_file()
+		server_object.delete_source_file()
 		break
 	else:
 
@@ -59,7 +59,7 @@ for row in cursor.fetchall():
 		server_object.save_result('', '0', '0', 0, trans_date, 0, linkedid, dst)
 		server_object.save_result('', '0', '0', 1, trans_date, 0, linkedid, dst)
 		server_object.delete_current_queue()
-		# server_object.delete_source_file()
+		server_object.delete_source_file()
 	processed += 1
 
 print(server_object.cpu_id,datetime.datetime.now().strftime('%Y-%m-%dT%H:%M:%S'), 'exit to next job..')
