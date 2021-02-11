@@ -140,9 +140,9 @@ class stt_server:
 		if self.source_id == self.sources['master']:
 			self.temp_file_path = self.original_file_path
 			if side:
-				self.temp_file_name = server_object.linkedid+'-in.wav'
+				self.temp_file_name = self.linkedid + '-in.wav'
 			else:
-				self.temp_file_name = server_object.linkedid + '-out.wav'
+				self.temp_file_name = self.linkedid + '-out.wav'
 
 		elif self.source_id == self.sources['call']:
 			# crop '.wav' & append postfix
