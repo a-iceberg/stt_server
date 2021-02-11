@@ -348,11 +348,13 @@ class stt_server:
 				cursor = self.mysql_conn[self.source_id].cursor()
 				query = "select calldate, src, dst from cdr where uniqueid = '" + uniqueid + "' limit 1;"
 				cursor.execute(query)
+				src = ''
+				dst = ''
+				linkedid = uniqueid
 				for row in cursor.fetchall():
 					rec_date = str(row[0])
 					src = str(row[1])
 					dst = str(row[2])
-					linkedid = uniqueid
 
 			fd_list.append({
 				'filename': filename,
