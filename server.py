@@ -53,7 +53,7 @@ for row in cursor.fetchall():
 		else:
 			print('files_converted', files_converted)
 		server_object.delete_current_queue()
-		#server_object.delete_source_file()
+		server_object.delete_source_file()
 		break
 	else:
 
