@@ -135,14 +135,15 @@ class stt_server:
 				return linkedid, dstchannel, src
 		return '', '', ''
 	
-	def make_file_splitted(self,side):
+	def make_file_splitted(self, side):
 
 		if self.source_id == self.sources['master']:
 			self.temp_file_path = self.original_file_path
-			if side:
+			if side == 0:
 				self.temp_file_name = self.linkedid + '-in.wav'
 			else:
 				self.temp_file_name = self.linkedid + '-out.wav'
+			print(side, 'master', self.temp_file_path + self.temp_file_name)
 
 		elif self.source_id == self.sources['call']:
 			# crop '.wav' & append postfix
