@@ -50,9 +50,9 @@ class stt_server:
 			1: False,
 			2: True,
 		}
-		self.temp_file_path = self.script_path+'files/'
 		# settings --
-		
+
+		self.temp_file_path = ''
 		self.temp_file_name = ''
 		self.original_file_path = ''
 		self.original_file_name = ''
@@ -147,6 +147,7 @@ class stt_server:
 
 		elif self.source_id == self.sources['call']:
 			# crop '.wav' & append postfix
+			self.temp_file_path = self.script_path+'files/'
 			self.temp_file_name = self.original_file_name[:-4]+('_R' if side else '_L')+'.wav'
 
 			os_cmd 	= 'ffmpeg -y -i '
@@ -192,7 +193,7 @@ class stt_server:
 	def transcribe_to_sql(self, side):
 
 		transcribation_date = datetime.datetime.now().strftime('%Y-%m-%dT%H:%M:%S')
-
+		print('transcribing', self.temp_file_path + self.temp_file_name)
 		# read file
 		wf = wave.open(self.temp_file_path + self.temp_file_name, "rb")
 
@@ -222,7 +223,7 @@ class stt_server:
 					for result_rec in accept['result']:
 						conf_score.append(float(result_rec['conf']))
 					conf_mid = str(sum(conf_score)/len(conf_score))
-					conf_score = []
+					# conf_score = []
 					
 					self.save_result(accept_text, accept_start, accept_end, side, transcribation_date, conf_mid)
 					
@@ -272,6 +273,7 @@ class stt_server:
 		self.conn.commit() # autocommit
 			
 	def remove_temporary_file(self):
+
 		print('removing',self.temp_file_path + self.temp_file_name)
 		os.remove(self.temp_file_path + self.temp_file_name)
 
