@@ -186,13 +186,13 @@ class stt_server:
 		#if self.source_file_deletion[self.source_id]:
 		if self.source_id == self.sources['master']:
 			#myfile = self.original_file_path + self.original_file_name
-			myfile = self.linkedid + '-in.wav'
+			myfile = self.original_file_path + self.linkedid + '-in.wav'
 			try:
 				os.remove(myfile)
 				print('succesfully removed', myfile)
 			except OSError as e:  ## if failed, report it back to the user ##
 				print("Error: %s - %s." % (e.filename, e.strerror))
-			myfile = self.linkedid + '-out.wav'
+			myfile = self.original_file_path + self.linkedid + '-out.wav'
 			try:
 				os.remove(myfile)
 				print('succesfully removed', myfile)
