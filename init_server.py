@@ -136,24 +136,28 @@ class stt_server:
 		return '', '', ''
 	
 	def make_file_splitted(self,side):
-			
-		# crop '.wav' & append postfix
-		self.temp_file_name = self.original_file_name[:-4]+('_R' if side else '_L')+'.wav'
 
-		os_cmd 	= 'ffmpeg -y -i '
-		os_cmd += self.original_file_path
-		os_cmd += self.original_file_name
-		os_cmd += ' -ar 16000 -af "pan=mono|c0=F'		
-		os_cmd += 'R' if side else 'L'
-		os_cmd += '" '
-		os_cmd += self.temp_file_path
-		os_cmd += self.temp_file_name
+		if self.source_id == self.sources['master']:
+			self.temp_file_path = self.original_file_path
+			self.temp_file_name = self.original_file_name
+		elif self.source_id == self.sources['call']:
+			# crop '.wav' & append postfix
+			self.temp_file_name = self.original_file_name[:-4]+('_R' if side else '_L')+'.wav'
 
-		try:
-			os.system(os_cmd)
-		except Exception as e:
-			print('make_file_splitted error:',str(e))
-		return os.path.isfile(self.temp_file_path + self.temp_file_name)
+			os_cmd 	= 'ffmpeg -y -i '
+			os_cmd += self.original_file_path
+			os_cmd += self.original_file_name
+			os_cmd += ' -ar 16000 -af "pan=mono|c0=F'
+			os_cmd += 'R' if side else 'L'
+			os_cmd += '" '
+			os_cmd += self.temp_file_path
+			os_cmd += self.temp_file_name
+
+			try:
+				os.system(os_cmd)
+			except Exception as e:
+				print('make_file_splitted error:',str(e))
+			return os.path.isfile(self.temp_file_path + self.temp_file_name)
 
 	def set_today_ymd(self):
 
@@ -178,7 +182,8 @@ class stt_server:
 			except OSError as e:  ## if failed, report it back to the user ##
 				print("Error: %s - %s." % (e.filename, e.strerror))
 		
-	def transcribe_to_sql(self,side,linkedid, dst):
+	#def transcribe_to_sql(self,side,linkedid, dst):
+	def transcribe_to_sql(self, side):
 
 		transcribation_date = datetime.datetime.now().strftime('%Y-%m-%dT%H:%M:%S')
 
@@ -213,14 +218,14 @@ class stt_server:
 					conf_mid = str(sum(conf_score)/len(conf_score))
 					conf_score = []
 					
-					self.save_result(accept_text, accept_start, accept_end, side, transcribation_date, conf_mid, linkedid, dst)
+					self.save_result(accept_text, accept_start, accept_end, side, transcribation_date, conf_mid)
 					
 					phrases_count+=1
 
 		if phrases_count == 0:
-			self.save_result('', '0', '0', side, transcribation_date, 0, linkedid, dst)
+			self.save_result('', '0', '0', side, transcribation_date, 0)
 
-	def save_result(self, accept_text, accept_start, accept_end, side, transcribation_date, conf_mid, linkedid, dst):
+	def save_result(self, accept_text, accept_start, accept_end, side, transcribation_date, conf_mid):
 	
 		cursor = self.conn.cursor()
 		sql_query = """insert into transcribations(
@@ -235,6 +240,7 @@ class stt_server:
 		side,
 		conf,
 		linkedid,
+		src,
 		dst,
 		record_date,
 		source_id) """
@@ -249,8 +255,9 @@ class stt_server:
 			str(accept_end) + "'," + \
 			str(side) + "," + \
 			str(conf_mid) + "," + \
-			str(linkedid) + ",'" + \
-			str(dst) + "','" + \
+			str(self.linkedid) + ",'" + \
+			str(self.src) + "','" + \
+			str(self.dst) + "','" + \
 			str(self.rec_date) + "','" + \
 			str(self.source_id) + \
 			"');"
@@ -259,8 +266,9 @@ class stt_server:
 		self.conn.commit() # autocommit
 			
 	def remove_temporary_file(self):
-		print('removing',self.temp_file_path + self.temp_file_name)
-		os.remove(self.temp_file_path + self.temp_file_name)
+		if self.source_id == self.sources['call']: # ToDo: delete master too when tests complete
+			print('removing',self.temp_file_path + self.temp_file_name)
+			os.remove(self.temp_file_path + self.temp_file_name)
 
 	def get_sql_complete_files(self):
 
