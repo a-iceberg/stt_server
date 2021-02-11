@@ -8,6 +8,7 @@ import wave
 import contextlib
 import re
 import pandas as pd
+import sys
 
 class stt_server:
 
@@ -281,10 +282,16 @@ class stt_server:
 		sql_query += " '" + str(self.dst) + "',"
 		sql_query += " " + str(self.rec_date) if str(self.rec_date) == 'Null' else "'" + str(self.rec_date) + "'"
 		sql_query += " ,'"+str(self.source_id)+"');"
-		# print('query',sql_query) # DEBUG
-		cursor.execute(sql_query)
-		self.conn.commit() # autocommit
-			
+
+		try:
+			cursor.execute(sql_query)
+			self.conn.commit() # autocommit
+		except Exception as e:
+			print('query error:',sql_query) # DEBUG
+			print(str(e))
+			sys.exit('save_result')
+
+
 	def remove_temporary_file(self):
 		if self.source_id == self.sources['call']:
 			print('removing',self.temp_file_path + self.temp_file_name)
