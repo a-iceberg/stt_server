@@ -130,7 +130,7 @@ class stt_server:
 			for row in cursor.fetchall():
 				linkedid, dstchannel, src = row[0], row[1], row[2]
 				#print('linkedid, dstchannel', linkedid, dstchannel)
-				return linkedid, dstchannel, src
+			return linkedid, dstchannel, src
 		return '', '', ''
 	
 	def make_file_splitted(self,side):
