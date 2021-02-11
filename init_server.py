@@ -357,6 +357,9 @@ class stt_server:
 					rec_date = str(row[0])
 					src = str(row[1])
 					dst = str(row[2])
+				if len(re.findall(r'\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}', rec_date)) == 0:
+					rec_date = 'Null'
+					print('Unable to extract date from filename', filename)
 
 			fd_list.append({
 				'filename': filename,
