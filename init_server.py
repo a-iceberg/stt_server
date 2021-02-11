@@ -126,7 +126,8 @@ class stt_server:
 					PT1C_cdr_MICO.recordingfile LIKE '%"""+filename+"""%' 
 					limit 1;"""
 
-			cursor = mysql_conn[self.source_id].cursor()
+			#cursor = mysql_conn[self.source_id].cursor()
+			cursor = mysql_conn.cursor()
 			cursor.execute(query)
 			for row in cursor.fetchall():
 				linkedid, dstchannel, src = row[0], row[1], row[2]
