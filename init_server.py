@@ -246,7 +246,7 @@ class stt_server:
 	def save_result(self, accept_text, accept_start, accept_end, side, transcribation_date, conf_mid):
 	
 		cursor = self.conn.cursor()
-		sql_query = "insert into transcribations(
+		sql_query = "insert into transcribations("
 		sql_query += " audio_file_name,"
 		sql_query += " transcribation_date,"
 		sql_query += " date_y,"
