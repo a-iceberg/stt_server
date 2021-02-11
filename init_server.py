@@ -98,7 +98,7 @@ class stt_server:
 			passwd=self.mysql_pass,
 			db=self.mysql_name[source_id],
 			# autocommit = True
-			cursorclass=mysql.cursors.DictCursor,
+			# cursorclass=mysql.cursors.DictCursor,
 		)
 	
 	def linkedid_by_filename(self):
@@ -110,10 +110,10 @@ class stt_server:
 		date_from = datetime.datetime.strptime(str(date_from), '%Y-%m-%d %H:%M:%S').strftime('%Y-%m-%dT%H:%M:%S')
 		date_toto = datetime.datetime.strptime(str(date_toto), '%Y-%m-%d %H:%M:%S').strftime('%Y-%m-%dT%H:%M:%S')
 
-		#mysql_conn = self.connect_mysql(self.source_id)
+		mysql_conn = self.connect_mysql(self.source_id)
 
-		#with mysql_conn:
-		with self.mysql_conn[self.source_id]:
+		with mysql_conn:
+		#with self.mysql_conn[self.source_id]:
 			query = """
 			select				
 				linkedid,
@@ -126,7 +126,7 @@ class stt_server:
 					PT1C_cdr_MICO.recordingfile LIKE '%"""+filename+"""%' 
 					limit 1;"""
 
-			cursor = self.mysql_conn[self.source_id].cursor()
+			cursor = mysql_conn[self.source_id].cursor()
 			cursor.execute(query)
 			for row in cursor.fetchall():
 				linkedid, dstchannel, src = row[0], row[1], row[2]
