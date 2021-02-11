@@ -313,7 +313,7 @@ class stt_server:
 				if len(re.findall(r'\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}', rec_date)) == 0:
 					rec_date = 'Null'
 					print('Unable to extract date from filename', filename)
-				linkedid, dstchannel, src = self.linkedid_by_filename()
+				linkedid, dst, src = self.linkedid_by_filename()
 
 			elif self.source_id == self.sources['master']:
 				uniqueid = re.findall(r'^\d*.\d*', filename)[0]
