@@ -140,6 +140,7 @@ class stt_server:
 		if self.source_id == self.sources['master']:
 			self.temp_file_path = self.original_file_path
 			self.temp_file_name = self.original_file_name
+			return True
 		elif self.source_id == self.sources['call']:
 			# crop '.wav' & append postfix
 			self.temp_file_name = self.original_file_name[:-4]+('_R' if side else '_L')+'.wav'
