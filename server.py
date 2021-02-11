@@ -62,7 +62,7 @@ for row in cursor.fetchall():
 		server_object.save_result('', '0', '0', 0, trans_date, 0)
 		server_object.save_result('', '0', '0', 1, trans_date, 0)
 		server_object.delete_current_queue()
-		# server_object.delete_source_file() # removed as temporary file
+		server_object.delete_source_file()
 	processed += 1
 
 print(server_object.cpu_id,datetime.datetime.now().strftime('%Y-%m-%dT%H:%M:%S'), 'exit to next job..')

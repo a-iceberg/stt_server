@@ -46,10 +46,10 @@ class stt_server:
 			1: 'RXTX_',
 			2: '',
 		}
-		self.source_file_deletion = {
+		"""self.source_file_deletion = {
 			1: False,
 			2: True,
-		}
+		}"""
 		# settings --
 
 		self.temp_file_path = ''
@@ -183,13 +183,22 @@ class stt_server:
 
 	def delete_source_file(self):
 
-		if self.source_file_deletion[self.source_id]:
-			myfile = self.original_file_path + self.original_file_name
+		#if self.source_file_deletion[self.source_id]:
+		if self.source_id == self.sources['master']:
+			#myfile = self.original_file_path + self.original_file_name
+			myfile = self.linkedid + '-in.wav'
 			try:
 				os.remove(myfile)
 				print('succesfully removed', myfile)
 			except OSError as e:  ## if failed, report it back to the user ##
 				print("Error: %s - %s." % (e.filename, e.strerror))
+			myfile = self.linkedid + '-out.wav'
+			try:
+				os.remove(myfile)
+				print('succesfully removed', myfile)
+			except OSError as e:  ## if failed, report it back to the user ##
+				print("Error: %s - %s." % (e.filename, e.strerror))
+
 		
 	#def transcribe_to_sql(self,side,linkedid, dst):
 	def transcribe_to_sql(self, side):
