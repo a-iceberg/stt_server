@@ -308,7 +308,7 @@ class stt_server:
 			sql_query = "select distinct filename from queue "
 			sql_query += "where source_id='" + str(self.source_id) + "' "
 			sql_query += "union all "
-			sql_query += "select distinct audio_file_name from transcribations where "
+			sql_query += "select distinct audio_file_name from transcribations "
 			sql_query += "where source_id='" + str(self.source_id) + "' "
 			sql_query += "order by filename;"
 
