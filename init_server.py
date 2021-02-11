@@ -88,6 +88,7 @@ class stt_server:
 			password = self.sql_pass,
 			database = self.sql_name,
 			#autocommit=True
+			cursorclass=pymysql.cursors.DictCursor,
 		)
 
 	def connect_mysql(self, source_id):
@@ -130,7 +131,7 @@ class stt_server:
 			for row in cursor.fetchall():
 				linkedid, dstchannel, src = row[0], row[1], row[2]
 				#print('linkedid, dstchannel', linkedid, dstchannel)
-			return linkedid, dstchannel, src
+				return linkedid, dstchannel, src
 		return '', '', ''
 	
 	def make_file_splitted(self,side):
