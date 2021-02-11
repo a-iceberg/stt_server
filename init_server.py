@@ -277,7 +277,7 @@ class stt_server:
 			str(self.src) + "','" + \
 			str(self.dst) + "'," + \
 			str(self.rec_date) if str(self.rec_date) == 'Null' else "'" + str(self.rec_date) + "'" + \
-			",'"+str(self.source_id)+');"
+			",'"+str(self.source_id)+"');"
 		# print('query',sql_query) # DEBUG
 		cursor.execute(sql_query)
 		self.conn.commit() # autocommit
