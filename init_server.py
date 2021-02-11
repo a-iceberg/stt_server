@@ -139,8 +139,11 @@ class stt_server:
 
 		if self.source_id == self.sources['master']:
 			self.temp_file_path = self.original_file_path
-			self.temp_file_name = self.original_file_name
-			return True
+			if side:
+				self.temp_file_name = server_object.linkedid+'-in.wav'
+			else:
+				self.temp_file_name = server_object.linkedid + '-out.wav'
+
 		elif self.source_id == self.sources['call']:
 			# crop '.wav' & append postfix
 			self.temp_file_name = self.original_file_name[:-4]+('_R' if side else '_L')+'.wav'
@@ -158,7 +161,8 @@ class stt_server:
 				os.system(os_cmd)
 			except Exception as e:
 				print('make_file_splitted error:',str(e))
-			return os.path.isfile(self.temp_file_path + self.temp_file_name)
+
+		return os.path.isfile(self.temp_file_path + self.temp_file_name)
 
 	def set_today_ymd(self):
 
@@ -402,7 +406,8 @@ class stt_server:
 		self.calculate_file_length()
 		
 		cursor = self.conn.cursor()
-		current_date = datetime.datetime.now().strftime('%Y-%m-%dT%H:%M:%S')		
+		current_date = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+		#current_date = datetime.datetime.now().strftime('%Y-%m-%dT%H:%M:%S')
 
 		"""rec_source_date = re.findall(r'\d{4}-\d{2}-\d{2}-\d{2}-\d{2}-\d{2}', self.original_file_name)[0]
 		self.rec_date = 'Null'
