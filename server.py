@@ -10,7 +10,6 @@ cursor = server_object.conn.cursor()
 sql_query = "select filepath, filename, date_y, date_m, date_d, duration, source_id, "
 sql_query += "record_date, src, dst, linkedid from queue "
 sql_query += "where cpu_id='"+str(server_object.cpu_id)+"'"
-#sql_query += " and source_id = '1'"	# ToDo: REMOVE when stt mrm ready
 sql_query += " order by record_date;"
 processed = 0
 cursor.execute(sql_query)
@@ -33,8 +32,6 @@ for row in cursor.fetchall():
 	if len(re.findall(r'\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}', server_object.rec_date)) == 0:
 		print('Unable to extract date from filename', server_object.original_file_name)
 		server_object.rec_date = 'Null'"""
-
-	# linkedid, dst = server_object.linkedid_by_filename() # ToDo: REMOVE
 
 	if server_object.original_file_duration>5:
 
@@ -65,7 +62,7 @@ for row in cursor.fetchall():
 		server_object.save_result('', '0', '0', 0, trans_date, 0)
 		server_object.save_result('', '0', '0', 1, trans_date, 0)
 		server_object.delete_current_queue()
-		# server_object.delete_source_file() # ToDo: ENABLE when tests complete
+		# server_object.delete_source_file() # removed as temporary file
 	processed += 1
 
 print(server_object.cpu_id,datetime.datetime.now().strftime('%Y-%m-%dT%H:%M:%S'), 'exit to next job..')

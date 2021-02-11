@@ -272,9 +272,8 @@ class stt_server:
 		self.conn.commit() # autocommit
 			
 	def remove_temporary_file(self):
-		if self.source_id == self.sources['call']: # ToDo: delete master too when tests complete
-			print('removing',self.temp_file_path + self.temp_file_name)
-			os.remove(self.temp_file_path + self.temp_file_name)
+		print('removing',self.temp_file_path + self.temp_file_name)
+		os.remove(self.temp_file_path + self.temp_file_name)
 
 	def get_sql_complete_files(self):
 
@@ -349,8 +348,6 @@ class stt_server:
 				'dst': dst,
 				'linkedid': linkedid,
 			})
-
-		# break  # todo: REMOVE
 
 		df = pd.DataFrame(fd_list)
 		df.sort_values(['rec_date', 'filename'], ascending=True, inplace=True)
