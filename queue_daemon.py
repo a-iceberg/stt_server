@@ -16,16 +16,19 @@ while True:
 	for source_id in server_object.sources: # ['call', 'master']
 
 		server_object.source_id = server_object.get_source_id(source_id)
-		if server_object.source_id == 1: # ToDo: REMOVE when stt mrm ready
-			continue
+		#if server_object.source_id == 1: # ToDo: REMOVE when stt mrm ready
+		#	continue
 		complete_files	= server_object.get_sql_complete_files()
 		incomplete_count = 0
 		complete_count = 0
-		for filename, rec_date in server_object.get_fs_files_list():
+		for filename, rec_date, src, dst, linkedid in server_object.get_fs_files_list():
 			server_object.rec_date = rec_date
 			if not filename in complete_files:
-				server_object.set_shortest_queue_cpu()
 				server_object.original_file_name = filename
+				server_object.src = src
+				server_object.dst = dst
+				server_object.linkedid = linkedid
+				server_object.set_shortest_queue_cpu()
 				server_object.add_queue()
 				# print('id', source_id, 'incomplete', incomplete_count, 'cpu', server_object.cpu_id, 'file', filename)
 				incomplete_count += 1

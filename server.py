@@ -30,7 +30,7 @@ for row in cursor.fetchall():
 		print('Unable to extract date from filename', server_object.original_file_name)
 		server_object.rec_date = 'Null'"""
 
-	linkedid, dst = server_object.linkedid_by_filename()
+	linkedid, dst = server_object.linkedid_by_filename() # ToDo: REMOVE
 
 	if server_object.original_file_duration>5:
 

@@ -61,6 +61,9 @@ class stt_server:
 		self.date_m = ''
 		self.date_d = ''
 		self.rec_date = ''
+		self.src = ''
+		self.dst = ''
+		self.linkedid = ''
 
 		#store pass in file, to prevent pass publication on gitdelete_current_queue
 		with open(self.script_path+'sql.pass','r') as file:
@@ -111,9 +114,10 @@ class stt_server:
 		#with mysql_conn:
 		with self.mysql_conn[self.source_id]:
 			query = """
-			select
+			select				
 				linkedid,
-				SUBSTRING(dstchannel, 5, 4)
+				SUBSTRING(dstchannel, 5, 4),
+				src
 				from PT1C_cdr_MICO as PT1C_cdr_MICO
 				where 
 					calldate>'"""+date_from+"""' and 
@@ -124,10 +128,10 @@ class stt_server:
 			cursor = self.mysql_conn[self.source_id].cursor()
 			cursor.execute(query)
 			for row in cursor.fetchall():
-				linkedid, dstchannel = row[0], row[1]
-				print('linkedid, dstchannel', linkedid, dstchannel)
-				return linkedid, dstchannel
-		return ''
+				linkedid, dstchannel, src = row[0], row[1], row[2]
+				#print('linkedid, dstchannel', linkedid, dstchannel)
+				return linkedid, dstchannel, src
+		return '', '', ''
 	
 	def make_file_splitted(self,side):
 			
@@ -309,18 +313,25 @@ class stt_server:
 				if len(re.findall(r'\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}', rec_date)) == 0:
 					rec_date = 'Null'
 					print('Unable to extract date from filename', filename)
+				linkedid, dstchannel, src = self.linkedid_by_filename()
 
 			elif self.source_id == self.sources['master']:
 				uniqueid = re.findall(r'^\d*.\d*', filename)[0]
 				cursor = self.mysql_conn[self.source_id].cursor()
-				query = "select calldate from cdr where uniqueid = '" + uniqueid + "' limit 1;"
+				query = "select calldate, src, dst from cdr where uniqueid = '" + uniqueid + "' limit 1;"
 				cursor.execute(query)
 				for row in cursor.fetchall():
 					rec_date = str(row[0])
+					src = str(row[1])
+					dst = str(row[2])
+					linkedid = uniqueid
 
 			fd_list.append({
 				'filename': filename,
-				'rec_date': rec_date
+				'rec_date': rec_date,
+				'src': src,
+				'dst': dst,
+				'linkedid': linkedid,
 			})
 
 		# break  # todo: REMOVE
@@ -396,21 +407,29 @@ class stt_server:
 		# debug --
 
 		sql_query = "insert into queue "
-		sql_query += "(filepath, filename, cpu_id, date, date_y, date_m, date_d, duration, record_date, source_id) "
+		sql_query += "(filepath, filename, cpu_id, date, date_y, date_m, date_d, "
+		sql_query += "duration, record_date, source_id, src, dst, linkedid) "
 		sql_query += "values ('"
-		sql_query += self.original_file_path+"','"
-		sql_query += self.original_file_name+"','"
-		sql_query += str(self.cpu_id)+"','"
-		sql_query += current_date+"','"
-		sql_query += self.date_y+"','"
-		sql_query += self.date_m+"','"
-		sql_query += self.date_d+"','"
-		sql_query += str(self.original_file_duration)+"','"
-		sql_query += self.rec_date+"','"
-		sql_query += str(self.source_id)+"');"
+		sql_query += self.original_file_path + "','"
+		sql_query += self.original_file_name + "','"
+		sql_query += str(self.cpu_id) + "','"
+		sql_query += current_date + "','"
+		sql_query += self.date_y + "','"
+		sql_query += self.date_m + "','"
+		sql_query += self.date_d + "','"
+		sql_query += str(self.original_file_duration) + "','"
+		sql_query += self.rec_date + "','"
+		sql_query += str(self.source_id) + "','"
+		sql_query += str(self.src) + "','"
+		sql_query += str(self.dst) + "','"
+		sql_query += str(self.linkedid) + "');"
 		
-		cursor.execute(sql_query)
-		self.conn.commit() # autocommit
+		try:
+			cursor.execute(sql_query)
+			self.conn.commit() # autocommit
+		except Exception as e:
+			print('add queue error. query: '+sql_query)
+			print(str(e))
 		
 	def calculate_file_length(self):
 		self.original_file_duration = 0
