@@ -20,6 +20,8 @@ additional libraries:
 python3 -m pip install pymssql
 pip install -U gast==0.2.2
 ```
+solving "No matching distribution found for vosk" under root
+```pip install --upgrade pip```
 
 #### Run
 

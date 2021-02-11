@@ -3,4 +3,5 @@ PyMySQL
 pymssql
 deeppavlov
 vosk
+pandas
 git+https://github.com/deepmipt/bert.git@feat/multi_gpu

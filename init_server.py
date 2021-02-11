@@ -65,7 +65,7 @@ class stt_server:
 		self.dst = ''
 		self.linkedid = ''
 
-		#store pass in file, to prevent pass publication on gitdelete_current_queue
+		#store pass in file, to prevent pass publication on git
 		with open(self.script_path+'sql.pass','r') as file:
 			self.sql_pass = file.read().replace('\n', '')
 			file.close()
@@ -177,7 +177,10 @@ class stt_server:
 	def delete_current_queue(self):
 
 		cursor = self.conn.cursor()
-		sql_query = "delete from queue where filename = '"+self.original_file_name+"';"	
+		if self.source_id == self.sources['master']:
+			sql_query = "delete from queue where linkedid = '" + self.linkedid + "';"
+		else:
+			sql_query = "delete from queue where filename = '"+self.original_file_name+"';"
 		cursor.execute(sql_query)
 		self.conn.commit() # autocommit
 

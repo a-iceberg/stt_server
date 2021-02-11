@@ -48,6 +48,7 @@ for row in cursor.fetchall():
 			files_converted += 1
 
 		if files_converted == 0:
+			time.sleep(3)
 			sys.exit( str(server_object.cpu_id)+': '+datetime.datetime.now().strftime('%Y-%m-%dT%H:%M:%S')+\
 					  ' No converted files found. exit..')
 		else:
