@@ -88,7 +88,6 @@ class stt_server:
 			password = self.sql_pass,
 			database = self.sql_name,
 			#autocommit=True
-			cursorclass=pymysql.cursors.DictCursor,
 		)
 
 	def connect_mysql(self, source_id):
@@ -99,6 +98,7 @@ class stt_server:
 			passwd=self.mysql_pass,
 			db=self.mysql_name[source_id],
 			# autocommit = True
+			cursorclass=mysql.cursors.DictCursor,
 		)
 	
 	def linkedid_by_filename(self):
