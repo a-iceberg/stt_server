@@ -48,9 +48,12 @@ for row in cursor.fetchall():
 			files_converted += 1
 
 		if files_converted == 0:
-			time.sleep(3)
-			sys.exit( str(server_object.cpu_id)+': '+datetime.datetime.now().strftime('%Y-%m-%dT%H:%M:%S')+\
-					  ' No converted files found. exit..')
+			#time.sleep(3)
+			#sys.exit( str(server_object.cpu_id)+': '+datetime.datetime.now().strftime('%Y-%m-%dT%H:%M:%S')+\
+			#		  ' No converted files found. exit..')
+			print('file not found:', server_object.linkedid, 'removing from queue..')
+			server_object.delete_current_queue()
+			
 		else:
 			print('files_converted', files_converted)
 		server_object.delete_current_queue()
