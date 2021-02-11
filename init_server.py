@@ -246,38 +246,38 @@ class stt_server:
 	def save_result(self, accept_text, accept_start, accept_end, side, transcribation_date, conf_mid):
 	
 		cursor = self.conn.cursor()
-		sql_query = """insert into transcribations(
-		audio_file_name,
-		transcribation_date,
-		date_y,
-		date_m,
-		date_d,
-		text,
-		start,
-		end_time,
-		side,
-		conf,
-		linkedid,
-		src,
-		dst,
-		record_date,
-		source_id) """
-		sql_query += "values ('" + \
-			self.original_file_name + "','" + \
-			transcribation_date + "','" + \
-			self.date_y + "','" + \
-			self.date_m + "','" + \
-			self.date_d + "','" + \
-			accept_text + "','" + \
-			str(accept_start) + "','" + \
-			str(accept_end) + "'," + \
-			str(side) + "," + \
-			str(conf_mid) + "," + \
-			str(self.linkedid) + ",'" + \
-			str(self.src) + "','" + \
-			str(self.dst) + "'," + \
-			str(self.rec_date) if str(self.rec_date) == 'Null' else "'" + str(self.rec_date) + "'" + \
-			",'"+str(self.source_id)+"');"
+		sql_query = "insert into transcribations(
+		sql_query += " audio_file_name,"
+		sql_query += " transcribation_date,"
+		sql_query += " date_y,"
+		sql_query += " date_m,"
+		sql_query += " date_d,"
+		sql_query += " text,"
+		sql_query += " start,"
+		sql_query += " end_time,"
+		sql_query += " side,"
+		sql_query += " conf,"
+		sql_query += " linkedid,"
+		sql_query += " src,"
+		sql_query += " dst,"
+		sql_query += " record_date,"
+		sql_query += " source_id)"
+		sql_query += " values ("
+		sql_query += " '" + self.original_file_name + "',"
+		sql_query += " '" + transcribation_date + "',"
+		sql_query += " '" + self.date_y + "',"
+		sql_query += " '" + self.date_m + "',"
+		sql_query += " '" + self.date_d + "',"
+		sql_query += " '" + accept_text + "',"
+		sql_query += " '" + str(accept_start) + "',"
+		sql_query += " '" + str(accept_end) + "',"
+		sql_query += " '" + str(side) + "',"
+		sql_query += " '" + str(conf_mid) + "',"
+		sql_query += " '" + str(self.linkedid) + "',"
+		sql_query += " '" + str(self.src) + "',"
+		sql_query += " '" + str(self.dst) + "',"
+		sql_query += " " + str(self.rec_date) if str(self.rec_date) == 'Null' else "'" + str(self.rec_date) + "'"
+		sql_query += " ,'"+str(self.source_id)+"');"
 		print('query',sql_query) # DEBUG
 		cursor.execute(sql_query)
 		self.conn.commit() # autocommit
