@@ -249,8 +249,9 @@ class stt_server:
 
 	def save_result(self, accept_text, accept_start, accept_end, side, transcribation_date, conf_mid):
 
-		if len(re.findall(r'\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}', str(self.rec_date))) == 0:
-			print('save_result - wrong rec_date:', str(self.rec_date), 'converting to Null..')
+		if not str(self.rec_date) == 'Null' and \
+				len(re.findall(r'\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}', str(self.rec_date))) == 0:
+			print(str(self.linkedid), 'save_result - wrong rec_date:', str(self.rec_date), 'converting to Null..')
 			self.rec_date = 'Null'
 
 
