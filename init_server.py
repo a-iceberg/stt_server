@@ -41,8 +41,10 @@ class stt_server:
 			'master': 2,
 		}
 		self.original_storage_path = {
-			1: '/mnt/share/audio_call/',
-			2: '/mnt/share/audio_master/REC_IN_OUT/',
+			#1: '/mnt/share/audio_call/',
+			#2: '/mnt/share/audio_master/REC_IN_OUT/',
+			1: '/mnt/share/audio/MSK_SRVCALL/RX_TX',
+			2: '/mnt/share/audio/MSK_SRVCALL/REC_IN_OUT/'
 		}
 		self.original_storage_prefix = {
 			1: 'RXTX_',
