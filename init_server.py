@@ -33,8 +33,8 @@ class stt_server:
 		self.mysql_login = 'asterisk'
 
 		self.script_path = '/home/alex/projects/call_centre_stt_server/'
-		# self.model_path = '/home/alex/projects/vosk-api/python/example/model_'+str(cpu_id)
-		self.model_path = '/mnt/share/audio_call/models/model_'+str(cpu_id)
+		self.model_path = '/home/alex/projects/vosk-api/python/example/model'
+		# self.model_path = '/mnt/share/audio_call/models/model_'+str(cpu_id)
 		self.source_id = 0
 		self.sources = {
 			'call': 1,
