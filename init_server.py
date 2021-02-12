@@ -1,3 +1,4 @@
+# ToDo: remove source master file if trascribation complete (handle runs error fixer)
 from vosk import Model, KaldiRecognizer, SetLogLevel
 import json
 import pymssql
@@ -22,8 +23,7 @@ class stt_server:
 		self.sql_name = 'voice_ai'
 		self.sql_server = '10.2.4.124'
 		self.sql_login = 'ICECORP\\1c_sql'
-		
-		# mysql
+
 		# mysql
 		self.mysql_name = {
 			1: 'MICO_96',
@@ -33,7 +33,7 @@ class stt_server:
 		self.mysql_login = 'asterisk'
 
 		self.script_path = '/home/alex/projects/call_centre_stt_server/'
-		self.model_path = '/home/alex/projects/vosk-api/python/example/model'
+		self.model_path = '/home/alex/projects/vosk-api/python/example/model_'+str(cpu_id)
 		self.source_id = 0
 		self.sources = {
 			'call': 1,
