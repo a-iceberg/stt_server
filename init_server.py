@@ -388,7 +388,7 @@ class stt_server:
 				'linkedid': linkedid,
 			})
 
-		df = pd.DataFrame(fd_list)
+		df = pd.DataFrame(fd_list, columns = ['rec_date', 'filename'])
 		df.sort_values(['rec_date', 'filename'], ascending=True, inplace=True)
 
 		return df.values
