@@ -43,13 +43,13 @@ class stt_server:
 		self.original_storage_path = {
 			#1: '/mnt/share/audio_call/',
 			#2: '/mnt/share/audio_master/REC_IN_OUT/',
-			1: '/mnt/share/audio/MSK_SRVCALL/RX_TX',
+			1: '/mnt/share/audio/MSK_SRVCALL/RX_TX/',
 			2: '/mnt/share/audio/MSK_SRVCALL/REC_IN_OUT/'
 		}
-		self.original_storage_prefix = {
+		"""self.original_storage_prefix = {
 			1: 'RXTX_',
 			2: '',
-		}
+		}"""
 		"""self.source_file_deletion = {
 			1: False,
 			2: True,
@@ -341,7 +341,7 @@ class stt_server:
 	def get_fs_files_list(self):
 
 		self.original_file_path = self.original_storage_path[self.source_id]
-		self.original_file_path += self.original_storage_prefix[self.source_id]
+		#self.original_file_path += self.original_storage_prefix[self.source_id]
 		if self.source_id == self.sources['call']:
 			self.original_file_path += self.date_y + '-' + self.date_m + '/' + self.date_d + '/'
 		files_list = []
