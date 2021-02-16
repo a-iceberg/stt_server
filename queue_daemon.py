@@ -39,7 +39,7 @@ while True:
 		print('incomplete_count',incomplete_count)
 		print('complete_count',complete_count)
 	
-	if len(sys.argv)==4:
+	if len(sys.argv) == 4:
 		break
 	else:
 		print(datetime.datetime.now().strftime('%Y-%m-%dT%H:%M:%S'), 'sleeping 10s..')

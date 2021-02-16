@@ -42,7 +42,7 @@ class stt_server:
 		}
 		self.original_storage_path = {
 			#1: '/mnt/share/audio_call/',
-			#2: '/mnt/share/audio_master/REC_IN_OUT/',
+			#2: '/mnt/share/audio_master/REC_IN_OUT/',get_fs_files_list
 			1: '/mnt/share/audio/MSK_SRVCALL/RX_TX/',
 			2: '/mnt/share/audio/MSK_SRVCALL/REC_IN_OUT/'
 		}
@@ -190,8 +190,15 @@ class stt_server:
 
 	def delete_source_file(self):
 
-		#if self.source_file_deletion[self.source_id]:
-		if self.source_id == self.sources['master']:
+		if self.source_id == self.sources['call']:
+			myfile = self.original_file_path + self.original_file_name
+			try:
+				os.remove(myfile)
+				print('succesfully removed', myfile)
+			except OSError as e:  ## if failed, report it back to the user ##
+				print("Error: %s - %s." % (e.filename, e.strerror))
+
+		elif self.source_id == self.sources['master']:
 			#myfile = self.original_file_path + self.original_file_name
 			myfile = self.original_file_path + self.linkedid + '-in.wav'
 			try:
@@ -206,8 +213,6 @@ class stt_server:
 			except OSError as e:  ## if failed, report it back to the user ##
 				print("Error: %s - %s." % (e.filename, e.strerror))
 
-		
-	#def transcribe_to_sql(self,side,linkedid, dst):
 	def transcribe_to_sql(self, side):
 
 		transcribation_date = datetime.datetime.now().strftime('%Y-%m-%dT%H:%M:%S')
@@ -309,28 +314,9 @@ class stt_server:
 	def get_sql_complete_files(self):
 
 		cursor = self.conn.cursor()
-
-		if self.source_id == self.sources['call']:
-			sql_query = "select distinct filename from queue where "
-			sql_query += "source_id='" + str(self.source_id) + "' and "
-			sql_query += "date_y='" + self.date_y + "' and "
-			sql_query += "date_m='" + self.date_m + "' and "
-			sql_query += "date_d='" + self.date_d + "' "
-			sql_query += "union all "
-			sql_query += "select distinct audio_file_name from transcribations where "
-			sql_query += "date_y='" + self.date_y + "' and "
-			sql_query += "date_m='" + self.date_m + "' and "
-			sql_query += "date_d='" + self.date_d + "' "
-			sql_query += "order by filename;"
-
-		elif self.source_id == self.sources['master']: # ToDo: optimization needed
-			sql_query = "select distinct filename from queue "
-			sql_query += "where source_id='" + str(self.source_id) + "' "
-			sql_query += "union all "
-			sql_query += "select distinct audio_file_name from transcribations "
-			sql_query += "where source_id='" + str(self.source_id) + "' "
-			sql_query += "order by filename;"
-
+		sql_query = "select distinct filename from queue where"
+		sql_query += " source_id='" + str(self.source_id) + "'"
+		sql_query += " order by filename;"
 		cursor.execute(sql_query)
 		complete_files = []
 		for row in cursor.fetchall():
