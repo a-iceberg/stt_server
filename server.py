@@ -59,7 +59,7 @@ for row in cursor.fetchall():
 		else:
 			print('files_converted', files_converted)
 		server_object.delete_current_queue(original_file_name, linkedid)
-		server_object.delete_source_file(original_file_path, original_file_name)
+		server_object.delete_source_file(original_file_path, original_file_name, linkedid)
 		break
 	else:
 
