@@ -188,7 +188,7 @@ class stt_server:
 	def delete_source_file(self, original_file_path, original_file_name, linkedid):
 
 		if self.source_id == self.sources['call']:
-			myfile = original_file_path + '/' + original_file_name
+			myfile = original_file_path + original_file_name
 			try:
 				os.remove(myfile)
 				print('succesfully removed', myfile)
@@ -383,7 +383,7 @@ class stt_server:
 								linkedid, dst, src = self.linkedid_by_filename(filename, date_y, date_m, date_d)  # cycled query
 
 								fd_list.append({
-									'filepath': root,
+									'filepath': root+'/',
 									'filename': filename,
 									'rec_date': rec_date,
 									'src': src,
