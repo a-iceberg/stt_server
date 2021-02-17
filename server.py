@@ -15,17 +15,19 @@ processed = 0
 cursor.execute(sql_query)
 for row in cursor.fetchall():
 
-	server_object.original_file_path = row[0]
-	server_object.original_file_name = row[1]
+	#server_object.original_file_path = row[0]
+	#server_object.original_file_name = row[1]
+	original_file_path = row[0]
+	original_file_name = row[1]
 	server_object.date_y = row[2]
 	server_object.date_m = row[3]
 	server_object.date_d = row[4]
-	server_object.original_file_duration = row[5]
+	original_file_duration = row[5]
 	server_object.source_id = row[6]
-	server_object.rec_date = row[7]
-	server_object.src = row[8]
-	server_object.dst = row[9]
-	server_object.linkedid = row[10]
+	rec_date = row[7]
+	src = row[8]
+	dst = row[9]
+	linkedid = row[10]
 
 	"""rec_source_date = re.findall(r'\d{4}-\d{2}-\d{2}-\d{2}-\d{2}-\d{2}', server_object.original_file_name)[0]
 	server_object.rec_date = rec_source_date[:10] + ' ' + rec_source_date[11:].replace('-', ':')
@@ -33,17 +35,17 @@ for row in cursor.fetchall():
 		print('Unable to extract date from filename', server_object.original_file_name)
 		server_object.rec_date = 'Null'"""
 
-	if server_object.original_file_duration>5:
+	if original_file_duration>5:
 
 		files_converted = 0
 
-		if server_object.make_file_splitted(0):
-			server_object.transcribe_to_sql(0)
+		if server_object.make_file_splitted(0, original_file_path, original_file_name, linkedid):
+			server_object.transcribe_to_sql(0, original_file_name, rec_date, src, dst, linkedid)
 			server_object.remove_temporary_file()
 			files_converted += 1
 
-		if server_object.make_file_splitted(1):
-			server_object.transcribe_to_sql(1)
+		if server_object.make_file_splitted(1, original_file_path, original_file_name, linkedid):
+			server_object.transcribe_to_sql(1, original_file_name, rec_date, src, dst, linkedid)
 			server_object.remove_temporary_file()
 			files_converted += 1
 
@@ -56,17 +58,17 @@ for row in cursor.fetchall():
 
 		else:
 			print('files_converted', files_converted)
-		server_object.delete_current_queue()
-		server_object.delete_source_file()
+		server_object.delete_current_queue(original_file_name)
+		server_object.delete_source_file(original_file_path, original_file_name)
 		break
 	else:
 
-		print(server_object.original_file_name, 'duration', server_object.original_file_duration)
+		print(server_object.original_file_name, 'duration', original_file_duration)
 		trans_date = datetime.datetime.now().strftime('%Y-%m-%dT%H:%M:%S')
-		server_object.save_result('', '0', '0', 0, trans_date, 0)
-		server_object.save_result('', '0', '0', 1, trans_date, 0)
-		server_object.delete_current_queue()
-		server_object.delete_source_file()
+		server_object.save_result('', '0', '0', 0, trans_date, 0, original_file_name, rec_date, src, dst, linkedid)
+		server_object.save_result('', '0', '0', 1, trans_date, 0, original_file_name, rec_date, src, dst, linkedid)
+		server_object.delete_current_queue(original_file_name, linkedid)
+		server_object.delete_source_file(original_file_path, original_file_name, linkedid)
 	processed += 1
 
 print(server_object.cpu_id,datetime.datetime.now().strftime('%Y-%m-%dT%H:%M:%S'), 'exit to next job..')

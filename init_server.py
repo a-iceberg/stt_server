@@ -58,16 +58,16 @@ class stt_server:
 
 		self.temp_file_path = ''
 		self.temp_file_name = ''
-		self.original_file_path = ''
-		self.original_file_name = ''
-		self.original_file_duration	= 0
-		self.date_y = ''
-		self.date_m = ''
-		self.date_d = ''
-		self.rec_date = ''
-		self.src = ''
-		self.dst = ''
-		self.linkedid = ''
+		#self.original_file_path = '' # ToDo: remove
+		#self.original_file_name = '' # ToDo: remove
+		#self.original_file_duration	= 0
+		#self.date_y = '' # ToDo: remove
+		#self.date_m = '' # ToDo: remove
+		#self.date_d = '' # ToDo: remove
+		#self.rec_date = ''
+		#self.src = ''
+		#self.dst = ''
+		#self.linkedid = ''
 
 		#store pass in file, to prevent pass publication on git
 		with open(self.script_path+'sql.pass','r') as file:
@@ -87,10 +87,10 @@ class stt_server:
 	def connect_sql(self):
 
 		return pymssql.connect(
-			server = self.sql_server,
-			user = self.sql_login,
-			password = self.sql_pass,
-			database = self.sql_name,
+			server=self.sql_server,
+			user=self.sql_login,
+			password=self.sql_pass,
+			database=self.sql_name,
 			#autocommit=True
 		)
 
@@ -105,11 +105,11 @@ class stt_server:
 			# cursorclass=mysql.cursors.DictCursor,
 		)
 	
-	def linkedid_by_filename(self):
+	def linkedid_by_filename(self, filename, date_y, date_m, date_d):
+
+		filename = filename.replace('rxtx.wav', '')
 		
-		filename = self.original_file_name.replace('rxtx.wav', '')
-		
-		date_from = datetime.datetime(int(self.date_y), int(self.date_m), int(self.date_d))
+		date_from = datetime.datetime(int(date_y), int(date_m), int(date_d))
 		date_toto = date_from+datetime.timedelta(days=1)
 		date_from = datetime.datetime.strptime(str(date_from), '%Y-%m-%d %H:%M:%S').strftime('%Y-%m-%dT%H:%M:%S')
 		date_toto = datetime.datetime.strptime(str(date_toto), '%Y-%m-%d %H:%M:%S').strftime('%Y-%m-%dT%H:%M:%S')
@@ -117,7 +117,6 @@ class stt_server:
 		mysql_conn = self.connect_mysql(self.source_id)
 
 		with mysql_conn:
-		#with self.mysql_conn[self.source_id]:
 			query = """
 			select				
 				linkedid,
@@ -130,35 +129,33 @@ class stt_server:
 					PT1C_cdr_MICO.recordingfile LIKE '%"""+filename+"""%' 
 					limit 1;"""
 
-			#cursor = mysql_conn[self.source_id].cursor()
 			cursor = mysql_conn.cursor()
 			cursor.execute(query)
 			for row in cursor.fetchall():
 				linkedid, dstchannel, src = row[0], row[1], row[2]
-				#print('linkedid, dstchannel', linkedid, dstchannel)
 				return linkedid, dstchannel, src
 		return '', '', ''
 	
-	def make_file_splitted(self, side):
+	def make_file_splitted(self, side, original_file_path, original_file_name, linkedid):
 
 		if self.source_id == self.sources['master']:
-			self.temp_file_path = self.original_file_path
+			self.temp_file_path = original_file_path
 			if side == 0:
-				self.original_file_name = self.linkedid + '-in.wav'
-				self.temp_file_name = self.linkedid + '-in.wav'
+				original_file_name = linkedid + '-in.wav'
+				self.temp_file_name = linkedid + '-in.wav'
 			else:
-				self.original_file_name = self.linkedid + '-out.wav'
-				self.temp_file_name = self.linkedid + '-out.wav'
+				original_file_name = linkedid + '-out.wav'
+				self.temp_file_name = linkedid + '-out.wav'
 			print(side, 'master', self.temp_file_path + self.temp_file_name)
 
 		elif self.source_id == self.sources['call']:
 			# crop '.wav' & append postfix
 			self.temp_file_path = self.script_path+'files/'
-			self.temp_file_name = self.original_file_name[:-4]+('_R' if side else '_L')+'.wav'
+			self.temp_file_name = original_file_name[:-4]+('_R' if side else '_L')+'.wav'
 
 			os_cmd 	= 'ffmpeg -y -i '
-			os_cmd += self.original_file_path
-			os_cmd += self.original_file_name
+			os_cmd += original_file_path
+			os_cmd += original_file_name
 			os_cmd += ' -ar 16000 -af "pan=mono|c0=F'
 			os_cmd += 'R' if side else 'L'
 			os_cmd += '" '
@@ -172,26 +169,26 @@ class stt_server:
 
 		return os.path.isfile(self.temp_file_path + self.temp_file_name)
 
-	def set_today_ymd(self):
+	"""def set_today_ymd(self):
 
 		self.date_y	= datetime.datetime.today().strftime('%Y')
 		self.date_m	= datetime.datetime.today().strftime('%m')
-		self.date_d	= datetime.datetime.today().strftime('%d')
+		self.date_d	= datetime.datetime.today().strftime('%d')"""
 
-	def delete_current_queue(self):
+	def delete_current_queue(self, original_file_name, linkedid):
 
 		cursor = self.conn.cursor()
 		if self.source_id == self.sources['master']:
-			sql_query = "delete from queue where linkedid = '" + self.linkedid + "';"
+			sql_query = "delete from queue where linkedid = '" + linkedid + "';"
 		else:
-			sql_query = "delete from queue where filename = '"+self.original_file_name+"';"
+			sql_query = "delete from queue where filename = '"+original_file_name+"';"
 		cursor.execute(sql_query)
 		self.conn.commit() # autocommit
 
-	def delete_source_file(self):
+	def delete_source_file(self, original_file_path, original_file_name, linkedid):
 
 		if self.source_id == self.sources['call']:
-			myfile = self.original_file_path + self.original_file_name
+			myfile = original_file_path + original_file_name
 			try:
 				os.remove(myfile)
 				print('succesfully removed', myfile)
@@ -199,21 +196,20 @@ class stt_server:
 				print("Error: %s - %s." % (e.filename, e.strerror))
 
 		elif self.source_id == self.sources['master']:
-			#myfile = self.original_file_path + self.original_file_name
-			myfile = self.original_file_path + self.linkedid + '-in.wav'
+			myfile = original_file_path + linkedid + '-in.wav'
 			try:
 				os.remove(myfile)
 				print('succesfully removed', myfile)
 			except OSError as e:  ## if failed, report it back to the user ##
 				print("Error: %s - %s." % (e.filename, e.strerror))
-			myfile = self.original_file_path + self.linkedid + '-out.wav'
+			myfile = original_file_path + linkedid + '-out.wav'
 			try:
 				os.remove(myfile)
 				print('succesfully removed', myfile)
 			except OSError as e:  ## if failed, report it back to the user ##
 				print("Error: %s - %s." % (e.filename, e.strerror))
 
-	def transcribe_to_sql(self, side):
+	def transcribe_to_sql(self, side, original_file_name, rec_date, src, dst, linkedid):
 
 		transcribation_date = datetime.datetime.now().strftime('%Y-%m-%dT%H:%M:%S')
 		print('transcribing', self.temp_file_path + self.temp_file_name)
@@ -248,28 +244,66 @@ class stt_server:
 					conf_mid = str(sum(conf_score)/len(conf_score))
 					# conf_score = []
 					
-					self.save_result(accept_text, accept_start, accept_end, side, transcribation_date, conf_mid)
+					self.save_result(
+						accept_text,
+						accept_start,
+						accept_end,
+						side,
+						transcribation_date,
+						conf_mid,
+						original_file_name,
+						rec_date,
+						src,
+						dst,
+						linkedid
+					)
 					
-					phrases_count+=1
+					phrases_count += 1
 
 		if phrases_count == 0:
-			self.save_result('', '0', '0', side, transcribation_date, 0)
+			self.save_result(
+				'',
+				'0',
+				'0',
+				side,
+				transcribation_date,
+				0,
+				original_file_name,
+				rec_date,
+				src,
+				dst,
+				linkedid
+			)
 
-	def save_result(self, accept_text, accept_start, accept_end, side, transcribation_date, conf_mid):
+	def save_result(
+			self,
+			accept_text,
+			accept_start,
+			accept_end,
+			side,
+			transcribation_date,
+			conf_mid,
+			original_file_name,
+			rec_date,
+			src,
+			dst,
+			linkedid
+		):
 
-		if not str(self.rec_date) == 'Null' and \
-				len(re.findall(r'\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}', str(self.rec_date))) == 0:
-			print(str(self.linkedid), 'save_result - wrong rec_date:', str(self.rec_date), 'converting to Null..')
-			self.rec_date = 'Null'
+		if not str(rec_date) == 'Null' and \
+				len(re.findall(r'\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}', str(rec_date))) == 0:
+			print(str(linkedid), 'save_result - wrong rec_date:', str(rec_date), 'converting to Null..')
+			rec_date = 'Null'
 
 
 		cursor = self.conn.cursor()
 		sql_query = "insert into transcribations("
 		sql_query += " audio_file_name,"
 		sql_query += " transcribation_date,"
-		sql_query += " date_y,"
+		"""sql_query += " date_y,"
 		sql_query += " date_m,"
 		sql_query += " date_d,"
+		"""
 		sql_query += " text,"
 		sql_query += " start,"
 		sql_query += " end_time,"
@@ -281,20 +315,21 @@ class stt_server:
 		sql_query += " record_date,"
 		sql_query += " source_id)"
 		sql_query += " values ("
-		sql_query += " '" + self.original_file_name + "',"
+		sql_query += " '" + original_file_name + "',"
 		sql_query += " '" + transcribation_date + "',"
-		sql_query += " '" + self.date_y + "',"
+		"""sql_query += " '" + self.date_y + "',"
 		sql_query += " '" + self.date_m + "',"
 		sql_query += " '" + self.date_d + "',"
+		"""
 		sql_query += " '" + accept_text + "',"
 		sql_query += " '" + str(accept_start) + "',"
 		sql_query += " '" + str(accept_end) + "',"
 		sql_query += " '" + str(side) + "',"
 		sql_query += " '" + str(conf_mid) + "',"
-		sql_query += " '" + str(self.linkedid) + "',"
-		sql_query += " '" + str(self.src) + "',"
-		sql_query += " '" + str(self.dst) + "',"
-		sql_query += " " + str(self.rec_date) if str(self.rec_date) == 'Null' else "'" + str(self.rec_date) + "'"
+		sql_query += " '" + str(linkedid) + "',"
+		sql_query += " '" + str(src) + "',"
+		sql_query += " '" + str(dst) + "',"
+		sql_query += " " + str(rec_date) if str(rec_date) == 'Null' else "'" + str(rec_date) + "'"
 		sql_query += " ,'"+str(self.source_id)+"');"
 
 		try:
@@ -324,57 +359,76 @@ class stt_server:
 
 		return complete_files
 
-	def get_fs_files_list(self):
+	def get_fs_files_list(self, queue):
 
-		self.original_file_path = self.original_storage_path[self.source_id]
-		#self.original_file_path += self.original_storage_prefix[self.source_id]
-		if self.source_id == self.sources['call']:
-			self.original_file_path += self.date_y + '-' + self.date_m + '/' + self.date_d + '/'
-		files_list = []
-		for (dirpath, dirnames, filenames) in os.walk(self.original_file_path):
-			files_list.extend(filenames)
-			break
-
-		# get record date
 		fd_list = []
-		for filename in files_list:
 
-			rec_date = 'Null'
+		if self.source_id == self.sources['call']:
+			for root, dirs, files in os.walk(self.original_storage_path[self.source_id]):
+				for filename in files:
+					if filename[-4:] == '.wav' and not filename in queue:
+						rec_source_date = re.findall(r'\d{4}-\d{2}-\d{2}-\d{2}-\d{2}-\d{2}', filename)
+						if len(rec_source_date) and len(rec_source_date[0]):
+							rec_date = rec_source_date[0][:10] + ' ' + rec_source_date[0][11:].replace('-', ':')
 
-			if self.source_id == self.sources['call']:
-				rec_source_date = re.findall(r'\d{4}-\d{2}-\d{2}-\d{2}-\d{2}-\d{2}', filename)[0]
-				if len(rec_source_date):
-					rec_date = rec_source_date[:10] + ' ' + rec_source_date[11:].replace('-', ':')
-				if len(re.findall(r'\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}', rec_date)) == 0:
+							if len(re.findall(r'\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}', rec_date)) == 0:
+								rec_date = 'Null'
+								print('0 Unable to extract date:', root, filename)
+
+							date_string = re.findall(r'\d{4}-\d{2}-\d{2}', filename)
+							if len(date_string):
+								date_y = date_string[0][:4]
+								date_m = date_string[0][5:-3]
+								date_d = date_string[0][-2:]
+								linkedid, dst, src = self.linkedid_by_filename(filename, date_y, date_m, date_d)  # cycled query
+
+								fd_list.append({
+									'filepath': root,
+									'filename': filename,
+									'rec_date': rec_date,
+									'src': src,
+									'dst': dst,
+									'linkedid': linkedid,
+								})
+						else:
+							print('1 Unable to extract date:', root, filename)
+				# break # ToDo: remove
+
+		elif self.source_id == self.sources['master']:
+			files_list = []
+			for (dirpath, dirnames, filenames) in os.walk(self.original_storage_path[self.source_id]):
+				files_list.extend(filenames)
+				# break # ToDo: remove
+
+			# get record date
+			for filename in files_list:
+				if not filename in queue:
 					rec_date = 'Null'
-					print('Unable to extract date from filename', filename)
-				linkedid, dst, src = self.linkedid_by_filename()
+					uniqueid = re.findall(r'^\d*.\d*', filename)[0]
+					cursor = self.mysql_conn[self.source_id].cursor()
+					query = "select calldate, src, dst from cdr where uniqueid = '" + uniqueid + "' limit 1;"
+					cursor.execute(query)  # cycled query
+					src = ''
+					dst = ''
+					linkedid = uniqueid
+					for row in cursor.fetchall():
+						rec_date = str(row[0])
+						src = str(row[1])
+						dst = str(row[2])
+					if len(re.findall(r'\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}', rec_date)) == 0:
+						rec_date = 'Null'
+						print('Unable to extract date from filename', filename)
 
-			elif self.source_id == self.sources['master']:
-				uniqueid = re.findall(r'^\d*.\d*', filename)[0]
-				cursor = self.mysql_conn[self.source_id].cursor()
-				query = "select calldate, src, dst from cdr where uniqueid = '" + uniqueid + "' limit 1;"
-				cursor.execute(query)
-				src = ''
-				dst = ''
-				linkedid = uniqueid
-				for row in cursor.fetchall():
-					rec_date = str(row[0])
-					src = str(row[1])
-					dst = str(row[2])
-				if len(re.findall(r'\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}', rec_date)) == 0:
-					rec_date = 'Null'
-					print('Unable to extract date from filename', filename)
+					fd_list.append({
+						'filepath': self.original_storage_path[self.source_id],
+						'filename': filename,
+						'rec_date': rec_date,
+						'src': src,
+						'dst': dst,
+						'linkedid': linkedid,
+					})
 
-			fd_list.append({
-				'filename': filename,
-				'rec_date': rec_date,
-				'src': src,
-				'dst': dst,
-				'linkedid': linkedid,
-			})
-
-		df = pd.DataFrame(fd_list, columns = ['rec_date', 'filename'])
+		df = pd.DataFrame(fd_list, columns=['filepath', 'filename', 'rec_date', 'src', 'dst', 'linkedid'])
 		df.sort_values(['rec_date', 'filename'], ascending=True, inplace=True)
 
 		return df.values
@@ -424,45 +478,28 @@ class stt_server:
 				return source[0]
 		return 0
 
-	def add_queue(self):
+	def add_queue(self, filepath, filename, rec_date, src, dst, linkedid):
 		
-		self.calculate_file_length()
+		file_duration = self.calculate_file_length(filepath, filename)
 		
 		cursor = self.conn.cursor()
 		current_date = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-		#current_date = datetime.datetime.now().strftime('%Y-%m-%dT%H:%M:%S')
-
-		"""rec_source_date = re.findall(r'\d{4}-\d{2}-\d{2}-\d{2}-\d{2}-\d{2}', self.original_file_name)[0]
-		self.rec_date = 'Null'
-		if len(rec_source_date):
-			self.rec_date = rec_source_date[:10] + ' ' + rec_source_date[11:].replace('-', ':')
-			if len(re.findall(r'\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}', self.rec_date)) == 0:
-				print('1: Unable to extract date from filename', self.original_file_name)
-		else:
-			print('0: Unable to extract date from filename', self.original_file_name)"""
-
-		# debug ++
-		# print(self.cpu_id, 'self.rec_date', self.rec_date, self.original_file_name)
-		# debug --
 
 		sql_query = "insert into queue "
-		sql_query += "(filepath, filename, cpu_id, date, date_y, date_m, date_d, "
+		sql_query += "(filepath, filename, cpu_id, date, "
 		sql_query += "duration, record_date, source_id, src, dst, linkedid) "
 		sql_query += "values ('"
-		sql_query += self.original_file_path + "','"
-		sql_query += self.original_file_name + "','"
+		sql_query += filepath + "','"
+		sql_query += filename + "','"
 		sql_query += str(self.cpu_id) + "','"
 		sql_query += current_date + "','"
-		sql_query += self.date_y + "','"
-		sql_query += self.date_m + "','"
-		sql_query += self.date_d + "','"
-		sql_query += str(self.original_file_duration) + "',"
-		sql_query += self.rec_date if self.rec_date == 'Null' else "'"+self.rec_date+"'"
+		sql_query += str(file_duration) + "',"
+		sql_query += rec_date if rec_date == 'Null' else "'"+rec_date+"'"
 		sql_query += ",'"
 		sql_query += str(self.source_id) + "','"
-		sql_query += str(self.src) + "','"
-		sql_query += str(self.dst) + "','"
-		sql_query += str(self.linkedid) + "');"
+		sql_query += str(src) + "','"
+		sql_query += str(dst) + "','"
+		sql_query += str(linkedid) + "');"
 		
 		try:
 			cursor.execute(sql_query)
@@ -471,16 +508,17 @@ class stt_server:
 			print('add queue error. query: '+sql_query)
 			print(str(e))
 		
-	def calculate_file_length(self):
-		self.original_file_duration = 0
+	def calculate_file_length(self, filepath, filename):
+		file_duration = 0
 		try:
-			fname = self.original_file_path + self.original_file_name
+			fname = filepath + filename
 			with contextlib.closing(wave.open(fname,'r')) as f:
 				frames = f.getnframes()
 				rate = f.getframerate()
-				self.original_file_duration = frames / float(rate)
+				file_duration = frames / float(rate)
 		except Exception as e:
 			print('file length calculate error:', str(e))
+		return file_duration
 
 	def delete_old_results(self):
 
