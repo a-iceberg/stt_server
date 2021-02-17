@@ -65,7 +65,7 @@ for row in cursor.fetchall():
 	else:
 
 		print(original_file_name, 'duration', original_file_duration)
-		sys.exit() # ToDo: remove when duration fixed
+		#sys.exit() # ToDo: remove when duration fixed
 		trans_date = datetime.datetime.now().strftime('%Y-%m-%dT%H:%M:%S')
 		server_object.save_result('', '0', '0', 0, trans_date, 0, original_file_name, rec_date, src, dst, linkedid)
 		server_object.save_result('', '0', '0', 1, trans_date, 0, original_file_name, rec_date, src, dst, linkedid)
