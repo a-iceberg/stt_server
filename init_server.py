@@ -188,7 +188,7 @@ class stt_server:
 	def delete_source_file(self, original_file_path, original_file_name, linkedid):
 
 		if self.source_id == self.sources['call']:
-			myfile = original_file_path + original_file_name
+			myfile = original_file_path + '/' + original_file_name
 			try:
 				os.remove(myfile)
 				print('succesfully removed', myfile)

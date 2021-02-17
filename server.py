@@ -54,11 +54,11 @@ for row in cursor.fetchall():
 			#sys.exit( str(server_object.cpu_id)+': '+datetime.datetime.now().strftime('%Y-%m-%dT%H:%M:%S')+\
 			#		  ' No converted files found. exit..')
 			print('file not found:', server_object.linkedid, 'removing from queue..')
-			server_object.delete_current_queue()
+			server_object.delete_current_queue(original_file_name, linkedid)
 
 		else:
 			print('files_converted', files_converted)
-		server_object.delete_current_queue(original_file_name)
+		server_object.delete_current_queue(original_file_name, linkedid)
 		server_object.delete_source_file(original_file_path, original_file_name)
 		break
 	else:
