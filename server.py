@@ -9,8 +9,9 @@ server_object = stt_server(sys.argv[1])
 cursor = server_object.conn.cursor()
 sql_query = "select filepath, filename, date_y, date_m, date_d, duration, source_id, "
 sql_query += "record_date, src, dst, linkedid from queue "
-sql_query += "where cpu_id='"+str(server_object.cpu_id)+"'"
-sql_query += " and source_id = 1 order by record_date;"
+sql_query += "where cpu_id='"+str(server_object.cpu_id)+"' "
+#sql_query += "and source_id = 2 order by record_date;"
+sql_query += "order by record_date;"
 processed = 0
 cursor.execute(sql_query)
 for row in cursor.fetchall():
