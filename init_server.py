@@ -34,40 +34,19 @@ class stt_server:
 
 		self.script_path = '/home/alex/projects/call_centre_stt_server/'
 		self.model_path = '/home/alex/projects/vosk-api/python/example/model'
-		# self.model_path = '/mnt/share/audio_call/models/model_'+str(cpu_id)
 		self.source_id = 0
 		self.sources = {
 			'call': 1,
 			'master': 2,
 		}
 		self.original_storage_path = {
-			#1: '/mnt/share/audio_call/',
-			#2: '/mnt/share/audio_master/REC_IN_OUT/',get_fs_files_list
 			1: '/mnt/share/audio/MSK_SRVCALL/RX_TX/',
 			2: '/mnt/share/audio/MSK_SRVCALL/REC_IN_OUT/'
 		}
-		"""self.original_storage_prefix = {
-			1: 'RXTX_',
-			2: '',
-		}"""
-		"""self.source_file_deletion = {
-			1: False,
-			2: True,
-		}"""
 		# settings --
 
 		self.temp_file_path = ''
 		self.temp_file_name = ''
-		#self.original_file_path = '' # ToDo: remove
-		#self.original_file_name = '' # ToDo: remove
-		#self.original_file_duration	= 0
-		#self.date_y = '' # ToDo: remove
-		#self.date_m = '' # ToDo: remove
-		#self.date_d = '' # ToDo: remove
-		#self.rec_date = ''
-		#self.src = ''
-		#self.dst = ''
-		#self.linkedid = ''
 
 		#store pass in file, to prevent pass publication on git
 		with open(self.script_path+'sql.pass','r') as file:
@@ -168,12 +147,6 @@ class stt_server:
 				print('make_file_splitted error:',str(e))
 
 		return os.path.isfile(self.temp_file_path + self.temp_file_name)
-
-	"""def set_today_ymd(self):
-
-		self.date_y	= datetime.datetime.today().strftime('%Y')
-		self.date_m	= datetime.datetime.today().strftime('%m')
-		self.date_d	= datetime.datetime.today().strftime('%d')"""
 
 	def delete_current_queue(self, original_file_name, linkedid):
 
@@ -534,4 +507,3 @@ class stt_server:
 		sql_query = "delete from transcribations where record_date<'"+str(bottom_limit)+"';"
 		cursor.execute(sql_query)
 		self.conn.commit() # autocommit
-
