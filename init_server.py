@@ -17,7 +17,7 @@ class stt_server:
 
 		# settings ++
 		self.cpu_id = cpu_id
-		self.cpu_cores = [i for i in range(0,31)]
+		self.cpu_cores = [i for i in range(0,29)]
 		
 		# ms sql
 		self.sql_name = 'voice_ai'
