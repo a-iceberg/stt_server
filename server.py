@@ -38,7 +38,7 @@ for row in cursor.fetchall():
 				server_object.transcribe_to_sql(side, original_file_name, rec_date, src, dst, linkedid)
 			server_object.delete_current_queue(original_file_name, linkedid)
 
-		elif self.source_id == self.sources['call']:
+		elif server_object.source_id == self.sources['call']:
 
 			if server_object.make_file_splitted(0, original_file_path, original_file_name, linkedid):
 				server_object.transcribe_to_sql(0, original_file_name, rec_date, src, dst, linkedid)
