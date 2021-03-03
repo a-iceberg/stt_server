@@ -34,7 +34,7 @@ for row in cursor.fetchall():
 		if server_object.source_id == server_object.sources['master']:
 			server_object.temp_file_path = original_file_path
 			server_object.temp_file_name = original_file_name
-			if os.path.isfile(temp_file_path + temp_file_name):
+			if os.path.isfile(server_object.temp_file_path + server_object.temp_file_name):
 				side = 0 if 'in' in original_file_name else 1
 				server_object.transcribe_to_sql(side, original_file_name, rec_date, src, dst, linkedid)
 			server_object.delete_current_queue(original_file_name, linkedid)
