@@ -117,7 +117,7 @@ class stt_server:
 	
 	def make_file_splitted(self, side, original_file_path, original_file_name, linkedid):
 
-		if self.source_id == self.sources['master']:
+		"""if self.source_id == self.sources['master']:
 			self.temp_file_path = original_file_path
 			if side == 0:
 				# original_file_name = linkedid + '-in.wav'
@@ -125,62 +125,62 @@ class stt_server:
 			else:
 				# original_file_name = linkedid + '-out.wav'
 				self.temp_file_name = linkedid + '-out.wav'
-			print(side, 'master', self.temp_file_path + self.temp_file_name)
+			print(side, 'master', self.temp_file_path + self.temp_file_name)"""
 
-		elif self.source_id == self.sources['call']:
-			# crop '.wav' & append postfix
-			self.temp_file_path = self.script_path+'files/'
-			self.temp_file_name = original_file_name[:-4]+('_R' if side else '_L')+'.wav'
+		#elif self.source_id == self.sources['call']:
+		# crop '.wav' & append postfix
+		self.temp_file_path = self.script_path+'files/'
+		self.temp_file_name = original_file_name[:-4]+('_R' if side else '_L')+'.wav'
 
-			os_cmd 	= 'ffmpeg -y -i '
-			os_cmd += original_file_path
-			os_cmd += original_file_name
-			os_cmd += ' -ar 16000 -af "pan=mono|c0=F'
-			os_cmd += 'R' if side else 'L'
-			os_cmd += '" '
-			os_cmd += self.temp_file_path
-			os_cmd += self.temp_file_name
+		os_cmd 	= 'ffmpeg -y -i '
+		os_cmd += original_file_path
+		os_cmd += original_file_name
+		os_cmd += ' -ar 16000 -af "pan=mono|c0=F'
+		os_cmd += 'R' if side else 'L'
+		os_cmd += '" '
+		os_cmd += self.temp_file_path
+		os_cmd += self.temp_file_name
 
-			try:
-				os.system(os_cmd)
-			except Exception as e:
-				print('make_file_splitted error:',str(e))
+		try:
+			os.system(os_cmd)
+		except Exception as e:
+			print('make_file_splitted error:',str(e))
 
 		return os.path.isfile(self.temp_file_path + self.temp_file_name)
 
 	def delete_current_queue(self, original_file_name, linkedid):
 
 		cursor = self.conn.cursor()
-		if self.source_id == self.sources['master']:
+		"""if self.source_id == self.sources['master']:
 			sql_query = "delete from queue where linkedid = '" + linkedid + "';"
-		else:
-			sql_query = "delete from queue where filename = '"+original_file_name+"';"
+		else:"""
+		sql_query = "delete from queue where filename = '"+original_file_name+"';"
 		cursor.execute(sql_query)
 		self.conn.commit() # autocommit
 
 	def delete_source_file(self, original_file_path, original_file_name, linkedid):
 
-		if self.source_id == self.sources['call']:
-			myfile = original_file_path + original_file_name
-			try:
-				os.remove(myfile)
-				print('succesfully removed', myfile)
-			except OSError as e:  ## if failed, report it back to the user ##
-				print("Error: %s - %s." % (e.filename, e.strerror))
+		#if self.source_id == self.sources['call']:
+		myfile = original_file_path + original_file_name
+		try:
+			os.remove(myfile)
+			print('succesfully removed', myfile)
+		except OSError as e:  ## if failed, report it back to the user ##
+			print("Error: %s - %s." % (e.filename, e.strerror))
 
-		elif self.source_id == self.sources['master']:
-			myfile = original_file_path + linkedid + '-in.wav'
-			try:
-				os.remove(myfile)
-				print('succesfully removed', myfile)
-			except OSError as e:  ## if failed, report it back to the user ##
-				print("Error: %s - %s." % (e.filename, e.strerror))
-			myfile = original_file_path + linkedid + '-out.wav'
-			try:
-				os.remove(myfile)
-				print('succesfully removed', myfile)
-			except OSError as e:  ## if failed, report it back to the user ##
-				print("Error: %s - %s." % (e.filename, e.strerror))
+		#elif self.source_id == self.sources['master']:
+		"""myfile = original_file_path + linkedid + '-in.wav'
+		try:
+			os.remove(myfile)
+			print('succesfully removed', myfile)
+		except OSError as e:  ## if failed, report it back to the user ##
+			print("Error: %s - %s." % (e.filename, e.strerror))
+		myfile = original_file_path + linkedid + '-out.wav'
+		try:
+			os.remove(myfile)
+			print('succesfully removed', myfile)
+		except OSError as e:  ## if failed, report it back to the user ##
+			print("Error: %s - %s." % (e.filename, e.strerror))"""
 
 	def transcribe_to_sql(self, side, original_file_name, rec_date, src, dst, linkedid):
 
@@ -276,10 +276,6 @@ class stt_server:
 		sql_query = "insert into transcribations("
 		sql_query += " audio_file_name,"
 		sql_query += " transcribation_date,"
-		"""sql_query += " date_y,"
-		sql_query += " date_m,"
-		sql_query += " date_d,"
-		"""
 		sql_query += " text,"
 		sql_query += " start,"
 		sql_query += " end_time,"
@@ -293,10 +289,6 @@ class stt_server:
 		sql_query += " values ("
 		sql_query += " '" + original_file_name + "',"
 		sql_query += " '" + transcribation_date + "',"
-		"""sql_query += " '" + self.date_y + "',"
-		sql_query += " '" + self.date_m + "',"
-		sql_query += " '" + self.date_d + "',"
-		"""
 		sql_query += " '" + accept_text + "',"
 		sql_query += " '" + str(accept_start) + "',"
 		sql_query += " '" + str(accept_end) + "',"
@@ -374,7 +366,6 @@ class stt_server:
 			files_list = []
 			for (dirpath, dirnames, filenames) in os.walk(self.original_storage_path[self.source_id]):
 				files_list.extend(filenames)
-				# break # ToDo: remove
 
 			# get record date
 			for filename in files_list:
