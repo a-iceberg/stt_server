@@ -168,6 +168,7 @@ class stt_server:
 		except OSError as e:  ## if failed, report it back to the user ##
 			print("Error: %s - %s." % (e.filename, e.strerror))
 
+
 		#elif self.source_id == self.sources['master']:
 		"""myfile = original_file_path + linkedid + '-in.wav'
 		try:
