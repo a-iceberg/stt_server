@@ -33,12 +33,12 @@ for row in cursor.fetchall():
 		if server_object.source_id == server_object.sources['master']:
 			server_object.temp_file_path = original_file_path
 			server_object.temp_file_name = original_file_name
-			if os.path.isfile(self.temp_file_path + self.temp_file_name):
+			if os.path.isfile(temp_file_path + temp_file_name):
 				side = 0 if 'in' in original_file_name else 1
 				server_object.transcribe_to_sql(side, original_file_name, rec_date, src, dst, linkedid)
 			server_object.delete_current_queue(original_file_name, linkedid)
 
-		elif server_object.source_id == self.sources['call']:
+		elif server_object.source_id == server_object.sources['call']:
 
 			if server_object.make_file_splitted(0, original_file_path, original_file_name, linkedid):
 				server_object.transcribe_to_sql(0, original_file_name, rec_date, src, dst, linkedid)
@@ -64,10 +64,10 @@ for row in cursor.fetchall():
 		print(original_file_name, 'duration', original_file_duration)
 		trans_date = datetime.datetime.now().strftime('%Y-%m-%dT%H:%M:%S')
 
-		if self.source_id == self.sources['master']:
+		if server_object.source_id == server_object.sources['master']:
 			side = 0 if 'in' in original_file_name else 1
 			server_object.save_result('', '0', '0', side, trans_date, 0, original_file_name, rec_date, src, dst, linkedid)
-		elif self.source_id == self.sources['call']:
+		elif server_object.source_id == server_object.sources['call']:
 			server_object.save_result('', '0', '0', 0, trans_date, 0, original_file_name, rec_date, src, dst, linkedid)
 			server_object.save_result('', '0', '0', 1, trans_date, 0, original_file_name, rec_date, src, dst, linkedid)
 
