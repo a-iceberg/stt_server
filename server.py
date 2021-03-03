@@ -37,7 +37,11 @@ for row in cursor.fetchall():
 			if os.path.isfile(server_object.temp_file_path + server_object.temp_file_name):
 				side = 0 if 'in' in original_file_name else 1
 				server_object.transcribe_to_sql(side, original_file_name, rec_date, src, dst, linkedid)
+				files_converted += 1
+			else:
+				print('mrm file not found', server_object.temp_file_path + server_object.temp_file_name)
 			server_object.delete_current_queue(original_file_name, linkedid)
+
 
 		elif server_object.source_id == server_object.sources['call']:
 
