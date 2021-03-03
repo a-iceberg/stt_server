@@ -30,7 +30,7 @@ for row in cursor.fetchall():
 
 		files_converted = 0
 
-		if server_object.source_id == self.sources['master']:
+		if server_object.source_id == server_object.sources['master']:
 			server_object.temp_file_path = original_file_path
 			server_object.temp_file_name = original_file_name
 			if os.path.isfile(self.temp_file_path + self.temp_file_name):
