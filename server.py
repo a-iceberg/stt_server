@@ -3,6 +3,7 @@ import time
 import datetime
 from init_server import stt_server
 import re
+import os
 
 print('cpu', sys.argv[1])
 server_object = stt_server(sys.argv[1])
