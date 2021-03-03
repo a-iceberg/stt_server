@@ -30,9 +30,9 @@ for row in cursor.fetchall():
 
 		files_converted = 0
 
-		if self.source_id == self.sources['master']:
-			self.temp_file_path = original_file_path
-			self.temp_file_name = original_file_name
+		if server_object.source_id == self.sources['master']:
+			server_object.temp_file_path = original_file_path
+			server_object.temp_file_name = original_file_name
 			if os.path.isfile(self.temp_file_path + self.temp_file_name):
 				side = 0 if 'in' in original_file_name else 1
 				server_object.transcribe_to_sql(side, original_file_name, rec_date, src, dst, linkedid)
