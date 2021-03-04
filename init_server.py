@@ -84,7 +84,8 @@ class stt_server:
 			# cursorclass=mysql.cursors.DictCursor,
 		)
 
-	def perf_log(self, step, spent_time, duration, linkedid):
+	def perf_log(self, step, time_start, time_end, duration, linkedid):
+		spent_time = (time_end - time_start).microseconds / 1000
 		current_date = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
 		cursor = self.conn.cursor()
 		sql_query = "insert into perf_log(event_date, step, time, cpu, file_name, duration, linkedid, source_id) "
@@ -258,8 +259,7 @@ class stt_server:
 					phrases_count += 1
 
 		trans_end = datetime.datetime.now()
-		trans_diff_ms = (trans_end - trans_start)/1000
-		self.perf_log(2, trans_diff_ms, duration, linkedid)
+		self.perf_log(2, trans_start, trans_end, duration, linkedid)
 
 		if phrases_count == 0:
 			self.save_result(
