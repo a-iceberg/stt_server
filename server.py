@@ -27,9 +27,9 @@ for row in cursor.fetchall():
 	dst = row[6]
 	linkedid = row[7]
 
-	if original_file_duration>5:
+	files_converted = 0
 
-		files_converted = 0
+	if original_file_duration>5:
 
 		if server_object.source_id == server_object.sources['master']:
 			server_object.temp_file_path = original_file_path
