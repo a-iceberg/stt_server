@@ -53,7 +53,13 @@ for row in cursor.fetchall():
 
 		elif server_object.source_id == server_object.sources['call']:
 
-			if server_object.make_file_splitted(0, original_file_path, original_file_name, linkedid):
+			if server_object.make_file_splitted(
+					0,
+					original_file_path,
+					original_file_name,
+					linkedid,
+					original_file_duration
+			):
 				server_object.transcribe_to_sql(
 					original_file_duration,
 					0,
@@ -66,7 +72,13 @@ for row in cursor.fetchall():
 				server_object.remove_temporary_file()
 				files_converted += 1
 
-			if server_object.make_file_splitted(1, original_file_path, original_file_name, linkedid):
+			if server_object.make_file_splitted(
+					1,
+					original_file_path,
+					original_file_name,
+					linkedid,
+					original_file_duration
+			):
 				server_object.transcribe_to_sql(
 					original_file_duration,
 					1,

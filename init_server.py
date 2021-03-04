@@ -133,7 +133,9 @@ class stt_server:
 				return linkedid, dstchannel, src
 		return '', '', ''
 	
-	def make_file_splitted(self, side, original_file_path, original_file_name, linkedid):
+	def make_file_splitted(self, side, original_file_path, original_file_name, linkedid, duration):
+
+		trans_start = datetime.datetime.now()
 
 		"""if self.source_id == self.sources['master']:
 			self.temp_file_path = original_file_path
@@ -164,7 +166,12 @@ class stt_server:
 		except Exception as e:
 			print('make_file_splitted error:',str(e))
 
-		return os.path.isfile(self.temp_file_path + self.temp_file_name)
+		isfile = os.path.isfile(self.temp_file_path + self.temp_file_name)
+
+		trans_end = datetime.datetime.now()
+		self.perf_log(1, trans_start, trans_end, duration, linkedid)
+
+		return isfile
 
 	def delete_current_queue(self, original_file_name, linkedid):
 
