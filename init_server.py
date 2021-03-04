@@ -135,7 +135,7 @@ class stt_server:
 	
 	def make_file_splitted(self, side, original_file_path, original_file_name, linkedid, duration):
 
-		trans_start = datetime.datetime.now()
+		split_start = datetime.datetime.now()
 
 		"""if self.source_id == self.sources['master']:
 			self.temp_file_path = original_file_path
@@ -168,8 +168,8 @@ class stt_server:
 
 		isfile = os.path.isfile(self.temp_file_path + self.temp_file_name)
 
-		trans_end = datetime.datetime.now()
-		self.perf_log(1, trans_start, trans_end, duration, linkedid)
+		split_end = datetime.datetime.now()
+		self.perf_log(1, split_start, split_end, duration, linkedid)
 
 		return isfile
 
@@ -300,6 +300,8 @@ class stt_server:
 			linkedid
 		):
 
+		save_start = datetime.datetime.now()
+
 		if not str(rec_date) == 'Null' and \
 				len(re.findall(r'\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}', str(rec_date))) == 0:
 			print(str(linkedid), 'save_result - wrong rec_date:', str(rec_date), 'converting to Null..')
@@ -346,6 +348,8 @@ class stt_server:
 			print(str(e))
 			sys.exit('save_result')
 
+		save_end = datetime.datetime.now()
+		self.perf_log(3, save_start, save_end, duration, linkedid)
 
 	def remove_temporary_file(self):
 		if self.source_id == self.sources['call']:

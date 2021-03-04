@@ -18,6 +18,8 @@ cursor.execute(sql_query)
 linkedid = ''
 for row in cursor.fetchall():
 
+	queue_start = datetime.datetime.now()
+
 	original_file_path = row[0]
 	original_file_name = row[1]
 	original_file_duration = row[2]
@@ -153,6 +155,9 @@ for row in cursor.fetchall():
 
 		server_object.delete_current_queue(original_file_name, linkedid)
 		server_object.delete_source_file(original_file_path, original_file_name, linkedid)
+
+	queue_end = datetime.datetime.now()
+	server_object.perf_log(0, queue_start, queue_end, original_file_duration, linkedid)
 
 	processed += 1
 	if files_converted > 0:
