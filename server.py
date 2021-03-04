@@ -80,7 +80,7 @@ for row in cursor.fetchall():
 				files_converted += 1
 
 			if files_converted == 0:
-				print('file not found:', server_object.linkedid, 'removing from queue..')
+				print('file not found:', linkedid, 'removing from queue..')
 				server_object.delete_current_queue(original_file_name, linkedid)
 
 		#else:
