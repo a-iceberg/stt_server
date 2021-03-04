@@ -101,7 +101,11 @@ for row in cursor.fetchall():
 		print('files_converted', files_converted)
 		#server_object.delete_current_queue(original_file_name, linkedid)
 		server_object.delete_source_file(original_file_path, original_file_name, linkedid)
-		break
+
+		"""queue_end = datetime.datetime.now()
+		server_object.perf_log(0, queue_start, queue_end, original_file_duration, linkedid)"""
+
+		#break
 
 	else:
 		print(original_file_name, 'duration', original_file_duration)
@@ -156,12 +160,12 @@ for row in cursor.fetchall():
 		server_object.delete_current_queue(original_file_name, linkedid)
 		server_object.delete_source_file(original_file_path, original_file_name, linkedid)
 
-	print('debug: end point')
-	queue_end = datetime.datetime.now()
-	server_object.perf_log(0, queue_start, queue_end, original_file_duration, linkedid)
+		# print('debug: end point')
+		queue_end = datetime.datetime.now()
+		server_object.perf_log(0, queue_start, queue_end, original_file_duration, linkedid)
 
 	processed += 1
-	print('processed, files_converted', processed, files_converted)
+	# print('processed, files_converted', processed, files_converted)
 	if files_converted > 0:
 		break
 
