@@ -83,6 +83,22 @@ class stt_server:
 			# autocommit = True
 			# cursorclass=mysql.cursors.DictCursor,
 		)
+
+	def perf_log(self, step, spent_time, duration, linkedid):
+		current_date = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+		cursor = self.conn.cursor()
+		sql_query = "insert into perf_log(event_date, step, time, cpu, file_name, duration, linkedid, source_id) "
+		sql_query += "values ("
+		sql_query += "'" + current_date + "', "
+		sql_query += str(step) + ", "
+		sql_query += str(spent_time) + ", "
+		sql_query += str(self.cpu_id) + ", "
+		sql_query += "'" + self.temp_file_name + "', "
+		sql_query += "'" + str(duration) + "', "
+		sql_query += "'" + str(linkedid) + "', "
+		sql_query += "'" + str(self.source_id) + "');"
+		cursor.execute(sql_query)
+		server_object.conn.commit()
 	
 	def linkedid_by_filename(self, filename, date_y, date_m, date_d):
 
@@ -185,6 +201,8 @@ class stt_server:
 
 	def transcribe_to_sql(self, duration, side, original_file_name, rec_date, src, dst, linkedid):
 
+		trans_start = datetime.datetime.now()
+
 		if self.source_id == self.sources['master']:
 			original_file_name = linkedid + ('-in.wav' if side == 0 else '-out.wav')
 
@@ -237,6 +255,10 @@ class stt_server:
 					)
 					
 					phrases_count += 1
+
+		trans_end = datetime.datetime.now()
+		trans_diff_ms = (trans_end - trans_start)/1000
+		server_object.perf_log(2, trans_diff_ms, duration, linkedid)
 
 		if phrases_count == 0:
 			self.save_result(
