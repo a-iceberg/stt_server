@@ -35,11 +35,16 @@ def queue_by_cpu():
     result = 'Очередь по ядрам:\n'
     ms_sql_conn = connect_mssql()
     with ms_sql_conn:
-        query = 'select cpu_id, count(distinct filename) as filename from queue group by cpu_id order by cpu_id;'
+        query = 'select '
+        query += 'cpu_id, '
+        query += 'count(distinct filename) as filename, '
+        query += 'max(record_date) as trans_date '
+        query += 'from queue group by cpu_id order by cpu_id;'
+
         cursor = ms_sql_conn.cursor()
         cursor.execute(query)
         for row in cursor.fetchall():
-            result += str(row[0])+': '+str(row[1])+'\n'
+            result += 'cpu['+str(row[0])+']: '+str(row[1])+' rec_date: '+str(row[2])+'\n'
     return result
 
 
@@ -97,4 +102,3 @@ msg += queue_by_cpu() + '\n'
 msg += sentiment_queue()
 print(msg)
 send_to_telegram('-1001443983697', msg)
-

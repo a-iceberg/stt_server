@@ -12,7 +12,7 @@ sql_query = "select filepath, filename, duration, source_id, "
 sql_query += "record_date, src, dst, linkedid from queue "
 sql_query += "where cpu_id='"+str(server_object.cpu_id)+"' "
 #sql_query += "and source_id = '2' " # debug
-sql_query += "order by record_date, linkedid, filename;"
+sql_query += "order by ISNULL(record_date, 0) desc, record_date, linkedid, filename;"
 processed = 0
 cursor.execute(sql_query)
 linkedid = ''
@@ -36,7 +36,15 @@ for row in cursor.fetchall():
 			server_object.temp_file_name = original_file_name
 			if os.path.isfile(server_object.temp_file_path + server_object.temp_file_name):
 				side = 0 if 'in' in original_file_name else 1
-				server_object.transcribe_to_sql(side, original_file_name, rec_date, src, dst, linkedid)
+				server_object.transcribe_to_sql(
+					original_file_duration,
+					side,
+					original_file_name,
+					rec_date,
+					src,
+					dst,
+					linkedid
+				)
 				files_converted += 1
 			else:
 				print('mrm file not found', server_object.temp_file_path + server_object.temp_file_name)
@@ -46,12 +54,28 @@ for row in cursor.fetchall():
 		elif server_object.source_id == server_object.sources['call']:
 
 			if server_object.make_file_splitted(0, original_file_path, original_file_name, linkedid):
-				server_object.transcribe_to_sql(0, original_file_name, rec_date, src, dst, linkedid)
+				server_object.transcribe_to_sql(
+					original_file_duration,
+					0,
+					original_file_name,
+					rec_date,
+					src,
+					dst,
+					linkedid
+				)
 				server_object.remove_temporary_file()
 				files_converted += 1
 
 			if server_object.make_file_splitted(1, original_file_path, original_file_name, linkedid):
-				server_object.transcribe_to_sql(1, original_file_name, rec_date, src, dst, linkedid)
+				server_object.transcribe_to_sql(
+					original_file_duration,
+					1,
+					original_file_name,
+					rec_date,
+					src,
+					dst,
+					linkedid
+				)
 				server_object.remove_temporary_file()
 				files_converted += 1
 
@@ -71,10 +95,49 @@ for row in cursor.fetchall():
 
 		if server_object.source_id == server_object.sources['master']:
 			side = 0 if 'in' in original_file_name else 1
-			server_object.save_result('', '0', '0', side, trans_date, 0, original_file_name, rec_date, src, dst, linkedid)
+			server_object.save_result(
+				original_file_duration,
+				'',
+				'0',
+				'0',
+				side,
+				trans_date,
+				0,
+				original_file_name,
+				rec_date,
+				src,
+				dst,
+				linkedid
+			)
 		elif server_object.source_id == server_object.sources['call']:
-			server_object.save_result('', '0', '0', 0, trans_date, 0, original_file_name, rec_date, src, dst, linkedid)
-			server_object.save_result('', '0', '0', 1, trans_date, 0, original_file_name, rec_date, src, dst, linkedid)
+			server_object.save_result(
+				original_file_duration,
+				'',
+				'0',
+				'0',
+				0,
+				trans_date,
+				0,
+				original_file_name,
+				rec_date,
+				src,
+				dst,
+				linkedid
+			)
+			server_object.save_result(
+				original_file_duration,
+				'',
+				'0',
+				'0',
+				1,
+				trans_date,
+				0,
+				original_file_name,
+				rec_date,
+				src,
+				dst,
+				linkedid
+			)
 
 		server_object.delete_current_queue(original_file_name, linkedid)
 		server_object.delete_source_file(original_file_path, original_file_name, linkedid)

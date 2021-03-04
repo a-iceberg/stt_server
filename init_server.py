@@ -183,7 +183,7 @@ class stt_server:
 		except OSError as e:  ## if failed, report it back to the user ##
 			print("Error: %s - %s." % (e.filename, e.strerror))"""
 
-	def transcribe_to_sql(self, side, original_file_name, rec_date, src, dst, linkedid):
+	def transcribe_to_sql(self, duration, side, original_file_name, rec_date, src, dst, linkedid):
 
 		if self.source_id == self.sources['master']:
 			original_file_name = linkedid + ('-in.wav' if side == 0 else '-out.wav')
@@ -222,6 +222,7 @@ class stt_server:
 					# conf_score = []
 					
 					self.save_result(
+						duration,
 						accept_text,
 						accept_start,
 						accept_end,
@@ -239,6 +240,7 @@ class stt_server:
 
 		if phrases_count == 0:
 			self.save_result(
+				duration,
 				'',
 				'0',
 				'0',
@@ -254,6 +256,7 @@ class stt_server:
 
 	def save_result(
 			self,
+			duration,
 			accept_text,
 			accept_start,
 			accept_end,
@@ -275,6 +278,8 @@ class stt_server:
 
 		cursor = self.conn.cursor()
 		sql_query = "insert into transcribations("
+		sql_query += " cpu_id,"
+		sql_query += " duration,"
 		sql_query += " audio_file_name,"
 		sql_query += " transcribation_date,"
 		sql_query += " text,"
@@ -288,6 +293,8 @@ class stt_server:
 		sql_query += " record_date,"
 		sql_query += " source_id)"
 		sql_query += " values ("
+		sql_query += " " + str(self.cpu_id) + ","
+		sql_query += " " + str(duration) + ","
 		sql_query += " '" + original_file_name + "',"
 		sql_query += " '" + transcribation_date + "',"
 		sql_query += " '" + accept_text + "',"
