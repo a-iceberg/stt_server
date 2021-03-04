@@ -86,20 +86,19 @@ class stt_server:
 
 	def perf_log(self, step, time_start, time_end, duration, linkedid):
 		print('perf_log', step)
-		spent_time = (time_end - time_start).microseconds / 1000000 # seconds
+		spent_time = (time_end - time_start)
 		current_date = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
 		cursor = self.conn.cursor()
 		sql_query = "insert into perf_log(event_date, step, time, cpu, file_name, duration, linkedid, source_id) "
 		sql_query += "values ("
 		sql_query += "'" + current_date + "', "
 		sql_query += str(step) + ", "
-		sql_query += str(spent_time) + ", "
+		sql_query += str(spent_time.seconds + spent_time.microseconds / 1000000) + ", "
 		sql_query += str(self.cpu_id) + ", "
 		sql_query += "'" + self.temp_file_name + "', "
 		sql_query += "'" + str(duration) + "', "
 		sql_query += "'" + str(linkedid) + "', "
 		sql_query += "'" + str(self.source_id) + "');"
-		#print(sql_query)
 		cursor.execute(sql_query)
 		self.conn.commit()
 	
