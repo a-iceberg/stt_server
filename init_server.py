@@ -258,7 +258,7 @@ class stt_server:
 
 		trans_end = datetime.datetime.now()
 		trans_diff_ms = (trans_end - trans_start)/1000
-		server_object.perf_log(2, trans_diff_ms, duration, linkedid)
+		self.perf_log(2, trans_diff_ms, duration, linkedid)
 
 		if phrases_count == 0:
 			self.save_result(
