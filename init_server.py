@@ -300,7 +300,7 @@ class stt_server:
 			linkedid
 		):
 
-		save_start = datetime.datetime.now()
+		#save_start = datetime.datetime.now()
 
 		if not str(rec_date) == 'Null' and \
 				len(re.findall(r'\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}', str(rec_date))) == 0:
@@ -348,8 +348,8 @@ class stt_server:
 			print(str(e))
 			sys.exit('save_result')
 
-		save_end = datetime.datetime.now()
-		self.perf_log(3, save_start, save_end, duration, linkedid)
+		#save_end = datetime.datetime.now()
+		#self.perf_log(3, save_start, save_end, duration, linkedid)
 
 	def remove_temporary_file(self):
 		if self.source_id == self.sources['call']:
