@@ -161,6 +161,7 @@ for row in cursor.fetchall():
 	server_object.perf_log(0, queue_start, queue_end, original_file_duration, linkedid)
 
 	processed += 1
+	print('processed, files_converted', processed, files_converted)
 	if files_converted > 0:
 		break
 
