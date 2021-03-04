@@ -85,6 +85,7 @@ class stt_server:
 		)
 
 	def perf_log(self, step, time_start, time_end, duration, linkedid):
+		print('perf_log', step)
 		spent_time = (time_end - time_start).microseconds / 1000
 		current_date = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
 		cursor = self.conn.cursor()
