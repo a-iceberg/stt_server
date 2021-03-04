@@ -97,6 +97,7 @@ class stt_server:
 		sql_query += "'" + str(duration) + "', "
 		sql_query += "'" + str(linkedid) + "', "
 		sql_query += "'" + str(self.source_id) + "');"
+		print(sql_query)
 		cursor.execute(sql_query)
 		server_object.conn.commit()
 	
