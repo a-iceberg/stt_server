@@ -109,7 +109,6 @@ for row in cursor.fetchall():
 
 	else:
 		print(original_file_name, 'duration', original_file_duration)
-		trans_date = datetime.datetime.now().strftime('%Y-%m-%dT%H:%M:%S')
 
 		if server_object.source_id == server_object.sources['master']:
 			side = 0 if 'in' in original_file_name else 1
