@@ -89,11 +89,12 @@ class stt_server:
 		spent_time = (time_end - time_start)
 		current_date = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
 		cursor = self.conn.cursor()
-		sql_query = "insert into perf_log(event_date, step, time, cpu, file_name, duration, linkedid, source_id) "
+		sql_query = "insert into perf_log(cores, event_date, step, time, cpu, file_name, duration, linkedid, source_id) "
 		sql_query += "values ("
+		sql_query += str(int(self.cpu_cores)) + ", "
 		sql_query += "'" + current_date + "', "
 		sql_query += str(step) + ", "
-		sql_query += str(spent_time.seconds + spent_time.microseconds / 1000000) + ", "
+		sql_query += str(int(spent_time.seconds)) + ", "
 		sql_query += str(self.cpu_id) + ", "
 		sql_query += "'" + self.temp_file_name + "', "
 		sql_query += "'" + str(duration) + "', "
