@@ -94,7 +94,7 @@ class stt_server:
 		sql_query += str(len(self.cpu_cores)) + ", "
 		sql_query += "'" + current_date + "', "
 		sql_query += str(step) + ", "
-		sql_query += str(int(spent_time.seconds)) + ", "
+		sql_query += str(spent_time.seconds + trans_diff_ms.microseconds / 1000000) + ", "
 		sql_query += str(self.cpu_id) + ", "
 		sql_query += "'" + self.temp_file_name + "', "
 		sql_query += "'" + str(duration) + "', "
