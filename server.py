@@ -18,7 +18,8 @@ cursor.execute(sql_query)
 linkedid = ''
 for row in cursor.fetchall():
 
-	queue_start = datetime.datetime.now()
+	#queue_start = datetime.datetime.now()
+	queue_start = time.time()
 
 	original_file_path = row[0]
 	original_file_name = row[1]
@@ -97,15 +98,8 @@ for row in cursor.fetchall():
 				print('file not found:', linkedid, 'removing from queue..')
 				server_object.delete_current_queue(original_file_name, linkedid)
 
-		#else:
 		print('files_converted', files_converted)
-		#server_object.delete_current_queue(original_file_name, linkedid)
 		server_object.delete_source_file(original_file_path, original_file_name, linkedid)
-
-		"""queue_end = datetime.datetime.now()
-		server_object.perf_log(0, queue_start, queue_end, original_file_duration, linkedid)"""
-
-		#break
 
 	else:
 		print(original_file_name, 'duration', original_file_duration)
@@ -159,8 +153,8 @@ for row in cursor.fetchall():
 		server_object.delete_current_queue(original_file_name, linkedid)
 		server_object.delete_source_file(original_file_path, original_file_name, linkedid)
 
-	# print('debug: end point')
-	queue_end = datetime.datetime.now()
+	#queue_end = datetime.datetime.now()
+	queue_end = time.time()
 	server_object.perf_log(0, queue_start, queue_end, original_file_duration, linkedid)
 
 	processed += 1

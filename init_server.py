@@ -10,6 +10,7 @@ import contextlib
 import re
 import pandas as pd
 import sys
+import time
 
 class stt_server:
 
@@ -94,7 +95,8 @@ class stt_server:
 		sql_query += str(len(self.cpu_cores)) + ", "
 		sql_query += "'" + current_date + "', "
 		sql_query += str(step) + ", "
-		sql_query += str(spent_time.seconds + spent_time.microseconds / 1000000) + ", "
+		#sql_query += str(spent_time.seconds + spent_time.microseconds / 1000000) + ", "
+		sql_query += str(spent_time) + ", "
 		sql_query += str(self.cpu_id) + ", "
 		sql_query += "'" + self.temp_file_name + "', "
 		sql_query += "'" + str(duration) + "', "
@@ -136,7 +138,8 @@ class stt_server:
 	
 	def make_file_splitted(self, side, original_file_path, original_file_name, linkedid, duration):
 
-		split_start = datetime.datetime.now()
+		#split_start = datetime.datetime.now()
+		split_start = time.time()
 
 		"""if self.source_id == self.sources['master']:
 			self.temp_file_path = original_file_path
@@ -169,7 +172,8 @@ class stt_server:
 
 		isfile = os.path.isfile(self.temp_file_path + self.temp_file_name)
 
-		split_end = datetime.datetime.now()
+		#split_end = datetime.datetime.now()
+		split_end = time.time()
 		self.perf_log(1, split_start, split_end, duration, linkedid)
 
 		return isfile
@@ -211,7 +215,7 @@ class stt_server:
 
 	def transcribe_to_sql(self, duration, side, original_file_name, rec_date, src, dst, linkedid):
 
-		trans_start = datetime.datetime.now()
+		trans_start = time.time() # datetime.datetime.now()
 
 		if self.source_id == self.sources['master']:
 			original_file_name = linkedid + ('-in.wav' if side == 0 else '-out.wav')
@@ -266,7 +270,7 @@ class stt_server:
 					
 					phrases_count += 1
 
-		trans_end = datetime.datetime.now()
+		trans_end = time.time() # datetime.datetime.now()
 		self.perf_log(2, trans_start, trans_end, duration, linkedid)
 
 		if phrases_count == 0:
@@ -301,7 +305,7 @@ class stt_server:
 			linkedid
 		):
 
-		#save_start = datetime.datetime.now()
+		#save_start = time.time() # datetime.datetime.now()
 
 		if not str(rec_date) == 'Null' and \
 				len(re.findall(r'\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}', str(rec_date))) == 0:
@@ -349,7 +353,7 @@ class stt_server:
 			print(str(e))
 			sys.exit('save_result')
 
-		#save_end = datetime.datetime.now()
+		#save_end = time.time() # datetime.datetime.now()
 		#self.perf_log(3, save_start, save_end, duration, linkedid)
 
 	def remove_temporary_file(self):
