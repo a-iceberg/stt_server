@@ -37,8 +37,7 @@ def queue_by_cpu():
     with ms_sql_conn:
         query = 'select '
         query += 'cpu_id, '
-        query += 'count(distinct filename) as filename, '
-        query += 'max(transcribation_date) as trans_date '
+        query += 'count(distinct filename) as filename '
         query += 'from queue group by cpu_id order by cpu_id;'
 
         cursor = ms_sql_conn.cursor()
