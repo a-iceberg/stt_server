@@ -43,7 +43,7 @@ def queue_by_cpu():
         cursor = ms_sql_conn.cursor()
         cursor.execute(query)
         for row in cursor.fetchall():
-            result += '['+str(row[0])+']: '+str(row[1])+' last: '+str(row[2])+'\n'
+            result += '['+str(row[0])+']: '+str(row[1])+'\n'
     return result
 
 
