@@ -91,7 +91,7 @@ class stt_server:
 		cursor = self.conn.cursor()
 		sql_query = "insert into perf_log(cores, event_date, step, time, cpu, file_name, duration, linkedid, source_id) "
 		sql_query += "values ("
-		sql_query += str(int(self.cpu_cores)) + ", "
+		sql_query += str(len(self.cpu_cores)) + ", "
 		sql_query += "'" + current_date + "', "
 		sql_query += str(step) + ", "
 		sql_query += str(int(spent_time.seconds)) + ", "
