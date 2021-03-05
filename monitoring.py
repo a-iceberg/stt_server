@@ -94,7 +94,7 @@ def send_to_telegram(chat_id, message):
             message))
 
 
-msg = 'Состояние системы расшивки аудиозаписей\n'
+msg = 'Состояние системы расшифровки аудиозаписей\n'
 msg += transcribed_yesterday() + '\n'
 msg += queue_len() + '\n'
 msg += queue_by_cpu() + '\n'
