@@ -208,13 +208,14 @@ class stt_server:
 		cursor.execute(sql_query)
 		self.conn.commit() # autocommit
 
-	def send_to_telegram(chat, message):
+	def send_to_telegram(self, message):
 		headers = {
 			"Origin": "http://scriptlab.net",
 			"Referer": "http://scriptlab.net/telegram/bots/relaybot/",
 			'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/70.0.3538.110 Safari/537.36'}
 
-		url = "http://scriptlab.net/telegram/bots/relaybot/relaylocked.php?chat=" + chat + "&text=" + message
+		url = "http://scriptlab.net/telegram/bots/relaybot/relaylocked.php?chat=" + self.telegram_chat
+		url += "&text=" + message
 		requests.get(url, headers=headers)
 
 	def delete_source_file(self, original_file_path, original_file_name, linkedid):
