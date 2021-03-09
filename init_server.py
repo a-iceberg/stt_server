@@ -11,6 +11,7 @@ import re
 import pandas as pd
 import sys
 import time
+import requests
 
 class stt_server:
 
@@ -19,6 +20,12 @@ class stt_server:
 		# settings ++
 		self.cpu_id = cpu_id
 		self.cpu_cores = [i for i in range(0,9)]
+
+		# telegram
+		self.telegram_chat = '106129214'
+		with open('telegram_bot.token', 'r') as file:
+			self.telegram_bot_token = file.read().replace('\n', '')
+			file.close()
 		
 		# ms sql
 		self.sql_name = 'voice_ai'
@@ -63,6 +70,19 @@ class stt_server:
 			1: self.connect_mysql(1),
 			2: self.connect_mysql(2),
 		}
+
+	def send_to_telegram(self, message):
+		headers = {
+			"Origin": "https://api.telegram.org",
+			"Referer": 'https://api.telegram.org/bot' + self.telegram_bot_token,
+			'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/70.0.3538.110 Safari/537.36'}
+		url = 'https://api.telegram.org/bot' + self.telegram_bot_token
+		url += '/sendMessage?chat_id=' + str(self.telegram_chat)
+		url += '&text=' + str(message)
+		try:
+			requests.get(url, headers=headers)
+		except Exception as e:
+			print('Telegram send message error:', str(e))
 			
 	def connect_sql(self):
 
@@ -188,6 +208,15 @@ class stt_server:
 		cursor.execute(sql_query)
 		self.conn.commit() # autocommit
 
+	def send_to_telegram(chat, message):
+		headers = {
+			"Origin": "http://scriptlab.net",
+			"Referer": "http://scriptlab.net/telegram/bots/relaybot/",
+			'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/70.0.3538.110 Safari/537.36'}
+
+		url = "http://scriptlab.net/telegram/bots/relaybot/relaylocked.php?chat=" + chat + "&text=" + message
+		requests.get(url, headers=headers)
+
 	def delete_source_file(self, original_file_path, original_file_name, linkedid):
 
 		#if self.source_id == self.sources['call']:
@@ -197,6 +226,7 @@ class stt_server:
 			print('succesfully removed', myfile)
 		except OSError as e:  ## if failed, report it back to the user ##
 			print("Error: %s - %s." % (e.filename, e.strerror))
+			self.send_to_telegram('delete_source_file error:\n' + myfile + '\n' + str(e))
 
 
 		#elif self.source_id == self.sources['master']:
@@ -359,7 +389,12 @@ class stt_server:
 	def remove_temporary_file(self):
 		if self.source_id == self.sources['call']:
 			print('removing',self.temp_file_path + self.temp_file_name)
-			os.remove(self.temp_file_path + self.temp_file_name)
+			try:
+				os.remove(self.temp_file_path + self.temp_file_name)
+			except Exception as e:
+				msg = 'remove_temporary_file error:\n' + self.temp_file_path + self.temp_file_name + '\n' + str(e)
+				print(msg)
+				self.send_to_telegram(msg)
 
 	def get_sql_complete_files(self):
 
