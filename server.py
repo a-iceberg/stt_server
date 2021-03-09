@@ -36,7 +36,7 @@ for row in cursor.fetchall():
 		msg = 'File not found: '+ original_file_path + original_file_name
 		msg += '\nRemoving from queue..'
 		print(msg)
-		server_object.send_to_telegram(msg)
+		#server_object.send_to_telegram(msg)
 		server_object.delete_current_queue(original_file_name, linkedid)
 		continue
 
@@ -167,8 +167,8 @@ for row in cursor.fetchall():
 
 	processed += 1
 	# print('processed, files_converted', processed, files_converted)
-	if files_converted > 0:
-		break
+	"""if files_converted > 0:
+		break"""
 
 print(server_object.cpu_id,datetime.datetime.now().strftime('%Y-%m-%dT%H:%M:%S'), 'exit to next job..')
 if processed == 0:
