@@ -22,8 +22,8 @@ class stt_server:
 		self.cpu_cores = [i for i in range(0,9)]
 
 		# telegram
-		#self.telegram_chat = '106129214'
-		self.telegram_chat = '106129214'
+		#self.telegram_chat = '106129214' # alex
+		self.telegram_chat = '-1001443983697' # log 1c
 		with open('telegram_bot.token', 'r') as file:
 			self.telegram_bot_token = file.read().replace('\n', '')
 			file.close()
