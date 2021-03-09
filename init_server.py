@@ -22,6 +22,7 @@ class stt_server:
 		self.cpu_cores = [i for i in range(0,9)]
 
 		# telegram
+		#self.telegram_chat = '106129214'
 		self.telegram_chat = '106129214'
 		with open('telegram_bot.token', 'r') as file:
 			self.telegram_bot_token = file.read().replace('\n', '')
@@ -78,7 +79,7 @@ class stt_server:
 			'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/70.0.3538.110 Safari/537.36'}
 		url = 'https://api.telegram.org/bot' + self.telegram_bot_token
 		url += '/sendMessage?chat_id=' + str(self.telegram_chat)
-		url += '&text=' + str(message)
+		url += '&text=Stt cpu: ' + self.cpu_id + ' # ' + message
 		try:
 			requests.get(url, headers=headers)
 		except Exception as e:
@@ -208,15 +209,15 @@ class stt_server:
 		cursor.execute(sql_query)
 		self.conn.commit() # autocommit
 
-	def send_to_telegram(self, message):
+	"""def send_to_telegram(self, message):
 		headers = {
 			"Origin": "http://scriptlab.net",
 			"Referer": "http://scriptlab.net/telegram/bots/relaybot/",
 			'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/70.0.3538.110 Safari/537.36'}
 
 		url = "http://scriptlab.net/telegram/bots/relaybot/relaylocked.php?chat=" + self.telegram_chat
-		url += "&text=" + message
-		requests.get(url, headers=headers)
+		url += "&text=" + 'cpu: ' + self.cpu_id + ' # ' + message
+		requests.get(url, headers=headers)"""
 
 	def delete_source_file(self, original_file_path, original_file_name, linkedid):
 
