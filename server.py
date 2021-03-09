@@ -36,7 +36,7 @@ for row in cursor.fetchall():
 		msg = 'File not found: '+ original_file_path + original_file_name
 		msg += '\nRemoving from queue..'
 		print(msg)
-		send_to_telegram(msg)
+		server_object.send_to_telegram(msg)
 		server_object.delete_current_queue(original_file_name, linkedid)
 		continue
 
