@@ -32,6 +32,14 @@ for row in cursor.fetchall():
 
 	files_converted = 0
 
+	if not os.path.isfile(original_file_path + original_file_name):
+		msg = 'File not found: '+ original_file_path + original_file_name
+		msg += '\nRemoving from queue..'
+		print(msg)
+		send_to_telegram(msg)
+		server_object.delete_current_queue(original_file_name, linkedid)
+		continue
+
 	if original_file_duration>5:
 
 		if server_object.source_id == server_object.sources['master']:
