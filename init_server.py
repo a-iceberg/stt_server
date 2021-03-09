@@ -228,7 +228,7 @@ class stt_server:
 			print('succesfully removed', myfile)
 		except OSError as e:  ## if failed, report it back to the user ##
 			print("Error: %s - %s." % (e.filename, e.strerror))
-			self.send_to_telegram('delete_source_file error:\n' + myfile + '\n' + str(e))
+			self.send_to_telegram('delete_source_file error:\n' + str(e))
 
 
 		#elif self.source_id == self.sources['master']:
@@ -394,7 +394,7 @@ class stt_server:
 			try:
 				os.remove(self.temp_file_path + self.temp_file_name)
 			except Exception as e:
-				msg = 'remove_temporary_file error:\n' + self.temp_file_path + self.temp_file_name + '\n' + str(e)
+				msg = 'remove_temporary_file error:\n' + str(e)
 				print(msg)
 				self.send_to_telegram(msg)
 
