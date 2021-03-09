@@ -79,7 +79,7 @@ class stt_server:
 			'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/70.0.3538.110 Safari/537.36'}
 		url = 'https://api.telegram.org/bot' + self.telegram_bot_token
 		url += '/sendMessage?chat_id=' + str(self.telegram_chat)
-		url += '&text=Stt cpu: ' + self.cpu_id + ' # ' + message
+		url += '&text=' + message + '\nStt cpu: ' + str(self.cpu_id)
 		try:
 			requests.get(url, headers=headers)
 		except Exception as e:
