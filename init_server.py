@@ -451,6 +451,9 @@ class stt_server:
 			for (dirpath, dirnames, filenames) in os.walk(self.original_storage_path[self.source_id]):
 				files_list.extend(filenames)
 
+			files_extracted = 0
+			files_withoud_cdr_data = 0
+
 			# get record date
 			for filename in files_list:
 				if not filename in queue:
@@ -469,6 +472,8 @@ class stt_server:
 					if len(re.findall(r'\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}', rec_date)) == 0:
 						rec_date = 'Null'
 						print('Unable to extract date from filename', filename)
+						files_withoud_cdr_data += 1
+						continue
 
 					fd_list.append({
 						'filepath': self.original_storage_path[self.source_id],
@@ -478,6 +483,9 @@ class stt_server:
 						'dst': dst,
 						'linkedid': linkedid,
 					})
+					files_extracted += 1
+
+			print('master extracted:', files_extracted, 'without cdr data:', files_withoud_cdr_data)
 
 		df = pd.DataFrame(fd_list, columns=['filepath', 'filename', 'rec_date', 'src', 'dst', 'linkedid'])
 		df.sort_values(['rec_date', 'filename'], ascending=True, inplace=True)
