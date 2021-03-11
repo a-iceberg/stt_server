@@ -4,14 +4,16 @@ import datetime
 from init_server import stt_server
 import re
 import os
+import pendulum
 
 print('cpu', sys.argv[1])
 server_object = stt_server(sys.argv[1])
 cursor = server_object.conn.cursor()
+past_in_minutes = pendulum.now().add(minutes=-6).strftime('%Y-%m-%d %H:%M:%S')
 sql_query = "select filepath, filename, duration, source_id, "
 sql_query += "record_date, src, dst, linkedid from queue "
-sql_query += "where cpu_id='"+str(server_object.cpu_id)+"' "
-sql_query += "and source_id = '2' " # ToDo: remove
+sql_query += "where cpu_id='" + str(server_object.cpu_id) + "' "
+sql_query += "and ( (source_id = '2' and record_date < '" + past_in_minutes + "') or not source_id = '2' ) "
 sql_query += "order by ISNULL(record_date, 0) desc, record_date, linkedid, filename;"
 processed = 0
 cursor.execute(sql_query)
@@ -38,6 +40,9 @@ for row in cursor.fetchall():
 		print(msg)
 		#server_object.send_to_telegram(msg)
 		server_object.delete_current_queue(original_file_name, linkedid)
+
+		queue_end = time.time()
+		server_object.perf_log(0, queue_start, queue_end, original_file_duration, linkedid)
 		continue
 
 	if original_file_duration>5:

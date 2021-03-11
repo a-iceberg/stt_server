@@ -4,4 +4,5 @@ pymssql
 deeppavlov
 vosk
 pandas
+pendulum
 git+https://github.com/deepmipt/bert.git@feat/multi_gpu

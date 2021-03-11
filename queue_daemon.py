@@ -6,7 +6,7 @@ server_object = stt_server(0)
 while True:
 	for source_id in server_object.sources: # ['call', 'master']
 
-		if source_id == 'master': # ToDo: remove
+		#if source_id == 'master': # ToDo: remove
 
 			server_object.source_id = server_object.get_source_id(source_id)
 			complete_files = server_object.get_sql_complete_files()
