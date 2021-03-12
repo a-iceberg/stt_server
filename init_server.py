@@ -61,7 +61,7 @@ class stt_server:
 		with open(self.script_path+'sql.pass','r') as file:
 			self.sql_pass = file.read().replace('\n', '')
 			file.close()
-			
+
 		with open(self.script_path+'mysql.pass','r') as file:
 			self.mysql_pass = file.read().replace('\n', '')
 			file.close()
@@ -470,8 +470,8 @@ class stt_server:
 						src = str(row[1])
 						dst = str(row[2])
 					if len(re.findall(r'\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}', rec_date)) == 0:
+						print('u:', uniqueid, 'r:', rec_date, 'Unable to extract date from filename:', filename)
 						rec_date = 'Null'
-						print('Unable to extract date from filename', filename)
 						files_withoud_cdr_data += 1
 						continue
 
