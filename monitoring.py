@@ -83,6 +83,16 @@ def sentiment_queue():
             result += str(row[0])
     return result
 
+def earliest_records():
+    result = 'Самые ранние записи в очереди (1 - кц, 2 - мрм):\n'
+    ms_sql_conn = connect_mssql()
+    with ms_sql_conn:
+        query = "select source_id, min(record_date) from queue group by source_id order by source_id;"
+        cursor = ms_sql_conn.cursor()
+        cursor.execute(query)
+        for row in cursor.fetchall():
+            result += str(row[0])
+    print(df_queued)
 
 def send_to_telegram(chat_id, message):
     with open('/home/alex/projects/call_centre_stt_server/telegram_token.key', 'r') as file:
