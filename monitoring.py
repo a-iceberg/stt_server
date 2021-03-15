@@ -108,6 +108,7 @@ msg = 'Состояние системы расшифровки аудиозап
 msg += transcribed_yesterday() + '\n'
 msg += queue_len() + '\n'
 msg += queue_by_cpu() + '\n'
-msg += sentiment_queue()
+msg += sentiment_queue()+ '\n'
+msg += earliest_records()
 print(msg)
 send_to_telegram('-1001443983697', msg)
