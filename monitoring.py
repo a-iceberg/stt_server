@@ -91,7 +91,7 @@ def earliest_records():
         cursor = ms_sql_conn.cursor()
         cursor.execute(query)
         for row in cursor.fetchall():
-            result += str(row[0])
+            result += str(row[0]) + ': ' + str(row[1]) + '\n'
     return result
 
 def send_to_telegram(chat_id, message):
