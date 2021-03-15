@@ -92,7 +92,7 @@ def earliest_records():
         cursor.execute(query)
         for row in cursor.fetchall():
             result += str(row[0])
-    print(df_queued)
+    return result
 
 def send_to_telegram(chat_id, message):
     with open('/home/alex/projects/call_centre_stt_server/telegram_token.key', 'r') as file:
