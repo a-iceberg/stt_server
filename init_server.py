@@ -19,7 +19,7 @@ class stt_server:
 
 		# settings ++
 		self.cpu_id = cpu_id
-		self.cpu_cores = [i for i in range(0,9)]
+		self.cpu_cores = [i for i in range(0,17)]
 
 		# telegram
 		#self.telegram_chat = '106129214' # alex
