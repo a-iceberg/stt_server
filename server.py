@@ -113,6 +113,11 @@ for row in cursor.fetchall():
 				server_object.delete_current_queue(original_file_name, linkedid)
 
 		print('files_converted', files_converted)
+
+		# wer and other tests ++
+		server_object.save_file_for_analysis(original_file_path, original_file_name, original_file_duration)
+		# wer and other tests --
+
 		server_object.delete_source_file(original_file_path, original_file_name, linkedid)
 
 	else:

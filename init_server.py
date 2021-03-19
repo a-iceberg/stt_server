@@ -1,4 +1,3 @@
-# ToDo: remove source master file if trascribation complete (handle runs error fixer)
 from vosk import Model, KaldiRecognizer, SetLogLevel
 import json
 import pymssql
@@ -12,6 +11,7 @@ import pandas as pd
 import sys
 import time
 import requests
+from shutil import copyfile
 
 class stt_server:
 
@@ -52,6 +52,8 @@ class stt_server:
 			1: '/mnt/share/audio/MSK_SRVCALL/RX_TX/',
 			2: '/mnt/share/audio/MSK_SRVCALL/REC_IN_OUT/'
 		}
+		self.saved_for_analysis_path = '/mnt/share/audio/saved_for_analysis/'
+		self.confidence_of_file = 0
 		# settings --
 
 		self.temp_file_path = ''
@@ -264,8 +266,10 @@ class stt_server:
 		# recognizing
 		phrases_count = 0
 
+		confidences = []
+
 		while True:
-			
+
 			conf_score = []
 			
 			data = wf.readframes(4000)
@@ -283,6 +287,7 @@ class stt_server:
 					for result_rec in accept['result']:
 						conf_score.append(float(result_rec['conf']))
 					conf_mid = str(sum(conf_score)/len(conf_score))
+					confidences.append(conf_mid)
 					# conf_score = []
 					
 					self.save_result(
@@ -302,6 +307,7 @@ class stt_server:
 					
 					phrases_count += 1
 
+		self.confidence_of_file = sum(confidences)/len(confidences)
 		trans_end = time.time() # datetime.datetime.now()
 		self.perf_log(2, trans_start, trans_end, duration, linkedid)
 
@@ -590,3 +596,21 @@ class stt_server:
 		sql_query = "delete from transcribations where record_date<'"+str(bottom_limit)+"';"
 		cursor.execute(sql_query)
 		self.conn.commit() # autocommit
+
+	def save_file_for_analysis(self, original_file_path, original_file_name, duration):
+
+		try:
+			# query = "SELECT column_name FROM information_schema.columns WHERE table_name='transcribations';"
+			midlle_confidence = 0.8697060696547252
+			confidence_treshold_top = midlle_confidence + 0.1
+			confidence_treshold_bottom = midlle_confidence - 0.1
+			prefix = 'hi/'
+			if duration > 10 and duration < 60 and \
+					(self.confidence_of_file > confidence_treshold_top or \
+					self.confidence_of_file < confidence_treshold_bottom):
+				prefix = 'low/'
+			copyfile(original_file_path + original_file_name, self.saved_for_analysis_path + prefix + original_file_name)
+
+		except Exception as e:
+			print("Error:", str(e))
+			self.send_to_telegram('save_file_for_analysis error:\n' + str(e))
