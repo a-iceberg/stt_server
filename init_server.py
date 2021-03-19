@@ -605,15 +605,16 @@ class stt_server:
 			midlle_confidence = 0.8697060696547252
 			confidence_treshold_top = midlle_confidence + 0.1
 			confidence_treshold_bottom = midlle_confidence - 0.1
-			#prefix = 'hi/'
-			#if duration > 10 and duration < 60 and \
-			#		(self.confidence_of_file > confidence_treshold_top or \
-			#		self.confidence_of_file < confidence_treshold_bottom):
-			#	prefix = 'low/'
 
-			if duration > 10:
-				print('cp', file_path + file_name, 'to', self.saved_for_analysis_path + prefix + file_name)
-				copyfile(file_path + file_name, self.saved_for_analysis_path + prefix + file_name)
+			if duration > 10 and duration < 60:
+				if self.confidence_of_file > confidence_treshold_top:
+					prefix = 'hi/'
+				elif self.confidence_of_file < confidence_treshold_bottom:
+					prefix = 'low/'
+
+				if prefix == 'hi/' or prefix == 'low/':
+					#print('cp', file_path + file_name, 'to', self.saved_for_analysis_path + prefix + file_name)
+					copyfile(file_path + file_name, self.saved_for_analysis_path + prefix + file_name)
 
 		except Exception as e:
 			print("Error:", str(e))
