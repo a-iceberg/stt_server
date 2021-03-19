@@ -597,19 +597,23 @@ class stt_server:
 		cursor.execute(sql_query)
 		self.conn.commit() # autocommit
 
-	def save_file_for_analysis(self, original_file_path, original_file_name, duration):
+	def save_file_for_analysis(self, file_path, file_name, duration):
 
 		try:
-			# query = "SELECT column_name FROM information_schema.columns WHERE table_name='transcribations';"
+			prefix = 'any/'
+			# query = "SELECT avg(conf) FROM transcribations where not text = '';"
 			midlle_confidence = 0.8697060696547252
 			confidence_treshold_top = midlle_confidence + 0.1
 			confidence_treshold_bottom = midlle_confidence - 0.1
-			prefix = 'hi/'
-			if duration > 10 and duration < 60 and \
-					(self.confidence_of_file > confidence_treshold_top or \
-					self.confidence_of_file < confidence_treshold_bottom):
-				prefix = 'low/'
-			copyfile(original_file_path + original_file_name, self.saved_for_analysis_path + prefix + original_file_name)
+			#prefix = 'hi/'
+			#if duration > 10 and duration < 60 and \
+			#		(self.confidence_of_file > confidence_treshold_top or \
+			#		self.confidence_of_file < confidence_treshold_bottom):
+			#	prefix = 'low/'
+
+			if duration > 10:
+				print('cp', file_path + file_name, 'to', self.saved_for_analysis_path + prefix + file_name)
+				copyfile(file_path + file_name, self.saved_for_analysis_path + prefix + file_name)
 
 		except Exception as e:
 			print("Error:", str(e))
