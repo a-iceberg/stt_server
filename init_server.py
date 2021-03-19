@@ -307,7 +307,10 @@ class stt_server:
 					
 					phrases_count += 1
 
-		self.confidence_of_file = sum(confidences)/len(confidences)
+		if len(confidences):
+			self.confidence_of_file = sum(confidences)/len(confidences)
+		else:
+			self.confidence_of_file = 0
 		trans_end = time.time() # datetime.datetime.now()
 		self.perf_log(2, trans_start, trans_end, duration, linkedid)
 
