@@ -287,7 +287,7 @@ class stt_server:
 					for result_rec in accept['result']:
 						conf_score.append(float(result_rec['conf']))
 					conf_mid = str(sum(conf_score)/len(conf_score))
-					confidences.append(conf_mid)
+					confidences.append(sum(conf_score)/len(conf_score))
 					# conf_score = []
 					
 					self.save_result(
