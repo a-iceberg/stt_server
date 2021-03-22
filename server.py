@@ -115,7 +115,7 @@ for row in cursor.fetchall():
 		print('files_converted', files_converted)
 
 		# wer and other tests ++
-		server_object.save_file_for_analysis(original_file_path, original_file_name, original_file_duration)
+		# server_object.save_file_for_analysis(original_file_path, original_file_name, original_file_duration)
 		# wer and other tests --
 
 		server_object.delete_source_file(original_file_path, original_file_name, linkedid)
