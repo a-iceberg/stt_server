@@ -30,4 +30,4 @@ sudo systemctl stop call_stt_28.service
 sudo systemctl stop call_stt_29.service
 sudo systemctl stop call_stt_30.service
 sudo systemctl stop call_stt_queue.service
-sudo systemctl stop call_stt_sentiment.service
+#sudo systemctl stop call_stt_sentiment.service

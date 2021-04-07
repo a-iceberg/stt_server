@@ -548,6 +548,8 @@ class stt_server:
 
 	def add_queue(self, filepath, filename, rec_date, src, dst, linkedid):
 		
+		naming_version = 0
+		
 		file_duration = self.calculate_file_length(filepath, filename)
 		
 		cursor = self.conn.cursor()
@@ -555,7 +557,7 @@ class stt_server:
 
 		sql_query = "insert into queue "
 		sql_query += "(filepath, filename, cpu_id, date, "
-		sql_query += "duration, record_date, source_id, src, dst, linkedid) "
+		sql_query += "duration, record_date, source_id, src, dst, linkedid, version) "
 		sql_query += "values ('"
 		sql_query += filepath + "','"
 		sql_query += filename + "','"
@@ -567,7 +569,8 @@ class stt_server:
 		sql_query += str(self.source_id) + "','"
 		sql_query += str(src) + "','"
 		sql_query += str(dst) + "','"
-		sql_query += str(linkedid) + "');"
+		sql_query += str(linkedid) + "',"
+		sql_query += str(naming_version) + ");"
 		
 		try:
 			cursor.execute(sql_query)
