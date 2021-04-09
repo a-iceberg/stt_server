@@ -486,7 +486,7 @@ class stt_server:
 
 
 						rec_date = 'Null'
-						uniqueid = re.findall(r'^\d*.\d*', filename)[0]
+						uniqueid = re.findall(r'\d*\.\d*', filename)[0]
 						cursor = self.mysql_conn[self.source_id].cursor()
 						query = "select calldate, src, dst from cdr where uniqueid = '" + uniqueid + "' limit 1;"
 						cursor.execute(query)  # cycled query
