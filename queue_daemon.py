@@ -15,8 +15,8 @@ for source_id in server_object.sources: # ['call', 'master']
 			server_object.add_queue(filepath, filename, rec_date, src, dst, linkedid, version)
 			incomplete_count += 1
 
-	print('id', source_id)
-	print(incomplete_count, 'files sent to queue', server_object.sources[source_id])
+		print('id', source_id)
+		print(incomplete_count, 'files sent to queue', server_object.sources[source_id])
 
 sleep_time = 600
 print(
