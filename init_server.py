@@ -450,6 +450,7 @@ class stt_server:
 									'src': src,
 									'dst': dst,
 									'linkedid': linkedid,
+									'version': 0,
 								})
 						else:
 							print('1 Unable to extract date:', root, filename)
@@ -467,36 +468,57 @@ class stt_server:
 			for filename in files_list:
 				if not filename in queue:
 					rec_date = 'Null'
-					uniqueid = re.findall(r'^\d*.\d*', filename)[0]
-					cursor = self.mysql_conn[self.source_id].cursor()
-					query = "select calldate, src, dst from cdr where uniqueid = '" + uniqueid + "' limit 1;"
-					cursor.execute(query)  # cycled query
-					src = ''
-					dst = ''
-					linkedid = uniqueid
-					for row in cursor.fetchall():
-						rec_date = str(row[0])
-						src = str(row[1])
-						dst = str(row[2])
-					if len(re.findall(r'\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}', rec_date)) == 0:
-						print('u:', uniqueid, 'r:', rec_date, 'Unable to extract date from filename:', filename)
-						rec_date = 'Null'
-						files_withoud_cdr_data += 1
-						continue
+					version = 0
+					rec_date = re.findall(r'a.*b', filename)[0][1:][:-1]
+					if len(rec_date) == 19:
+						try:
+							rec_date = rec_date[1:][:-1]
+							src = re.findall(r'c.*d', filename)[0][1:][:-1]
+							dst = re.findall(r'e.*f', filename)[0][1:][:-1]
+							uniqueid = re.findall(r'g.*h', filename)[0][1:][:-1]
+							version = 1
+						except Exception as e:
+							print("Error:", str(e))
+							self.send_to_telegram('v1 filename parse error: '+ filename +'\n' + str(e))
 
-					fd_list.append({
-						'filepath': self.original_storage_path[self.source_id],
-						'filename': filename,
-						'rec_date': rec_date,
-						'src': src,
-						'dst': dst,
-						'linkedid': linkedid,
-					})
-					files_extracted += 1
+					if version == 0:
+
+
+						rec_date = 'Null'
+						uniqueid = re.findall(r'^\d*.\d*', filename)[0]
+						cursor = self.mysql_conn[self.source_id].cursor()
+						query = "select calldate, src, dst from cdr where uniqueid = '" + uniqueid + "' limit 1;"
+						cursor.execute(query)  # cycled query
+						src = ''
+						dst = ''
+						linkedid = uniqueid
+
+						for row in cursor.fetchall():
+							rec_date = str(row[0])
+							src = str(row[1])
+							dst = str(row[2])
+
+						if len(re.findall(r'\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}', rec_date)) == 0:
+							print('u:', uniqueid, 'r:', rec_date, 'Unable to extract date from filename:', filename)
+							rec_date = 'Null'
+							files_withoud_cdr_data += 1
+
+					if not rec_date == 'Null':
+
+						fd_list.append({
+							'filepath': self.original_storage_path[self.source_id],
+							'filename': filename,
+							'rec_date': rec_date,
+							'src': src,
+							'dst': dst,
+							'linkedid': linkedid,
+							'version': version,
+						})
+						files_extracted += 1
 
 			print('master extracted:', files_extracted, 'without cdr data:', files_withoud_cdr_data)
 
-		df = pd.DataFrame(fd_list, columns=['filepath', 'filename', 'rec_date', 'src', 'dst', 'linkedid'])
+		df = pd.DataFrame(fd_list, columns=['filepath', 'filename', 'rec_date', 'src', 'dst', 'linkedid', 'version'])
 		df.sort_values(['rec_date', 'filename'], ascending=True, inplace=True)
 
 		return df.values
@@ -546,9 +568,7 @@ class stt_server:
 				return source[0]
 		return 0
 
-	def add_queue(self, filepath, filename, rec_date, src, dst, linkedid):
-		
-		naming_version = 0
+	def add_queue(self, filepath, filename, rec_date, src, dst, linkedid, naming_version):
 		
 		file_duration = self.calculate_file_length(filepath, filename)
 		
