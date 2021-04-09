@@ -129,7 +129,7 @@ class stt_server:
 			cursor.execute(sql_query)
 			self.conn.commit()
 		except Exception as e:
-			print('perf_log query error:', str(e))
+			print('perf_log query error:', str(e), '\n', sql_query)
 	
 	def linkedid_by_filename(self, filename, date_y, date_m, date_d):
 
