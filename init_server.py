@@ -475,7 +475,7 @@ class stt_server:
 							rec_date = rec_date[1:][:-1]
 							src = re.findall(r'c.*d', filename)[0][1:][:-1]
 							dst = re.findall(r'e.*f', filename)[0][1:][:-1]
-							uniqueid = re.findall(r'g.*h', filename)[0][1:][:-1]
+							linkedid = re.findall(r'g.*h', filename)[0][1:][:-1]
 							version = 1
 						except Exception as e:
 							print("Error:", str(e))
