@@ -469,10 +469,11 @@ class stt_server:
 				if not filename in queue:
 					rec_date = 'Null'
 					version = 0
-					rec_date = re.findall(r'a.*b', filename)[0][1:][:-1]
+					r_d = re.findall(r'a.*b', filename)
 					if len(rec_date) == 19:
 						try:
-							rec_date = rec_date[1:][:-1]
+							rec_date = r_d[0][1:][:-1]
+							print('v.1 date', rec_date)
 							src = re.findall(r'c.*d', filename)[0][1:][:-1]
 							dst = re.findall(r'e.*f', filename)[0][1:][:-1]
 							linkedid = re.findall(r'g.*h', filename)[0][1:][:-1]
@@ -495,6 +496,7 @@ class stt_server:
 
 						for row in cursor.fetchall():
 							rec_date = str(row[0])
+							print('v.0 date', rec_date)
 							src = str(row[1])
 							dst = str(row[2])
 
