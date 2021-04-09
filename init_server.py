@@ -125,8 +125,11 @@ class stt_server:
 		sql_query += "'" + str(duration) + "', "
 		sql_query += "'" + str(linkedid) + "', "
 		sql_query += "'" + str(self.source_id) + "');"
-		cursor.execute(sql_query)
-		self.conn.commit()
+		try:
+			cursor.execute(sql_query)
+			self.conn.commit()
+		except Exception as e:
+			print('perf_log query error:', str(e))
 	
 	def linkedid_by_filename(self, filename, date_y, date_m, date_d):
 
