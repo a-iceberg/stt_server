@@ -480,7 +480,7 @@ class stt_server:
 							version = 1
 						except Exception as e:
 							print("Error:", str(e))
-							self.send_to_telegram('v1 filename parse error: '+ filename +'\n' + str(e))
+							#self.send_to_telegram('v1 filename parse error: '+ filename +'\n' + str(e))
 
 					if version == 0:
 
