@@ -470,9 +470,9 @@ class stt_server:
 					rec_date = 'Null'
 					version = 0
 					r_d = re.findall(r'a.*b', filename)
-					if len(rec_date) == 19:
+					if len(r_d) and len(r_d[0]) == 21:
 						try:
-							rec_date = r_d[0][1:][:-1]
+							rec_date = r_d[0][1:][:-1].replace('t', ' ')
 							print('v.1 date', rec_date)
 							src = re.findall(r'c.*d', filename)[0][1:][:-1]
 							dst = re.findall(r'e.*f', filename)[0][1:][:-1]
