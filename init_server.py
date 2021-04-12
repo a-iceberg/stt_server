@@ -49,7 +49,7 @@ class stt_server:
 			'master': 2,
 		}
 		self.original_storage_path = {
-			1: '/mnt/share/audio/MSK_SRVCALL/RX_TX/',
+			1: '/mnt/share/audio_call/MSK_SRVCALL/RX_TX/',
 			2: '/mnt/share/audio/MSK_SRVCALL/REC_IN_OUT/'
 		}
 		self.saved_for_analysis_path = '/mnt/share/audio/saved_for_analysis/'
