@@ -5,7 +5,7 @@ server_object = stt_server(0)
 
 for source_id in server_object.sources: # ['call', 'master']
 
-	if source_id == 'call': # fix call path
+	#if source_id == 'call': # debug
 
 		server_object.source_id = server_object.get_source_id(source_id)
 		complete_files = server_object.get_sql_complete_files()
