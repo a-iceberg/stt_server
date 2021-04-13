@@ -5,4 +5,5 @@ deeppavlov
 vosk
 pandas
 pendulum
+ThreadPoolExecutorPlus
 git+https://github.com/deepmipt/bert.git@feat/multi_gpu
