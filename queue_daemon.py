@@ -18,7 +18,7 @@ for source_id in server_object.sources: # ['call', 'master']
 		print('id', source_id)
 		print(incomplete_count, 'files sent to queue', server_object.sources[source_id])
 
-sleep_time = 600
+sleep_time = 60
 print(
 	datetime.datetime.now().strftime('%Y-%m-%dT%H:%M:%S'),
 	'sleeping '+str(sleep_time)+'s..'
