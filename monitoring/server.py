@@ -23,11 +23,11 @@ async def call_log(request):
         source_file.write(await request.text())
         source_file.close()
     df = pd.read_csv(filename, ';', dtype={
-        'call_date': 'datetime',
-        'ak': 'boolean',
-        'miko': 'boolean',
-        'mrm': 'boolean',
-        'incoming': 'boolean',
+        'call_date': datetime.datetime,
+        'ak': 'bool',
+        'miko': 'bool',
+        'mrm': 'bool',
+        'incoming': 'bool',
         'linkedid': 'str',
         'base_name': 'str',
     })
