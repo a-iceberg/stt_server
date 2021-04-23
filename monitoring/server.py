@@ -32,6 +32,7 @@ async def call_log(request):
     def get_base_name(val):
         return re.findall(r'"(.*?)"', val)[1]
     df.base_name = df.base_name.apply(get_base_name)
+    df.linkedid = df.linkedid.str.replace('.WAV', '')
 
     # df -> mysql
     with open('mysql_local.pass', 'r') as file:
