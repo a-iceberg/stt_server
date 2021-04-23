@@ -34,8 +34,8 @@ async def call_log(request):
     #     'linkedid': 'str',
     #     'base_name': 'str',
     # })
-    # unlink(filename)
-    print(filename)
+    unlink(filename)
+    #print(filename)
 
     # df -> mysql
     with open('mysql_local.pass', 'r') as file:
