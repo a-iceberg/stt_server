@@ -5,6 +5,7 @@ import uuid
 import pandas as pd
 from os import unlink
 import pymysql
+from sqlalchemy import create_engine
 PORT = '8083'
 
 async def call_test(request):
@@ -22,20 +23,23 @@ async def call_log(request):
         source_file.write(await request.text())
         source_file.close()
     df = pd.read_csv(filename, ';', dtype={'id': 'int', 'name': 'str'})
-    unlink(filename)
+    #unlink(filename)
+    print(filename)
 
     # df -> mysql
     with open('mysql_local.pass', 'r') as file:
         mysql_pass = file.read().replace('\n', '')
         file.close()
-    conn = pymysql.connect(
-        host='10.2.4.87',
-        user='root',
-        passwd=mysql_pass,
-        db='1c',
-        autocommit=True
-    )
-    df.to_sql(con=conn, name='calls', if_exists='replace')
+    #conn = pymysql.connect(
+    #    host='10.2.4.87',
+    #    user='root',
+    #    passwd=mysql_pass,
+    #    db='1c',
+    #    autocommit=True
+    #)
+    engine = create_engine('mysql+pymysql://root:' + mysql_pass + '@10.2.4.87:3306/1c', echo=False)
+    df.to_sql(name='calls', con=engine, index=False, if_exists='replace')
+    #df.to_sql(con=conn, name='calls', if_exists='replace')
     #cursor = conn.cursor()
     #query = "show tables;"
     #cursor.execute(query)
