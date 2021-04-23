@@ -6,7 +6,7 @@ import pandas as pd
 from os import unlink
 import pymysql
 from sqlalchemy import create_engine
-import datetime
+from datetime import datetime
 PORT = '8083'
 
 async def call_test(request):
@@ -23,15 +23,17 @@ async def call_log(request):
     with open(filename, 'w') as source_file:
         source_file.write(await request.text())
         source_file.close()
-    df = pd.read_csv(filename, ';', dtype={
-        'call_date': 'str',
-        'ak': 'bool',
-        'miko': 'bool',
-        'mrm': 'bool',
-        'incoming': 'bool',
-        'linkedid': 'str',
-        'base_name': 'str',
-    })
+    dateparser = lambda x: datetime.strptime(x, "%d.%m.%Y %H:%M:%S")
+    df = pd.read_csv(filename, ';', parse_dates=['call_date'], date_parser=dateparser)
+    # df = pd.read_csv(filename, ';', dtype={
+    #     'call_date': 'str',
+    #     'ak': 'bool',
+    #     'miko': 'bool',
+    #     'mrm': 'bool',
+    #     'incoming': 'bool',
+    #     'linkedid': 'str',
+    #     'base_name': 'str',
+    # })
     # unlink(filename)
     print(filename)
 
