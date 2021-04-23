@@ -2,4 +2,6 @@ asyncio
 aiohttp
 uuid
 pandas
-ssl
+pymysql
+sqlalchemy
+cryptography
