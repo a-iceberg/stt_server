@@ -35,7 +35,7 @@ async def call_log(request):
         db='1c',
         autocommit=True
     )
-    df.to_sql(con=conn, name='calls', if_exists='replace', flavor='mysql')
+    df.to_sql(con=conn, name='calls', if_exists='replace')
     #cursor = conn.cursor()
     #query = "show tables;"
     #cursor.execute(query)
