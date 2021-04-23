@@ -15,7 +15,7 @@ async def call_test(request):
 
 async def call_log(request):
 
-    print('call_compute')
+    print('call_log')
     # data -> df
     filename = str(uuid.uuid4())+'.csv'
     with open(filename, 'w') as source_file:
@@ -35,13 +35,14 @@ async def call_log(request):
         db='1c',
         autocommit=True
     )
-    cursor = conn.cursor()
-    query = "show tables;"
-    cursor.execute(query)
-    for row in cursor.fetchall():
-        print(row)
+    df.to_sql(con=conn, name='calls', if_exists='replace', flavor='mysql')
+    #cursor = conn.cursor()
+    #query = "show tables;"
+    #cursor.execute(query)
+    #for row in cursor.fetchall():
+    #    print(row)
 
-    answer = 'list:'
+    answer = 'inserted: '+str(len(df))
     #for nom_id, nom_name in df.values:
     #    answer += '\n' + str(nom_id) + ';'+nom_name
 
