@@ -9,14 +9,15 @@ from sqlalchemy import create_engine
 from datetime import datetime
 PORT = '8083'
 
+
 async def call_test(request):
     print('call_test')
     return web.Response(
         text='ok',
         content_type="text/html")
 
-async def call_log(request):
 
+async def call_log(request):
     print('call_log')
     # data -> df
     filename = str(uuid.uuid4())+'.csv'
@@ -25,42 +26,20 @@ async def call_log(request):
         source_file.close()
     dateparser = lambda x: datetime.strptime(x, "%d.%m.%Y %H:%M:%S")
     df = pd.read_csv(filename, ';', parse_dates=['call_date'], date_parser=dateparser)
-    # df = pd.read_csv(filename, ';', dtype={
-    #     'call_date': 'str',
-    #     'ak': 'bool',
-    #     'miko': 'bool',
-    #     'mrm': 'bool',
-    #     'incoming': 'bool',
-    #     'linkedid': 'str',
-    #     'base_name': 'str',
-    # })
     unlink(filename)
-    #print(filename)
+
+    def get_base_name(val):
+        return re.findall(r'"(.*?)"', val)[1]
+    df.base_name = df.base_name.apply(get_base_name)
 
     # df -> mysql
     with open('mysql_local.pass', 'r') as file:
         mysql_pass = file.read().replace('\n', '')
         file.close()
-    #conn = pymysql.connect(
-    #    host='10.2.4.87',
-    #    user='root',
-    #    passwd=mysql_pass,
-    #    db='1c',
-    #    autocommit=True
-    #)
     engine = create_engine('mysql+pymysql://root:' + mysql_pass + '@10.2.4.87:3306/1c', echo=False)
     df.to_sql(name='calls', con=engine, index=False, if_exists='append')
-    #df.to_sql(con=conn, name='calls', if_exists='replace')
-    #cursor = conn.cursor()
-    #query = "show tables;"
-    #cursor.execute(query)
-    #for row in cursor.fetchall():
-    #    print(row)
 
     answer = 'inserted: '+str(len(df))
-    #for nom_id, nom_name in df.values:
-    #    answer += '\n' + str(nom_id) + ';'+nom_name
-
     return web.Response(
         text=answer,
         content_type="text/html")
