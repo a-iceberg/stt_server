@@ -47,7 +47,7 @@ async def call_log(request):
     #    autocommit=True
     #)
     engine = create_engine('mysql+pymysql://root:' + mysql_pass + '@10.2.4.87:3306/1c', echo=False)
-    df.to_sql(name='calls', con=engine, index=False, if_exists='replace')
+    df.to_sql(name='calls', con=engine, index=False, if_exists='append')
     #df.to_sql(con=conn, name='calls', if_exists='replace')
     #cursor = conn.cursor()
     #query = "show tables;"
