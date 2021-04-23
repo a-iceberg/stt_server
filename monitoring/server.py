@@ -24,7 +24,7 @@ async def call_log(request):
         source_file.write(await request.text())
         source_file.close()
     df = pd.read_csv(filename, ';', dtype={
-        'call_date': datetime.datetime,
+        'call_date': 'str',
         'ak': 'bool',
         'miko': 'bool',
         'mrm': 'bool',
