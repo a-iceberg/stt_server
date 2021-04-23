@@ -22,8 +22,16 @@ async def call_log(request):
     with open(filename, 'w') as source_file:
         source_file.write(await request.text())
         source_file.close()
-    df = pd.read_csv(filename, ';', dtype={'id': 'int', 'name': 'str'})
-    #unlink(filename)
+    df = pd.read_csv(filename, ';', dtype={
+        'call_date': 'datetime',
+        'ak': 'boolean',
+        'miko': 'boolean',
+        'mrm': 'boolean',
+        'incoming': 'boolean',
+        'linkedid': 'str',
+        'base_name': 'str',
+    })
+    # unlink(filename)
     print(filename)
 
     # df -> mysql
