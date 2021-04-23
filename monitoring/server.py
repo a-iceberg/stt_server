@@ -1,19 +1,10 @@
+# 1C table -> http post -> mysql
 import asyncio
 from aiohttp import web
 import uuid
 import pandas as pd
 from os import unlink
-#import ssl
-#PORT = '8443' # ssl
 PORT = '8083'
-
-# Quick'n'dirty SSL certificate generation:
-#
-# openssl genrsa -out webhook_pkey.pem 2048
-# openssl req -new -x509 -days 3650 -key webhook_pkey.pem -out webhook_cert.pem
-#
-# When asked for "Common Name (e.g. server FQDN or YOUR name)" you should reply
-# with the same value in you put in WEBHOOK_HOST with www
 
 async def call_test(request):
     print('call_test')
@@ -40,17 +31,12 @@ async def call_compute(request):
         text=answer,
         content_type="text/html")
 
-## Build ssl context
-#ssl_context = ssl.create_default_context(ssl.Purpose.CLIENT_AUTH)
-#ssl_context.load_cert_chain(cert_pub, cert_key)
-
 app = web.Application()
 app.router.add_route('GET', '/test', call_test)
 app.router.add_route('POST', '/compute', call_compute)
 
 loop = asyncio.get_event_loop()
 handler = app.make_handler()
-#f = loop.create_server(handler, port=PORT, ssl=ssl_context)
 f = loop.create_server(handler, port=PORT)
 srv = loop.run_until_complete(f)
 print('serving on', srv.sockets[0].getsockname())
