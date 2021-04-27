@@ -116,17 +116,16 @@ for row in cursor.fetchall():
 				print('file not found:', linkedid, 'removing from queue..')
 				server_object.delete_current_queue(original_file_name, linkedid)
 
-		print('files_converted', files_converted)
-
-		# wer and other tests ++
-		# server_object.save_file_for_analysis(original_file_path, original_file_name, original_file_duration)
-		# wer and other tests --
+		print('files_converted', files_converted)		
 
 		server_object.delete_source_file(original_file_path, original_file_name, linkedid)
 
 	else:
 		print(original_file_name, 'duration', original_file_duration)
 		trans_date = datetime.datetime.now().strftime('%Y-%m-%dT%H:%M:%S')
+		# tests ++
+		# server_object.save_file_for_analysis(original_file_path, original_file_name, original_file_duration)
+		# tests --
 		if server_object.source_id == server_object.sources['master']:
 			side = 0 if 'in' in original_file_name else 1
 			server_object.save_result(

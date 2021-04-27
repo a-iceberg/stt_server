@@ -52,7 +52,7 @@ class stt_server:
 			1: '/mnt/share/audio_call/MSK_SRVCALL/RX_TX/',
 			2: '/mnt/share/audio/MSK_SRVCALL/REC_IN_OUT/'
 		}
-		self.saved_for_analysis_path = '/mnt/share/audio/saved_for_analysis/'
+		self.saved_for_analysis_path = '/mnt/share/audio_call/saved_for_analysis/'
 		self.confidence_of_file = 0
 		# settings --
 
@@ -631,13 +631,17 @@ class stt_server:
 	def save_file_for_analysis(self, file_path, file_name, duration):
 
 		try:
-			prefix = 'any/'
+			"""prefix = 'any/'
 			# query = "SELECT avg(conf) FROM transcribations where not text = '';"
 			midlle_confidence = 0.8697060696547252
 			confidence_treshold_top = midlle_confidence + 0.1
-			confidence_treshold_bottom = midlle_confidence - 0.1
+			confidence_treshold_bottom = midlle_confidence - 0.1"""
 
-			if duration > 10 and duration < 60:
+			if duration == 0:
+				prefix = 'zero/'
+				copyfile(file_path + file_name, self.saved_for_analysis_path + prefix + file_name)
+			
+			"""if duration > 10 and duration < 60:
 				if self.confidence_of_file > confidence_treshold_top:
 					prefix = 'hi/'
 				elif self.confidence_of_file < confidence_treshold_bottom:
@@ -645,7 +649,7 @@ class stt_server:
 
 				if prefix == 'hi/' or prefix == 'low/':
 					#print('cp', file_path + file_name, 'to', self.saved_for_analysis_path + prefix + file_name)
-					copyfile(file_path + file_name, self.saved_for_analysis_path + prefix + file_name)
+					copyfile(file_path + file_name, self.saved_for_analysis_path + prefix + file_name)"""
 
 		except Exception as e:
 			print("Error:", str(e))
