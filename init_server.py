@@ -614,6 +614,8 @@ class stt_server:
 				file_duration = frames / float(rate)
 		except Exception as e:
 			print('file length calculate error:', str(e))
+			#self.save_file_for_analysis(filepath, filename, file_duration)
+			#self.send_to_telegram('file length calculate error:\n'+fname+'\n'+str(e))
 		return file_duration
 
 	def delete_old_results(self):
