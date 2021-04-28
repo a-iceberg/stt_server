@@ -576,33 +576,37 @@ class stt_server:
 	def add_queue(self, filepath, filename, rec_date, src, dst, linkedid, naming_version):
 		
 		file_duration = self.calculate_file_length(filepath, filename)
-		
-		cursor = self.conn.cursor()
-		current_date = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+		if file_duration == 0:
+			message = 'queue skipped: [' + str(rec_date) + ']  ' + str(filename)
+			print(message)
+			self.send_to_telegram(message)
+		else:
+			cursor = self.conn.cursor()
+			current_date = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
 
-		sql_query = "insert into queue "
-		sql_query += "(filepath, filename, cpu_id, date, "
-		sql_query += "duration, record_date, source_id, src, dst, linkedid, version) "
-		sql_query += "values ('"
-		sql_query += filepath + "','"
-		sql_query += filename + "','"
-		sql_query += str(self.cpu_id) + "','"
-		sql_query += current_date + "','"
-		sql_query += str(file_duration) + "',"
-		sql_query += rec_date if rec_date == 'Null' else "'"+rec_date+"'"
-		sql_query += ",'"
-		sql_query += str(self.source_id) + "','"
-		sql_query += str(src) + "','"
-		sql_query += str(dst) + "','"
-		sql_query += str(linkedid) + "',"
-		sql_query += str(naming_version) + ");"
-		
-		try:
-			cursor.execute(sql_query)
-			self.conn.commit() # autocommit
-		except Exception as e:
-			print('add queue error. query: '+sql_query)
-			print(str(e))
+			sql_query = "insert into queue "
+			sql_query += "(filepath, filename, cpu_id, date, "
+			sql_query += "duration, record_date, source_id, src, dst, linkedid, version) "
+			sql_query += "values ('"
+			sql_query += filepath + "','"
+			sql_query += filename + "','"
+			sql_query += str(self.cpu_id) + "','"
+			sql_query += current_date + "','"
+			sql_query += str(file_duration) + "',"
+			sql_query += rec_date if rec_date == 'Null' else "'"+rec_date+"'"
+			sql_query += ",'"
+			sql_query += str(self.source_id) + "','"
+			sql_query += str(src) + "','"
+			sql_query += str(dst) + "','"
+			sql_query += str(linkedid) + "',"
+			sql_query += str(naming_version) + ");"
+
+			try:
+				cursor.execute(sql_query)
+				self.conn.commit() # autocommit
+			except Exception as e:
+				print('add queue error. query: '+sql_query)
+				print(str(e))
 		
 	def calculate_file_length(self, filepath, filename):
 		file_duration = 0
