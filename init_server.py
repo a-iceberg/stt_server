@@ -254,8 +254,8 @@ class stt_server:
 
 		trans_start = time.time() # datetime.datetime.now()
 
-		if self.source_id == self.sources['master']:
-			original_file_name = linkedid + ('-in.wav' if side == 0 else '-out.wav')
+		# if self.source_id == self.sources['master']:
+		# 	original_file_name = linkedid + ('-in.wav' if side == 0 else '-out.wav')
 
 		transcribation_date = datetime.datetime.now().strftime('%Y-%m-%dT%H:%M:%S')
 		print('transcribing', self.temp_file_path + self.temp_file_name)
