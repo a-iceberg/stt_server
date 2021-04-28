@@ -575,21 +575,18 @@ class stt_server:
 
 	def add_queue(self, filepath, filename, rec_date, src, dst, linkedid, naming_version):
 
-		# ready = False
 		file_stat = os.stat(filepath + filename)
-		# file_size = file_stat.st_size
-		file_duration = self.calculate_file_length(filepath, filename)
 		if time.time() - file_stat.st_mtime > 60:
-			# ready = True
+			file_duration = self.calculate_file_length(filepath, filename)
 
-
-
-			# if file_duration == 0 and time.time() - file_stat.st_mtime < 60:
-			# 	message = 'queue skipped: [' + str(rec_date) + ']  ' + str(filename)
-			# 	self.save_file_for_analysis(filepath, filename, file_duration)
-			# 	print(message)
-			# 	#self.send_to_telegram(message)
-			# else:
+			if file_duration == 0:
+				message = 'zero file in queue: t[' + str(time.time() - file_stat.st_mtime) + ']  '
+				message += 's[' + str(file_stat.st_size) + ']  '
+				message += 'd[' + str(file_duration) + ']  '
+				message += str(filename)
+				self.save_file_for_analysis(filepath, filename, file_duration)
+				print(message)
+				self.send_to_telegram(message)
 
 			cursor = self.conn.cursor()
 			current_date = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
@@ -620,9 +617,9 @@ class stt_server:
 		else:
 			message = 'queue skipped: t[' + str(time.time() - file_stat.st_mtime) + ']  '
 			message += 's[' + str(file_stat.st_size) + ']  '
-			message += 'd[' + str(file_duration) + ']  '
+			# message += 'd[' + str(file_duration) + ']  '
 			message += str(filename)
-			self.save_file_for_analysis(filepath, filename, file_duration)
+			#self.save_file_for_analysis(filepath, filename, file_duration)
 			print(message)
 			#self.send_to_telegram(message)
 		
