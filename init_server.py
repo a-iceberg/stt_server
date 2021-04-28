@@ -578,6 +578,7 @@ class stt_server:
 		file_duration = self.calculate_file_length(filepath, filename)
 		if file_duration == 0:
 			message = 'queue skipped: [' + str(rec_date) + ']  ' + str(filename)
+			self.save_file_for_analysis(filepath, filename, file_duration)
 			print(message)
 			#self.send_to_telegram(message)
 		else:
