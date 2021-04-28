@@ -476,7 +476,7 @@ class stt_server:
 					if len(r_d) and len(r_d[0]) == 21:
 						try:
 							rec_date = r_d[0][1:][:-1].replace('t', ' ')
-							print('v.1 date', rec_date)
+							#print('v.1 date', rec_date)
 							src = re.findall(r'c.*d', filename)[0][1:][:-1]
 							dst = re.findall(r'e.*f', filename)[0][1:][:-1]
 							linkedid = re.findall(r'g.*h', filename)[0][1:][:-1]
@@ -618,8 +618,9 @@ class stt_server:
 				print('add queue error. query: '+sql_query)
 				print(str(e))
 		else:
-			message = 'queue skipped: [' + str(time.time() - file_stat.st_mtime) + ']  '
-			message += '<' + str(file_stat.st_size) + '>  '
+			message = 'queue skipped: t[' + str(time.time() - file_stat.st_mtime) + ']  '
+			message += 's[' + str(file_stat.st_size) + ']  '
+			message += 'd[' + str(file_duration) + ']  '
 			message += str(filename)
 			self.save_file_for_analysis(filepath, filename, file_duration)
 			print(message)
