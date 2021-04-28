@@ -579,7 +579,7 @@ class stt_server:
 		if file_duration == 0:
 			message = 'queue skipped: [' + str(rec_date) + ']  ' + str(filename)
 			print(message)
-			self.send_to_telegram(message)
+			#self.send_to_telegram(message)
 		else:
 			cursor = self.conn.cursor()
 			current_date = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
