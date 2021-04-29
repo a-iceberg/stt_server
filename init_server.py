@@ -50,7 +50,8 @@ class stt_server:
 		}
 		self.original_storage_path = {
 			1: '/mnt/share/audio_call/MSK_SRVCALL/RX_TX/',
-			2: '/mnt/share/audio/MSK_SRVCALL/REC_IN_OUT/'
+			#2: '/mnt/share/audio/MSK_SRVCALL/REC_IN_OUT/'
+			2: '/mnt/share/audio_master/MSK_MRM/REC_IN_OUT/'
 		}
 		self.saved_for_analysis_path = '/mnt/share/audio_call/saved_for_analysis/'
 		self.confidence_of_file = 0
@@ -633,7 +634,7 @@ class stt_server:
 				file_duration = frames / float(rate)
 		except Exception as e:
 			print('file length calculate error:', str(e))
-			self.save_file_for_analysis(filepath, filename, file_duration)
+			# self.save_file_for_analysis(filepath, filename, file_duration)
 			self.send_to_telegram('file length calculate error:\n'+fname+'\n'+str(e))
 		return file_duration
 
