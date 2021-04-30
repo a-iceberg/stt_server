@@ -471,6 +471,23 @@ class stt_server:
 			# get record date
 			for filename in files_list:
 				if not filename in queue:
+					try:
+						file_stat = os.stat(self.original_storage_path + filename)
+						# f_size = file_stat.st_size
+						file_age = file_stat.st_mtime
+					except Exception as e:
+						print("get_fs_files_list / file_stat Error:", str(e))
+						file_age = 0
+					if "h.wav" in filename:
+						try:
+							if file_age > 10:
+								os.remove(self.original_storage_path + filename)
+								print('get_fs_files_list. Removed:', filename)
+							continue
+						except OSError as e:  ## if failed, report it back to the user ##
+							print("Error: %s - %s." % (e.filename, e.strerror))
+							self.send_to_telegram('get_fs_files_list file delete error:\n' + str(e))
+
 					rec_date = 'Null'
 					version = 0
 					r_d = re.findall(r'a.*b', filename)
@@ -579,16 +596,18 @@ class stt_server:
 		try:
 			file_stat = os.stat(filepath + filename)
 			f_size = file_stat.st_size
+			st_mtime = file_stat.st_mtime
 		except Exception as e:
 			f_size = -1
+			st_mtime = 0
 			print('file stat error:', str(e))
 			self.send_to_telegram(str(e))
 
-		if time.time() - file_stat.st_mtime > 60:
+		if time.time() - st_mtime > 60:
 			file_duration = self.calculate_file_length(filepath, filename)
 
 			if file_duration == 0:
-				message = 'zero file in queue: t[' + str(time.time() - file_stat.st_mtime) + ']  '
+				message = 'zero file in queue: t[' + str(time.time() - st_mtime) + ']  '
 				message += 's[' + str(f_size) + ']  '
 				message += 'd[' + str(file_duration) + ']  '
 				message += str(filename)
@@ -630,7 +649,7 @@ class stt_server:
 			# self.save_file_for_analysis(filepath, filename, file_duration)
 			print(message)
 			# self.send_to_telegram(message)
-		
+
 	def calculate_file_length(self, filepath, filename):
 		file_duration = 0
 		try:
