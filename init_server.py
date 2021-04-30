@@ -19,11 +19,11 @@ class stt_server:
 
 		# settings ++
 		self.cpu_id = cpu_id
-		self.cpu_cores = [i for i in range(0,14)] # 8 is best
+		self.cpu_cores = [i for i in range(0, 14)]  # 8 is best
 
 		# telegram
-		#self.telegram_chat = '106129214' # alex
-		self.telegram_chat = '-1001443983697' # log 1c
+		# self.telegram_chat = '106129214' # alex
+		self.telegram_chat = '-1001443983697'  # log 1c
 		with open('telegram_bot.token', 'r') as file:
 			self.telegram_bot_token = file.read().replace('\n', '')
 			file.close()
@@ -50,7 +50,7 @@ class stt_server:
 		}
 		self.original_storage_path = {
 			1: '/mnt/share/audio_call/MSK_SRVCALL/RX_TX/',
-			#2: '/mnt/share/audio/MSK_SRVCALL/REC_IN_OUT/'
+			# 2: '/mnt/share/audio/MSK_SRVCALL/REC_IN_OUT/'
 			2: '/mnt/share/audio_master/MSK_MRM/REC_IN_OUT/'
 		}
 		self.saved_for_analysis_path = '/mnt/share/audio_call/saved_for_analysis/'
@@ -60,7 +60,7 @@ class stt_server:
 		self.temp_file_path = ''
 		self.temp_file_name = ''
 
-		#store pass in file, to prevent pass publication on git
+		# store pass in file, to prevent pass publication on git
 		with open(self.script_path+'sql.pass','r') as file:
 			self.sql_pass = file.read().replace('\n', '')
 			file.close()
@@ -627,9 +627,9 @@ class stt_server:
 			message += 's[' + str(file_stat.st_size) + ']  '
 			# message += 'd[' + str(file_duration) + ']  '
 			message += str(filename)
-			#self.save_file_for_analysis(filepath, filename, file_duration)
+			# self.save_file_for_analysis(filepath, filename, file_duration)
 			print(message)
-			#self.send_to_telegram(message)
+			# self.send_to_telegram(message)
 		
 	def calculate_file_length(self, filepath, filename):
 		file_duration = 0
@@ -642,7 +642,7 @@ class stt_server:
 		except Exception as e:
 			print('file length calculate error:', str(e))
 			# self.save_file_for_analysis(filepath, filename, file_duration)
-			self.send_to_telegram('file length calculate error:\n'+fname+'\n'+str(e))
+			# self.send_to_telegram('file length calculate error:\n'+fname+'\n'+str(e))
 		return file_duration
 
 	def delete_old_results(self):
