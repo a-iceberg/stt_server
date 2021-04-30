@@ -472,7 +472,7 @@ class stt_server:
 			for filename in files_list:
 				if not filename in queue:
 					try:
-						file_stat = os.stat(self.original_storage_path + filename)
+						file_stat = os.stat(self.original_storage_path[self.source_id] + filename)
 						# f_size = file_stat.st_size
 						file_age = file_stat.st_mtime
 					except Exception as e:
@@ -481,7 +481,7 @@ class stt_server:
 					if "h.wav" in filename:
 						try:
 							if file_age > 10:
-								os.remove(self.original_storage_path + filename)
+								os.remove(self.original_storage_path[self.source_id] + filename)
 								print('get_fs_files_list. Removed:', filename)
 							continue
 						except OSError as e:  ## if failed, report it back to the user ##
