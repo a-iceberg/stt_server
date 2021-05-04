@@ -9,6 +9,6 @@ pymssql
 numpy
 datetime
 matplotlib
-telebot
+pyTelegramBotAPI
 requests
 
