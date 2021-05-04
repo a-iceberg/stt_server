@@ -480,9 +480,11 @@ class stt_server:
 						file_age = 0
 					if "h.wav" in filename:
 						try:
-							if file_age > 10:
+							if file_age > 3600:
 								os.remove(self.original_storage_path[self.source_id] + filename)
-								print('get_fs_files_list. Removed:', filename)
+								print(str(file_age/60), 'min. get_fs_files_list. Removed:', filename)
+							else:
+								print(str(file_age/60), 'min. get_fs_files_list. Skipped: ', filename)
 							continue
 						except OSError as e:  ## if failed, report it back to the user ##
 							print("Error: %s - %s." % (e.filename, e.strerror))
