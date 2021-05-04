@@ -474,17 +474,17 @@ class stt_server:
 					try:
 						file_stat = os.stat(self.original_storage_path[self.source_id] + filename)
 						# f_size = file_stat.st_size
-						file_age = file_stat.st_mtime
+						file_age = time.time() - file_stat.st_mtime
 					except Exception as e:
 						print("get_fs_files_list / file_stat Error:", str(e))
 						file_age = 0
 					if "h.wav" in filename:
 						try:
-							if file_age > 3600:
+							if file_age > 10:
 								os.remove(self.original_storage_path[self.source_id] + filename)
-								print(str(file_age/60), 'min. get_fs_files_list. Removed:', filename)
+								print(str(round(file_age/60)), 'min. get_fs_files_list. Removed:', filename)
 							else:
-								print(str(file_age/60), 'min. get_fs_files_list. Skipped: ', filename)
+								print(str(round(file_age/60)), 'min. get_fs_files_list. Skipped: ', filename)
 							continue
 						except OSError as e:  ## if failed, report it back to the user ##
 							print("Error: %s - %s." % (e.filename, e.strerror))
