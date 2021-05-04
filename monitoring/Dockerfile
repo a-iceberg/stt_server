@@ -7,5 +7,7 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 COPY server.py .
 COPY mysql_local.pass .
+COPY sql.pass .
+COPY telegram_token.key .
 
 CMD [ "python", "./server.py" ]

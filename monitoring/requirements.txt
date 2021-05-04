@@ -5,3 +5,10 @@ pandas
 pymysql
 sqlalchemy
 cryptography
+pymssql
+numpy
+datetime
+matplotlib
+telebot
+requests
+
