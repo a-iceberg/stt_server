@@ -28,7 +28,8 @@ async def call_test(request):
 
 async def call_connections(request):
 
-    group = '106129214' # telegram group id
+    #group = '106129214'
+    group = '-1001443983697'  # telegram group id
 
     def plot_grouped(df, header, group):
 
