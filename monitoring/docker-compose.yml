@@ -1,0 +1,7 @@
+database:
+  image: mysql:latest
+  container_name: mysql
+  ports:
+    - "3306:3306"
+  security_opt:
+    - seccomp:unconfined
