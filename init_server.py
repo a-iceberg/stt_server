@@ -232,6 +232,9 @@ class stt_server:
 		try:
 			os.remove(myfile)
 			print('succesfully removed', myfile)
+			# debug ++
+			self.send_to_telegram('delete_source_file removed: ' + str(myfile))
+			# debug --
 		except OSError as e:  ## if failed, report it back to the user ##
 			print("Error: %s - %s." % (e.filename, e.strerror))
 			self.send_to_telegram('delete_source_file error:\n' + str(e))
@@ -406,6 +409,9 @@ class stt_server:
 			print('removing',self.temp_file_path + self.temp_file_name)
 			try:
 				os.remove(self.temp_file_path + self.temp_file_name)
+				# debug ++
+				self.send_to_telegram('remove_temporary_file removed: ' + str(self.temp_file_name))
+				# debug --
 			except Exception as e:
 				msg = 'remove_temporary_file error:\n' + str(e)
 				print(msg)
@@ -482,6 +488,9 @@ class stt_server:
 						try:
 							if file_age > 3600:
 								os.remove(self.original_storage_path[self.source_id] + filename)
+								# debug ++
+								self.send_to_telegram('min. get_fs_files_list. removed: ' + str(filename))
+								# debug --
 								print(str(round(file_age/60)), 'min. get_fs_files_list. Removed:', filename)
 							else:
 								print(str(round(file_age/60)), 'min. get_fs_files_list. Skipped: ', filename)
