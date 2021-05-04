@@ -107,7 +107,7 @@ async def call_connections(request):
         # plt.show()
         plt.savefig('report.png')
 
-        with open('/home/alex/projects/call_centre_stt_server/telegram_token.key', 'r') as file:
+        with open('telegram_token.key', 'r') as file:
             token = file.read().replace('\n', '')
             file.close()
         bot = telebot.TeleBot(token)
@@ -116,7 +116,7 @@ async def call_connections(request):
         bot.send_photo(group, data_file)
 
     def send_to_telegram(chat_id, message):
-        with open('/home/alex/projects/call_centre_stt_server/telegram_token.key', 'r') as file:
+        with open('telegram_token.key', 'r') as file:
             token = file.read().replace('\n', '')
             file.close()
         session = requests.Session()
