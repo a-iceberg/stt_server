@@ -611,7 +611,7 @@ class stt_server:
 				message += 's[' + str(f_size) + ']  '
 				message += 'd[' + str(file_duration) + ']  '
 				message += str(filename)
-				# self.save_file_for_analysis(filepath, filename, file_duration)
+				self.save_file_for_analysis(filepath, filename, file_duration)
 				print(message)
 				# self.send_to_telegram(message)
 
@@ -654,7 +654,7 @@ class stt_server:
 		file_duration = 0
 		try:
 			fname = filepath + filename
-			with contextlib.closing(wave.open(fname,'r')) as f:
+			with contextlib.closing(wave.open(fname, 'r')) as f:
 				frames = f.getnframes()
 				rate = f.getframerate()
 				file_duration = frames / float(rate)
