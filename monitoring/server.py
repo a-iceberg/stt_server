@@ -111,9 +111,9 @@ async def call_connections(request):
             token = file.read().replace('\n', '')
             file.close()
         bot = telebot.TeleBot(token)
-        data_file = open('report.png', 'rb')
-        # bot.send_photo(group, data_file, caption="queue_time_vs_date")
-        bot.send_photo(group, data_file)
+        with open('report.png', 'rb') as data_file:
+            # bot.send_photo(group, data_file, caption="queue_time_vs_date")
+            bot.send_photo(group, data_file)
 
     def send_to_telegram(chat_id, message):
         with open('telegram_token.key', 'r') as file:
@@ -175,9 +175,9 @@ async def call_connections(request):
         report += '\nЗвонков: ' + str(len(calls[calls.day == yesterday].linkedid.unique()))
         report += '\nРасшифровок: ' + str(len(trans[trans.day == str(yesterday)].linkedid.unique()))
         mask = (df_all._merge == 'both') & (df_all.day == yesterday)
-        report += '\nСвязь установлена:' + str(len(df_all[mask].linkedid.unique()))
+        report += '\nСвязь установлена: ' + str(len(df_all[mask].linkedid.unique()))
         mask = (df_all._merge == 'left_only') & (df_all.day == yesterday)
-        report += '\nИдентификатор расшифровки не найден среди звонков:' + str(len(df_all[mask].linkedid.unique()))
+        report += '\nИдентификатор расшифровки не найден среди звонков: ' + str(len(df_all[mask].linkedid.unique()))
 
         send_to_telegram(group, report)
 
