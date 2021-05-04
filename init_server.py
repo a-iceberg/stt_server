@@ -233,7 +233,7 @@ class stt_server:
 			os.remove(myfile)
 			print('succesfully removed', myfile)
 			# debug ++
-			self.send_to_telegram('delete_source_file removed: ' + str(myfile))
+			# self.send_to_telegram('delete_source_file removed: ' + str(myfile))
 			# debug --
 		except OSError as e:  ## if failed, report it back to the user ##
 			print("Error: %s - %s." % (e.filename, e.strerror))
