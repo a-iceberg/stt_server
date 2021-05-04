@@ -87,11 +87,11 @@ def plot_grouped(df, header, tg_group):
     with open('/home/alex/projects/call_centre_stt_server/monitoring/telegram_token.key', 'r') as file:
         token = file.read().replace('\n', '')
         file.close()
-    bot = telebot.TeleBot(token)
+    t_bot = telebot.TeleBot(token)
     with open('/home/alex/projects/call_centre_stt_server/monitoring/report.png', 'rb') as data_file:
         # bot.send_photo(group, data_file, caption="queue_time_vs_date")
         print('sending photo to ', tg_group)
-        bot.send_photo(tg_group, data_file)
+        t_bot.send_photo(chat_id = tg_group, photo = data_file)
 
 
 group = '-1001443983697'  # telegram group id
