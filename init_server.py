@@ -410,7 +410,7 @@ class stt_server:
 			try:
 				os.remove(self.temp_file_path + self.temp_file_name)
 				# debug ++
-				self.send_to_telegram('remove_temporary_file removed: ' + str(self.temp_file_name))
+				# self.send_to_telegram('remove_temporary_file removed: ' + str(self.temp_file_name))
 				# debug --
 			except Exception as e:
 				msg = 'remove_temporary_file error:\n' + str(e)
