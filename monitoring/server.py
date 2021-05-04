@@ -31,7 +31,7 @@ async def call_connections(request):
     #group = '106129214'
     group = '-1001443983697'  # telegram group id
 
-    def plot_grouped(df, header, group):
+    def plot_grouped(df, header, tg_group):
 
         df = df.drop(['base_name', '_merge', 'call_date'], axis=1)
         df = df.groupby(['day', 'ak', 'miko', 'mrm', 'incoming', 'outcoming']).count()
@@ -113,7 +113,8 @@ async def call_connections(request):
         bot = telebot.TeleBot(token)
         with open('report.png', 'rb') as data_file:
             # bot.send_photo(group, data_file, caption="queue_time_vs_date")
-            bot.send_photo(group, data_file)
+            print('sending photo to ', tg_group)
+            bot.send_photo(tg_group, data_file)
 
     def send_to_telegram(chat_id, message):
         with open('telegram_token.key', 'r') as file:
