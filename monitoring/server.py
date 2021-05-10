@@ -6,11 +6,11 @@ import pandas as pd
 from os import unlink
 import pymysql
 from sqlalchemy import create_engine
-from datetime import datetime
+# from datetime import datetime
 import re
 import pymssql
 import numpy as np
-#import datetime
+import datetime
 import matplotlib.pyplot as plt
 import telebot
 import requests
@@ -203,7 +203,7 @@ async def call_log(request):
     with open(filename, 'w') as source_file:
         source_file.write(await request.text())
         source_file.close()
-    dateparser = lambda x: datetime.strptime(x, "%d.%m.%Y %H:%M:%S")
+    dateparser = lambda x: datetime.datetime.strptime(x, "%d.%m.%Y %H:%M:%S")
     df = pd.read_csv(filename, ';', parse_dates=['call_date'], date_parser=dateparser)
     unlink(filename)
 
