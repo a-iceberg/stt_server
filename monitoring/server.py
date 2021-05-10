@@ -224,7 +224,7 @@ async def call_log(request):
         text=answer,
         content_type="text/html")
 
-app = web.Application()
+app = web.Application(client_max_size=1024**4)
 app.router.add_route('GET', '/test', call_test)
 app.router.add_route('POST', '/log', call_log)
 app.router.add_route('GET', '/connections', call_connections)
