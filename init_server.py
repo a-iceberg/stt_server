@@ -489,7 +489,7 @@ class stt_server:
 							if file_age > 3600:
 								os.remove(self.original_storage_path[self.source_id] + filename)
 								# debug ++
-								self.send_to_telegram('min. get_fs_files_list. removed: ' + str(filename))
+								# self.send_to_telegram('min. get_fs_files_list. removed: ' + str(filename))
 								# debug --
 								print(str(round(file_age/60)), 'min. get_fs_files_list. Removed:', filename)
 							else:
