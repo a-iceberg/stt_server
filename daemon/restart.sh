@@ -30,4 +30,3 @@ sudo systemctl restart call_stt_14.service
 #sudo systemctl restart call_stt_29.service
 #sudo systemctl restart call_stt_30.service
 sudo systemctl restart call_stt_queue.service
-
