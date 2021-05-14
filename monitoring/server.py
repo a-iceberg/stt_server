@@ -183,6 +183,22 @@ async def call_connections(request):
         df_all = pd.merge(calls, trans, on='linkedid', how="outer", indicator=True)
         df_all['day'] = df_all.day_x
 
+        # remove tech records ++
+        df_all.base_name = df_all.base_name.str.lower()
+        tech = pd.merge(
+            df_all[df_all.base_name == '1c_service'],
+            df_all[df_all.base_name == '1c_service_spb'],
+            on='linkedid', how="inner"
+        )
+        tech = pd.merge(
+            tech,
+            df_all[df_all.base_name == '1c_service_region'],
+            on='linkedid', how="inner"
+        )
+        df_all = pd.DataFrame(df_all[~df_all.base_name.isnull()])
+        df_all = df_all[~df_all.linkedid.isin(tech.linkedid.unique())].sort_values('linkedid')
+        # remove tech records --
+
         report = 'Связь звонков и расшифровок за вчера:'
 
         yesterday = datetime.datetime.now().date() - datetime.timedelta(days=1)
