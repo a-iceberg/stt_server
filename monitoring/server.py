@@ -153,8 +153,21 @@ async def call_connections(request):
                 )
         trans_cursor = trans_conn.cursor()
 
+        seven_days = datetime.datetime.now().date() - datetime.timedelta(days=7)
+        date_from = seven_days.strftime('%Y:%m:%d %H:%M:%S')
         # calls
-        query = "SELECT date(call_date) as day, date(call_date) as call_date, ak, miko, mrm, incoming, not incoming as outcoming, linkedid, base_name from calls;"
+        query = "SELECT"
+        query += " date(call_date) as day,"
+        query += " date(call_date) as call_date,"
+        query += " ak,"
+        query += " miko,"
+        query += " mrm,"
+        query += " incoming,"
+        query += " not incoming as outcoming,"
+        query += " linkedid,"
+        query += " base_name"
+        query += " from calls"
+        query += " where date(call_date)>='"+date_from+"';"
         calls = pd.read_sql(query, con=calls_conn)
         date_min = calls.call_date.min()
         date_max = calls.call_date.max()
