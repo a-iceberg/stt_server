@@ -255,7 +255,7 @@ class stt_server:
 		except OSError as e:  ## if failed, report it back to the user ##
 			print("Error: %s - %s." % (e.filename, e.strerror))"""
 
-	def transcribe_to_sql(self, duration, side, original_file_name, rec_date, src, dst, linkedid):
+	def transcribe_to_sql(self, duration, side, original_file_name, rec_date, src, dst, linkedid, file_size):
 
 		trans_start = time.time() # datetime.datetime.now()
 
@@ -286,11 +286,11 @@ class stt_server:
 
 			if rec.AcceptWaveform(data):
 				accept = json.loads(rec.Result())
-				if accept['text'] !='':
+				if accept['text'] != '':
 
-					accept_start	= str(accept['result'][0]['start'])
-					accept_end   	= accept['result'][-1:][0]['end']
-					accept_text		= str(accept['text'])
+					accept_start = str(accept['result'][0]['start'])
+					accept_end = accept['result'][-1:][0]['end']
+					accept_text = str(accept['text'])
 					
 					for result_rec in accept['result']:
 						conf_score.append(float(result_rec['conf']))
@@ -310,7 +310,8 @@ class stt_server:
 						rec_date,
 						src,
 						dst,
-						linkedid
+						linkedid,
+						file_size
 					)
 					
 					phrases_count += 1
@@ -335,7 +336,8 @@ class stt_server:
 				rec_date,
 				src,
 				dst,
-				linkedid
+				linkedid,
+				file_size
 			)
 
 	def save_result(
@@ -351,7 +353,8 @@ class stt_server:
 			rec_date,
 			src,
 			dst,
-			linkedid
+			linkedid,
+			file_size
 		):
 
 		#save_start = time.time() # datetime.datetime.now()
@@ -377,7 +380,8 @@ class stt_server:
 		sql_query += " src,"
 		sql_query += " dst,"
 		sql_query += " record_date,"
-		sql_query += " source_id)"
+		sql_query += " source_id,"
+		sql_query += " file_size)"
 		sql_query += " values ("
 		sql_query += " " + str(self.cpu_id) + ","
 		sql_query += " " + str(duration) + ","
@@ -392,7 +396,8 @@ class stt_server:
 		sql_query += " '" + str(src) + "',"
 		sql_query += " '" + str(dst) + "',"
 		sql_query += " " + str(rec_date) if str(rec_date) == 'Null' else "'" + str(rec_date) + "'"
-		sql_query += " ,'"+str(self.source_id)+"');"
+		sql_query += " ,'" + str(self.source_id)+"',"
+		sql_query += " ," + str(file_size) + ");"
 
 		try:
 			cursor.execute(sql_query)

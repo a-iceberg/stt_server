@@ -15,7 +15,7 @@ server_object = stt_server(sys.argv[1])
 cursor = server_object.conn.cursor()
 past_in_minutes = pendulum.now().add(minutes=-6).strftime('%Y-%m-%d %H:%M:%S')
 sql_query = "select filepath, filename, duration, source_id, "
-sql_query += "record_date, src, dst, linkedid from queue "
+sql_query += "record_date, src, dst, linkedid, file_size from queue "
 sql_query += "where cpu_id='" + str(server_object.cpu_id) + "' "
 sql_query += "and ( (source_id = '2' and record_date < '" + past_in_minutes + "') or not source_id = '2' ) "
 #sql_query += "order by ISNULL(record_date, 0) desc, record_date, linkedid, filename;"
@@ -36,11 +36,12 @@ for row in cursor.fetchall():
 	src = row[5]
 	dst = row[6]
 	linkedid = row[7]
+	file_size = row[8]
 
 	files_converted = 0
 
 	if not os.path.isfile(original_file_path + original_file_name):
-		msg = 'File not found: '+ original_file_path + original_file_name
+		msg = 'File not found: ' + original_file_path + original_file_name
 		msg += '\nRemoving from queue..'
 		print(msg)
 		#server_object.send_to_telegram(msg)
@@ -64,7 +65,8 @@ for row in cursor.fetchall():
 					rec_date,
 					src,
 					dst,
-					linkedid
+					linkedid,
+					file_size
 				)
 				files_converted += 1
 			else:
@@ -88,7 +90,8 @@ for row in cursor.fetchall():
 					rec_date,
 					src,
 					dst,
-					linkedid
+					linkedid,
+					file_size
 				)
 				server_object.remove_temporary_file()
 				files_converted += 1
@@ -107,7 +110,8 @@ for row in cursor.fetchall():
 					rec_date,
 					src,
 					dst,
-					linkedid
+					linkedid,
+					file_size
 				)
 				server_object.remove_temporary_file()
 				files_converted += 1
