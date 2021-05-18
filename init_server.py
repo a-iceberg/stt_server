@@ -396,8 +396,8 @@ class stt_server:
 		sql_query += " '" + str(src) + "',"
 		sql_query += " '" + str(dst) + "',"
 		sql_query += " " + str(rec_date) if str(rec_date) == 'Null' else "'" + str(rec_date) + "'"
-		sql_query += " ,'" + str(self.source_id)+"',"
-		sql_query += " ,'" + str(file_size) + "');"
+		sql_query += " ,'" + str(self.source_id)+"'"
+		sql_query += " ," + str(file_size) + ");"
 
 		try:
 			cursor.execute(sql_query)
