@@ -615,7 +615,7 @@ class stt_server:
 			print('file stat error:', str(e))
 			self.send_to_telegram(str(e))
 
-		if time.time() - st_mtime > 60:
+		if time.time() - st_mtime > 600:
 			file_duration = self.calculate_file_length(filepath, filename)
 
 			if file_duration == 0:
@@ -632,7 +632,7 @@ class stt_server:
 
 			sql_query = "insert into queue "
 			sql_query += "(filepath, filename, cpu_id, date, "
-			sql_query += "duration, record_date, source_id, src, dst, linkedid, version) "
+			sql_query += "duration, record_date, source_id, src, dst, linkedid, version, file_size) "
 			sql_query += "values ('"
 			sql_query += filepath + "','"
 			sql_query += filename + "','"
@@ -645,7 +645,8 @@ class stt_server:
 			sql_query += str(src) + "','"
 			sql_query += str(dst) + "','"
 			sql_query += str(linkedid) + "',"
-			sql_query += str(naming_version) + ");"
+			sql_query += str(naming_version) + ","
+			sql_query += str(f_size) + ");"
 
 			try:
 				cursor.execute(sql_query)
