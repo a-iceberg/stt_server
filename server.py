@@ -144,7 +144,8 @@ for row in cursor.fetchall():
 				rec_date,
 				src,
 				dst,
-				linkedid
+				linkedid,
+				file_size
 			)
 		elif server_object.source_id == server_object.sources['call']:
 			server_object.save_result(
@@ -159,7 +160,8 @@ for row in cursor.fetchall():
 				rec_date,
 				src,
 				dst,
-				linkedid
+				linkedid,
+				file_size
 			)
 			server_object.save_result(
 				original_file_duration,
@@ -173,7 +175,8 @@ for row in cursor.fetchall():
 				rec_date,
 				src,
 				dst,
-				linkedid
+				linkedid,
+				file_size
 			)
 
 		server_object.delete_current_queue(original_file_name, linkedid)
