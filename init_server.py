@@ -263,7 +263,7 @@ class stt_server:
 		# 	original_file_name = linkedid + ('-in.wav' if side == 0 else '-out.wav')
 
 		transcribation_date = datetime.datetime.now().strftime('%Y-%m-%dT%H:%M:%S')
-		print('transcribing', self.temp_file_path + self.temp_file_name)
+		print('side:', side, 'file_size:', file_size, '### transcribing:', self.temp_file_path + self.temp_file_name)
 		# read file
 		wf = wave.open(self.temp_file_path + self.temp_file_name, "rb")
 
@@ -356,8 +356,6 @@ class stt_server:
 			linkedid,
 			file_size
 		):
-
-		#save_start = time.time() # datetime.datetime.now()
 
 		if not str(rec_date) == 'Null' and \
 				len(re.findall(r'\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}', str(rec_date))) == 0:
