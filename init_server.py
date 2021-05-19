@@ -255,7 +255,7 @@ class stt_server:
 		except OSError as e:  ## if failed, report it back to the user ##
 			print("Error: %s - %s." % (e.filename, e.strerror))"""
 
-	def transcribe_to_sql(self, duration, side, original_file_name, rec_date, src, dst, linkedid, file_size):
+	def transcribe_to_sql(self, duration, side, original_file_name, rec_date, src, dst, linkedid, file_size, queue_date):
 
 		trans_start = time.time() # datetime.datetime.now()
 
@@ -311,7 +311,8 @@ class stt_server:
 						src,
 						dst,
 						linkedid,
-						file_size
+						file_size,
+						queue_date
 					)
 					
 					phrases_count += 1
@@ -337,7 +338,8 @@ class stt_server:
 				src,
 				dst,
 				linkedid,
-				file_size
+				file_size,
+				queue_date
 			)
 
 	def save_result(
@@ -354,7 +356,8 @@ class stt_server:
 			src,
 			dst,
 			linkedid,
-			file_size
+			file_size,
+			queue_date
 		):
 
 		if not str(rec_date) == 'Null' and \
@@ -379,7 +382,8 @@ class stt_server:
 		sql_query += " dst,"
 		sql_query += " record_date,"
 		sql_query += " source_id,"
-		sql_query += " file_size)"
+		sql_query += " file_size,"
+		sql_query += " queue_date)"
 		sql_query += " values ("
 		sql_query += " " + str(self.cpu_id) + ","
 		sql_query += " " + str(duration) + ","
@@ -395,7 +399,8 @@ class stt_server:
 		sql_query += " '" + str(dst) + "',"
 		sql_query += " " + str(rec_date) if str(rec_date) == 'Null' else "'" + str(rec_date) + "'"
 		sql_query += " ,'" + str(self.source_id)+"'"
-		sql_query += " ,'" + str(0 if file_size is None else file_size) + "');"
+		sql_query += " ,'" + str(0 if file_size is None else file_size) + "',"
+		sql_query += " '" + str(queue_date) + "');"
 
 		try:
 			cursor.execute(sql_query)

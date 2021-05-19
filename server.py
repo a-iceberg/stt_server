@@ -15,7 +15,7 @@ server_object = stt_server(sys.argv[1])
 cursor = server_object.conn.cursor()
 past_in_minutes = pendulum.now().add(minutes=-6).strftime('%Y-%m-%d %H:%M:%S')
 sql_query = "select filepath, filename, duration, source_id, "
-sql_query += "record_date, src, dst, linkedid, file_size from queue "
+sql_query += "record_date, src, dst, linkedid, file_size, date from queue "
 sql_query += "where cpu_id='" + str(server_object.cpu_id) + "' "
 sql_query += "and ( (source_id = '2' and record_date < '" + past_in_minutes + "') or not source_id = '2' ) "
 #sql_query += "order by ISNULL(record_date, 0) desc, record_date, linkedid, filename;"
@@ -37,6 +37,7 @@ for row in cursor.fetchall():
 	dst = row[6]
 	linkedid = row[7]
 	file_size = row[8]
+	queue_date = row[9]
 
 	files_converted = 0
 
@@ -66,7 +67,8 @@ for row in cursor.fetchall():
 					src,
 					dst,
 					linkedid,
-					file_size
+					file_size,
+					queue_date
 				)
 				files_converted += 1
 			else:
@@ -91,7 +93,8 @@ for row in cursor.fetchall():
 					src,
 					dst,
 					linkedid,
-					file_size
+					file_size,
+					queue_date
 				)
 				server_object.remove_temporary_file()
 				files_converted += 1
@@ -111,7 +114,8 @@ for row in cursor.fetchall():
 					src,
 					dst,
 					linkedid,
-					file_size
+					file_size,
+					queue_date
 				)
 				server_object.remove_temporary_file()
 				files_converted += 1
@@ -145,7 +149,8 @@ for row in cursor.fetchall():
 				src,
 				dst,
 				linkedid,
-				file_size
+				file_size,
+				queue_date
 			)
 		elif server_object.source_id == server_object.sources['call']:
 			server_object.save_result(
@@ -161,7 +166,8 @@ for row in cursor.fetchall():
 				src,
 				dst,
 				linkedid,
-				file_size
+				file_size,
+				queue_date
 			)
 			server_object.save_result(
 				original_file_duration,
@@ -176,7 +182,8 @@ for row in cursor.fetchall():
 				src,
 				dst,
 				linkedid,
-				file_size
+				file_size,
+				queue_date
 			)
 
 		server_object.delete_current_queue(original_file_name, linkedid)
