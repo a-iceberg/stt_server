@@ -11,4 +11,5 @@ datetime
 matplotlib
 pyTelegramBotAPI
 requests
+seaborn
 
