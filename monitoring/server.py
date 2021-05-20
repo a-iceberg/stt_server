@@ -1,12 +1,8 @@
 # 1C table -> http post -> mysql
 import asyncio
-from aiohttp import web
 import uuid
 import pandas as pd
-from os import unlink
 import pymysql
-from sqlalchemy import create_engine
-# from datetime import datetime
 import re
 import pymssql
 import numpy as np
@@ -15,6 +11,10 @@ import matplotlib.pyplot as plt
 import telebot
 import requests
 import urllib
+from aiohttp import web
+from sqlalchemy import create_engine
+from os import unlink
+
 
 PORT = '8083'
 
@@ -116,6 +116,49 @@ async def call_connections(request):
             print('sending photo to ', tg_group)
             bot.send_photo(tg_group, data_file)
 
+
+    def plot_lag(header, columns, tg_group):
+        mycolors = ['tab:blue', 'tab:orange', 'red']
+
+        # Draw Plot and Annotate
+        fig, ax = plt.subplots(1,1,figsize=(16, 9), dpi = 80)
+
+        labs = columns.values.tolist()
+
+        # Prepare data
+        x  = df['record_hour'].values.tolist()
+        y0 = df[columns[0]].values.tolist()
+        y1 = df[columns[1]].values.tolist()
+        y = np.vstack([y0, y1])
+
+        # Plot for each column
+        labs = columns.values.tolist()
+        ax = plt.gca()
+        ax.stackplot(x, y, labels=labs, colors=mycolors, alpha=0.8)
+
+        # Decorations
+        ax.set_title(header, fontsize=18)
+        ax.legend(fontsize=10, ncol=4)
+        plt.grid(alpha=0.5)
+
+        # Lighten borders
+        plt.gca().spines["top"].set_alpha(0)
+        plt.gca().spines["bottom"].set_alpha(.3)
+        plt.gca().spines["right"].set_alpha(0)
+        plt.gca().spines["left"].set_alpha(.3)
+
+        # plt.show()
+        plt.savefig('report.png')
+
+        with open('telegram_token.key', 'r') as file:
+            token = file.read().replace('\n', '')
+            file.close()
+        bot = telebot.TeleBot(token)
+        with open('report.png', 'rb') as data_file:
+            print('sending photo to ', tg_group)
+            bot.send_photo(tg_group, data_file)
+
+
     def send_to_telegram(chat_id, message):
         with open('telegram_token.key', 'r') as file:
             token = file.read().replace('\n', '')
@@ -124,6 +167,7 @@ async def call_connections(request):
         session.get(
             'https://api.telegram.org/bot' + token + '/sendMessage?chat_id=' + chat_id + '&text=' + urllib.parse.quote_plus(
                 message))
+
 
     try:
 
@@ -153,6 +197,7 @@ async def call_connections(request):
                 )
         trans_cursor = trans_conn.cursor()
 
+        # = = = connections report = = =
         seven_days = datetime.datetime.now().date() - datetime.timedelta(days=7)
         date_from = seven_days.strftime('%Y:%m:%d %H:%M:%S')
         # calls
@@ -216,6 +261,32 @@ async def call_connections(request):
 
         df = df_all[df_all._merge == 'left_only']
         plot_grouped(df, 'Соединение не установлено', group)
+
+        # = = = lag report = = =
+        today = datetime.datetime.now().date()
+        yesterday = today - datetime.timedelta(days=1)
+        date_from = yesterday.strftime('%Y.%m.%d %H:%M:%S')
+        date_toto = today.strftime('%Y.%m.%d %H:%M:%S')
+        query = "SELECT distinct"
+        query += " DATEPART(HOUR, record_date) as record_hour,"
+        query += " DATEDIFF(second,record_date, queue_date) as rq,"
+        query += " DATEDIFF(second,queue_date, transcribation_date) as qt,"
+        query += " CASE WHEN source_id = 1 then 1 else 0 end as call,"
+        query += " CASE WHEN source_id = 2 then 1 else 0 end as mrm"
+        query += " FROM transcribations"
+        query += " WHERE transcribation_date > '"+date_from+"'"
+        query += " and transcribation_date < '"+date_toto+"'"
+        query += " and not queue_date is Null;"
+        df = pd.read_sql(query, con = trans_conn)
+        df['кц от записи до постановки в очередь']=df.rq*df.call
+        df['кц от постановки в очередь до расшифровки']=df.qt*df.call
+        df['мрм от записи до постановки в очередь']=df.rq*df.mrm
+        df['мрм от постановки в очередь до расшифровки']=df.qt*df.mrm
+        df.drop(['rq','qt','call','mrm'], axis = 1, inplace = True)
+        df = pd.DataFrame(df.groupby(['record_hour']).median()/60/60)
+        df['record_hour'] = df.index
+        plot_lag('Длительность расшифровки записей КЦ (ч.)', df.columns[0:2], group)
+        plot_lag('Длительность расшифровки записей МРМ (ч.)', df.columns[2:4], group)
 
     except Exception as e:
         report = 'error: ' + str(e)
