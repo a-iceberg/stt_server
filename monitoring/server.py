@@ -159,6 +159,47 @@ async def call_connections(request):
             bot.send_photo(tg_group, data_file)
 
 
+    def queue_tasks_report(source_id, header, tg_group):
+        today = datetime.datetime.now().date()
+        yesterday = today - datetime.timedelta(days=1)
+        date_from = yesterday.strftime('%Y.%m.%d %H:%M:%S')
+        date_toto = today.strftime('%Y.%m.%d %H:%M:%S')
+        query = "SELECT distinct"
+        query += " cast('"+date_from+"' as datetime) as start_date,"
+        query += " linkedid as linkedid_count,"
+        query += " queue_date"
+        query += " FROM transcribations"
+        query += " WHERE transcribation_date > '"+date_from+"'"
+        query += " and transcribation_date < '"+date_toto+"'"
+        query += " and source_id = "+str(source_id)
+        query += " and not queue_date is Null;"
+        df = pd.read_sql(query, con = trans_conn)
+        df['time'] = (df.queue_date - df.start_date)
+        df.time = df.time.apply(lambda x: round(x.seconds/60))
+        df = df.drop(['start_date', 'queue_date'], axis=1)
+        df = df.groupby(df.time).count()
+        df.reset_index(level=0, inplace=True)
+        start_time = datetime.datetime(yesterday.year, yesterday.month, yesterday.day, 0, 0, 0)
+        (start_time + datetime.timedelta(minutes = 120)).time()
+        df['queued'] = df.time.apply(lambda x: (start_time + datetime.timedelta(minutes = x)).time())
+        fig, ax = plt.subplots(figsize=(16,10), dpi= 80)    
+        sns.stripplot(df.queued, df.linkedid_count, jitter=0.25, size=8, ax=ax, linewidth=.5)
+        plt.gca().set_xticklabels(labels = df.queued, rotation=30)
+        # Decorations
+        plt.grid(linestyle='--', alpha=0.5)
+        plt.title(header, fontsize=22)
+        # plt.show()
+        plt.savefig('report.png')
+
+        with open('telegram_token.key', 'r') as file:
+            token = file.read().replace('\n', '')
+            file.close()
+        bot = telebot.TeleBot(token)
+        with open('report.png', 'rb') as data_file:
+            print('sending photo to ', tg_group)
+            bot.send_photo(tg_group, data_file)
+
+
     def send_to_telegram(chat_id, message):
         with open('telegram_token.key', 'r') as file:
             token = file.read().replace('\n', '')
@@ -288,6 +329,10 @@ async def call_connections(request):
         df['record_hour'] = df.index
         plot_lag('Длительность расшифровки записей КЦ (ч.)', df.columns[0:2], group)
         plot_lag('Длительность расшифровки записей МРМ (ч.)', df.columns[2:4], group)
+        
+        # = = = queue tasks report = = =
+        queue_tasks_report(0, 'Поступление в очередь КЦ (количество linkedid в минуту)', group)
+        queue_tasks_report(1, 'Поступление в очередь МРМ (количество linkedid в минуту)', group)
 
     except Exception as e:
         report += ' Error: ' + str(e)
