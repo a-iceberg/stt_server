@@ -170,7 +170,8 @@ async def call_connections(request):
 
 
     try:
-
+        
+        report =''
         # calls
         with open('mysql_local.pass','r') as file:
             calls_pass = file.read().replace('\n', '')
@@ -244,7 +245,7 @@ async def call_connections(request):
         df_all = df_all[~df_all.linkedid.isin(tech.linkedid.unique())].sort_values('linkedid')
         # remove tech records --
 
-        report = 'Связь звонков и расшифровок за вчера:'
+        report += 'Связь звонков и расшифровок за вчера:'
 
         yesterday = datetime.datetime.now().date() - datetime.timedelta(days=1)
         report += '\nЗвонков: ' + str(len(calls[calls.day == yesterday].linkedid.unique()))
@@ -289,7 +290,8 @@ async def call_connections(request):
         plot_lag('Длительность расшифровки записей МРМ (ч.)', df.columns[2:4], group)
 
     except Exception as e:
-        report = 'error: ' + str(e)
+        report += ' Error: ' + str(e)
+        send_to_telegram(group, 'call centre monitoring error: ' + str(e))
 
     return web.Response(
         text=report,
