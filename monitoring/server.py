@@ -332,8 +332,8 @@ async def call_connections(request):
         plot_lag('Длительность расшифровки записей МРМ (ч.)', df.columns[2:4], group)
         
         # = = = queue tasks report = = =
-        queue_tasks_report(0, 'Поступление в очередь КЦ (количество linkedid в минуту)', group)
-        queue_tasks_report(1, 'Поступление в очередь МРМ (количество linkedid в минуту)', group)
+        queue_tasks_report(1, 'Поступление в очередь КЦ (количество linkedid в минуту)', group)
+        queue_tasks_report(2, 'Поступление в очередь МРМ (количество linkedid в минуту)', group)
 
     except Exception as e:
         report += ' Error: ' + str(e)
