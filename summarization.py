@@ -6,6 +6,7 @@ import datetime
 
 REDIS_IP = '10.2.5.212'
 BATCH_SIZE = 10
+MAX_TEXT_SIZE = 1023
 
 
 def ms_sql_con():
@@ -67,13 +68,14 @@ def sum_to_sql(linkedid, recor_date, side, text, phrases_count, text_length):
     query += "'"+str(recor_date)+"',"
     query += "'"+str(current_date)+"',"
     query += str(side)+","
-    query += "'"+str(text)+"',"
+    query += "'"+str(text[:MAX_TEXT_SIZE])+"',"
     query += "'"+str(phrases_count)+"',"
     query += "'"+str(text_length)+"'"
     query += ");"
 
     conn = ms_sql_con()  
     cursor = conn.cursor()
+    print(77, query)
     cursor.execute(query)
 
 
@@ -101,3 +103,4 @@ while True:
             text_full, phrases_count = concatenate_linkedid_side(side, row.record_date, row.linkedid)
             text_short = summarize(text_full, phrases_count)
             sum_to_sql(row.linkedid, row.record_date, side, text_short, phrases_count, len(text_full))
+    break # TODO: remove
