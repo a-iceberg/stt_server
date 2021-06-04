@@ -5,7 +5,7 @@ import time
 import datetime
 
 REDIS_IP = '10.2.5.212'
-BATCH_SIZE = 10
+BATCH_SIZE = 1000
 MAX_TEXT_SIZE = 1023
 SCRIPT_PATH = '/home/alex/projects/call_centre_stt_server/'
 
