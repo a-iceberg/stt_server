@@ -75,7 +75,6 @@ def sum_to_sql(linkedid, recor_date, side, text, phrases_count, text_length):
 
     conn = ms_sql_con()  
     cursor = conn.cursor()
-    print(77, query)
     cursor.execute(query)
 
 
