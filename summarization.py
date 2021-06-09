@@ -69,14 +69,14 @@ def sum_to_sql(linkedid, recor_date, side, text, phrases_count, text_length):
     query += "'"+str(recor_date)+"',"
     query += "'"+str(current_date)+"',"
     query += str(side)+","
-    query += "'"+str(text[:MAX_TEXT_SIZE])+"',"
+    query += "'"+str(text[:MAX_TEXT_SIZE]).replace("'","").replace('"','')+"',"
     query += "'"+str(phrases_count)+"',"
     query += "'"+str(text_length)+"'"
     query += ");"
 
     # debug ++
-    print(current_date, linkedid, side)
-    print(query)
+    #print(current_date, linkedid, side)
+    #print(query)
     # debug ++
 
     conn = ms_sql_con()  
