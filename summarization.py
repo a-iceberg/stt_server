@@ -99,6 +99,8 @@ query = "select max(record_date) from summarization;"
 df = read_sql(query)
 summarization_first_record = str(df.iloc()[0][0])
 
+print(datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S'), 'select from transcribations..')
+
 # concatenate transcribations
 query = "SELECT distinct top "+str(BATCH_SIZE)+" record_date, linkedid"
 query += " from transcribations"
@@ -111,6 +113,13 @@ df = read_sql(query)
 for _id, row in df.iterrows():
     
     for side in range(2):
+        print(datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S'), 
+        'concatenating',
+            row.record_date,
+            row.linkedid,
+            side,
+            phrases_count
+        )
         text_full, phrases_count = concatenate_linkedid_side(side, row.record_date, row.linkedid)
         text_short = summarize(text_full, phrases_count)
         sum_to_sql(row.linkedid, row.record_date, side, text_short, phrases_count, len(text_full))
