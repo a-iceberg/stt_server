@@ -61,7 +61,7 @@ def summarize(text, phrases_count):
         time.sleep(1)
 
 
-def sum_to_sql(linkedid, recor_date, side, text, phrases_count, text_length):
+def sum_to_sql(linkedid, recor_date, side, text, phrases_count, text_length):    
     current_date = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
     query = "insert into summarization(linkedid, record_date, sum_date, side, text, phrases_count, text_length) "
     query += " values("
@@ -73,6 +73,11 @@ def sum_to_sql(linkedid, recor_date, side, text, phrases_count, text_length):
     query += "'"+str(phrases_count)+"',"
     query += "'"+str(text_length)+"'"
     query += ");"
+
+    # debug ++
+    print(current_date, linkedid, side)
+    print(query)
+    # debug ++
 
     conn = ms_sql_con()  
     cursor = conn.cursor()
