@@ -110,6 +110,13 @@ query += " not linkedid in (select distinct linkedid from summarization)"
 query += " order by record_date desc;"
 df = read_sql(query)
 
+print(
+    datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
+    'received:', len(df),
+    'from:', min(df.record_date),
+    'to:', max(df.record_date)
+    )
+
 for _id, row in df.iterrows():
     
     for side in range(2):
@@ -117,8 +124,7 @@ for _id, row in df.iterrows():
         'concatenating',
             row.record_date,
             row.linkedid,
-            side,
-            phrases_count
+            side
         )
         text_full, phrases_count = concatenate_linkedid_side(side, row.record_date, row.linkedid)
         text_short = summarize(text_full, phrases_count)
@@ -126,7 +132,7 @@ for _id, row in df.iterrows():
 
 print(
     datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
-    'summarized:', len(df),
+    'job complete:', len(df),
     'from:', min(df.record_date),
     'to:', max(df.record_date)
     )
