@@ -82,13 +82,19 @@ def sum_to_sql(linkedid, recor_date, side, text, phrases_count, text_length):
 while True:
 
     # obtain datetime limits
-    query = "select min(record_date) from queue;"
+    query = "select linkedid from queue;"
     df = read_sql(query)
-    queue_first_record = str(df.iloc()[0][0])
+    if len(df):
+        query = "select min(record_date) from queue where not isnull(record_date,'')='';"
+        df = read_sql(query)
+        queue_first_record = str(df.iloc()[0][0])
+    else:
+        queue_first_record = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
     query = "select max(record_date) from summarization;"
     df = read_sql(query)
     summarization_first_record = str(df.iloc()[0][0])
 
+    # concatenate transcribations
     query = "SELECT distinct top "+str(BATCH_SIZE)+" record_date, linkedid"
     query += " from transcribations"
     query += " where "
