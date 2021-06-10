@@ -28,7 +28,7 @@ async def call_mark(request):
     with open(filename, 'w') as source_file:
         source_file.write(await request.text())
         source_file.close()
-    df = pd.read_csv(filename, ';', dtype={'id': 'int', 'name': 'str'})
+    df = pd.read_csv(filename, ';', dtype={'linkedid': 'str'})
     unlink(filename)
     df.id += 10
     df.name = 'hello from python: '+df.name
