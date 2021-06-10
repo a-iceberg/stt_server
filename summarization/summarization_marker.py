@@ -3,6 +3,7 @@ from aiohttp import web
 import uuid
 import pandas as pd
 from os import unlink
+import pymssql
 #import ssl
 #PORT = '8443' # ssl
 PORT = '8085'
@@ -14,6 +15,23 @@ PORT = '8085'
 #
 # When asked for "Common Name (e.g. server FQDN or YOUR name)" you should reply
 # with the same value in you put in WEBHOOK_HOST with www
+
+def ms_sql_con():
+    sql_name = 'voice_ai'
+    sql_server = '10.2.4.124'
+    sql_login = 'ICECORP\\1c_sql'
+
+    with open('../sql.pass','r') as file:
+        sql_pass = file.read().replace('\n', '')
+        file.close()
+
+    return pymssql.connect(
+            server = sql_server,
+            user = sql_login,
+            password = sql_pass,
+            database = sql_name,
+            autocommit=True
+        )
 
 async def call_test(request):
     print('call_test')
@@ -28,14 +46,21 @@ async def call_mark(request):
     with open(filename, 'w') as source_file:
         source_file.write(await request.text())
         source_file.close()
-    df = pd.read_csv(filename, ';', dtype={'linkedid': 'str'})
+    df = pd.read_csv(filename, ';', dtype={'linkedid': 'str', 'record_date': 'str', 'cat': 'str'})
     unlink(filename)
     #df.id += 10
     #df.name = 'hello from python: '+df.name
     answer = 'list:'
     for _id, row in df.iterrows():
         #for nom_id, nom_name in df.values:
-        answer += '\n' + str(row.linkedid)
+        #answer += '\n' + str(row.linkedid)
+        query = "update summarization set '"+str(row.cat)+"' = True where "
+        query += " record_date = '"+str(row.record_date)+"' and"
+        query += " linkedid = '"+str(row.linkedid)+"';"    
+        print('query:', query)
+        conn = ms_sql_con()  
+        cursor = conn.cursor()
+        cursor.execute(query)
 
     return web.Response(
         text=answer,
