@@ -58,9 +58,9 @@ async def call_mark(request):
         query += " record_date = '"+str(row.record_date)+"' and"
         query += " linkedid = '"+str(row.linkedid)+"';"    
         print('query:', query)
-        conn = ms_sql_con()  
-        cursor = conn.cursor()
-        cursor.execute(query)
+        #conn = ms_sql_con()  
+        #cursor = conn.cursor()
+        #cursor.execute(query)
 
     return web.Response(
         text=answer,
