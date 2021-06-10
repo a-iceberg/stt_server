@@ -40,7 +40,7 @@ def concatenate_linkedid_side(side, record_date, linkedid):
     text_df = read_sql(query)
     phrases_count = len(text_df)
     text_full = ', '.join([row.text for _id, row in text_df.iterrows()])
-    return text_full, phrases_count, min(df.source_id)
+    return text_full, phrases_count, min(text_df.source_id)
 
 
 def summarize(text, phrases_count):
