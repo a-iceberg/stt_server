@@ -30,8 +30,8 @@ async def call_mark(request):
         source_file.close()
     df = pd.read_csv(filename, ';', dtype={'linkedid': 'str'})
     unlink(filename)
-    df.id += 10
-    df.name = 'hello from python: '+df.name
+    #df.id += 10
+    #df.name = 'hello from python: '+df.name
     answer = 'list:'
     for nom_id, nom_name in df.values:
         answer += '\n' + str(nom_id) + ';'+nom_name
