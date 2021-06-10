@@ -50,7 +50,7 @@ async def call_mark(request):
     unlink(filename)
     #df.id += 10
     #df.name = 'hello from python: '+df.name
-    answer = 'list:'
+    answer = 'ok'
     for _id, row in df.iterrows():
         #for nom_id, nom_name in df.values:
         #answer += '\n' + str(row.linkedid)
@@ -58,9 +58,9 @@ async def call_mark(request):
         query += " record_date = '"+str(row.record_date)+"' and"
         query += " linkedid = '"+str(row.linkedid)+"';"    
         print('query:', query)
-        #conn = ms_sql_con()  
-        #cursor = conn.cursor()
-        #cursor.execute(query)
+        conn = ms_sql_con()  
+        cursor = conn.cursor()
+        cursor.execute(query)
 
     return web.Response(
         text=answer,
