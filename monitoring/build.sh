@@ -1,1 +1,1 @@
-docker build . --tag format37/call_logger
+sudo docker build . --tag format37/call_logger
