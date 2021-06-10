@@ -33,14 +33,14 @@ def read_sql(query):
 
 
 def concatenate_linkedid_side(side, record_date, linkedid):
-    query = "SELECT text from transcribations where "
+    query = "SELECT text, source_id from transcribations where "
     query += " side="+str(side)+" and "
     query += " record_date = '"+str(record_date)+"' and "
     query += " linkedid = '"+str(linkedid)+"';"
     text_df = read_sql(query)
     phrases_count = len(text_df)
     text_full = ', '.join([row.text for _id, row in text_df.iterrows()])
-    return text_full, phrases_count
+    return text_full, phrases_count, min(df.source_id)
 
 
 def summarize(text, phrases_count):
@@ -61,9 +61,10 @@ def summarize(text, phrases_count):
         time.sleep(1)
 
 
-def sum_to_sql(linkedid, recor_date, side, text, phrases_count, text_length):    
+def sum_to_sql(linkedid, recor_date, side, text, phrases_count, text_length, source_id):    
     current_date = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-    query = "insert into summarization(linkedid, record_date, sum_date, side, text, phrases_count, text_length) "
+    query = "insert into summarization"
+    query += "(linkedid, record_date, sum_date, side, text, phrases_count, text_length, source_id) "
     query += " values("
     query += "'"+str(linkedid)+"',"
     query += "'"+str(recor_date)+"',"
@@ -71,7 +72,8 @@ def sum_to_sql(linkedid, recor_date, side, text, phrases_count, text_length):
     query += str(side)+","
     query += "'"+str(text[:MAX_TEXT_SIZE]).replace("'","").replace('"','')+"',"
     query += "'"+str(phrases_count)+"',"
-    query += "'"+str(text_length)+"'"
+    query += "'"+str(text_length)+"',"
+    query += ""+str(source_id)+""
     query += ");"
 
     # debug ++
@@ -126,9 +128,9 @@ for _id, row in df.iterrows():
             row.linkedid,
             side
         )
-        text_full, phrases_count = concatenate_linkedid_side(side, row.record_date, row.linkedid)
+        text_full, phrases_count, source_id = concatenate_linkedid_side(side, row.record_date, row.linkedid)
         text_short = summarize(text_full, phrases_count)
-        sum_to_sql(row.linkedid, row.record_date, side, text_short, phrases_count, len(text_full))
+        sum_to_sql(row.linkedid, row.record_date, side, text_short, phrases_count, len(text_full), source_id)
 
 print(
     datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
