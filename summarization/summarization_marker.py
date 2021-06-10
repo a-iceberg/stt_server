@@ -33,8 +33,9 @@ async def call_mark(request):
     #df.id += 10
     #df.name = 'hello from python: '+df.name
     answer = 'list:'
-    for nom_id, nom_name in df.values:
-        answer += '\n' + str(nom_id) + ';'+nom_name
+    for _id, row in df.iterrows():
+        #for nom_id, nom_name in df.values:
+        answer += '\n' + str(row.linkedid)
 
     return web.Response(
         text=answer,
