@@ -46,7 +46,7 @@ async def call_mark(request):
 
 app = web.Application()
 app.router.add_route('GET', '/test', call_test)
-app.router.add_route('POST', '/compute', call_mark)
+app.router.add_route('POST', '/mark', call_mark)
 
 loop = asyncio.get_event_loop()
 handler = app.make_handler()
