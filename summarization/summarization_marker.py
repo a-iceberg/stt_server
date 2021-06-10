@@ -46,7 +46,7 @@ async def call_mark(request):
     with open(filename, 'w') as source_file:
         source_file.write(await request.text())
         source_file.close()
-    df = pd.read_csv(filename, ';', dtype={'linkedid': 'str', 'record_date': 'str', 'cat': 'str'})
+    df = pd.read_csv(filename, ';', dtype={'linkedid': 'str', 'record_date': 'str', 'city': 'str'})
     unlink(filename)
     #df.id += 10
     #df.name = 'hello from python: '+df.name
@@ -54,7 +54,7 @@ async def call_mark(request):
     for _id, row in df.iterrows():
         #for nom_id, nom_name in df.values:
         #answer += '\n' + str(row.linkedid)
-        query = "update summarization set '"+str(row.cat)+"' = True where "
+        query = "update summarization set '"+str(row.city)+"' = True where "
         query += " record_date = '"+str(row.record_date)+"' and"
         query += " linkedid = '"+str(row.linkedid)+"';"    
         print('query:', query)
