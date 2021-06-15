@@ -5,6 +5,8 @@ import urllib
 import pandas as pd
 import matplotlib.pyplot as plt
 import telebot
+import os
+from collections import namedtuple
 
 
 def connect_mssql():
@@ -117,6 +119,20 @@ def colorator(source_id):
     return 'red' if source_id == 1 else 'green'
 
 
+def disk_usage(path):
+    """Return disk usage statistics about the given path.
+
+    Returned valus is a named tuple with attributes 'total', 'used' and
+    'free', which are the amount of total, used and free space, in Gbytes.
+    """
+    _ntuple_diskusage = namedtuple('usage', 'total used free')
+    st = os.statvfs(path)
+    free = st.f_bavail * st.f_frsize
+    total = st.f_blocks * st.f_frsize
+    used = (st.f_blocks - st.f_bfree) * st.f_frsize
+    return _ntuple_diskusage(total//(1024**3), used//(1024**3), free//(1024**3))
+
+
 def queue_time_vs_date(group):
 
     query = "select"
@@ -177,7 +193,11 @@ msg += transcribed_yesterday() + '\n'
 msg += queue_len() + '\n'
 msg += queue_by_cpu() + '\n'
 msg += sentiment_queue()+ '\n'
-msg += earliest_records()
+msg += earliest_records()+ '\n'
+msg += '/ ' + disk_usage('/')+ '\n'
+msg += '/mnt/share/audio/ ' + disk_usage('/mnt/share/audio/')+ '\n'
+msg += '/mnt/share/audio_master/ ' + disk_usage('/mnt/share/audio_master/')+ '\n'
+msg += '/mnt/share/audio_call/ ' + disk_usage('/mnt/share/audio_call/')
 print(msg)
 send_to_telegram('-1001443983697', msg)
 queue_time_vs_date('-1001443983697')
