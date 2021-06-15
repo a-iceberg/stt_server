@@ -130,7 +130,7 @@ def disk_usage(path):
     free = st.f_bavail * st.f_frsize
     total = st.f_blocks * st.f_frsize
     used = (st.f_blocks - st.f_bfree) * st.f_frsize
-    return _ntuple_diskusage(total//(1024**3), used//(1024**3), free//(1024**3))
+    return str(_ntuple_diskusage(total//(1024**3), used//(1024**3), free//(1024**3)))
 
 
 def queue_time_vs_date(group):
