@@ -54,7 +54,7 @@ async def call_mark(request):
     for _id, row in df.iterrows():
         #for nom_id, nom_name in df.values:
         #answer += '\n' + str(row.linkedid)
-        query = "update summarization set "+str(row.city)+" = True where "
+        query = "update summarization set "+str(row.city)+" = 1 where "
         query += " record_date = '"+str(row.record_date)+"' and"
         query += " linkedid = '"+str(row.linkedid)+"' and"
         query += " side = '"+str(row.side)+"';"
