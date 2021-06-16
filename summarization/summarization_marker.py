@@ -46,7 +46,7 @@ async def call_mark(request):
     with open(filename, 'w') as source_file:
         source_file.write(await request.text())
         source_file.close()
-    df = pd.read_csv(filename, ';', dtype={'linkedid': 'str', 'record_date': 'str', 'city': 'str'})
+    df = pd.read_csv(filename, ';', dtype={'linkedid': 'str', 'record_date': 'str', 'side': 'str', 'city': 'str'})
     unlink(filename)
     #df.id += 10
     #df.name = 'hello from python: '+df.name
@@ -56,7 +56,8 @@ async def call_mark(request):
         #answer += '\n' + str(row.linkedid)
         query = "update summarization set '"+str(row.city)+"' = True where "
         query += " record_date = '"+str(row.record_date)+"' and"
-        query += " linkedid = '"+str(row.linkedid)+"';"    
+        query += " linkedid = '"+str(row.linkedid)+"' and"
+        query += " side = '"+str(row.side)+"';"
         print('query:', query)
         conn = ms_sql_con()  
         cursor = conn.cursor()
