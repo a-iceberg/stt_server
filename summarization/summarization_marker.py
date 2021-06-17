@@ -7,6 +7,7 @@ import pymssql
 #import ssl
 #PORT = '8443' # ssl
 PORT = '8086'
+script_path = '/home/alex/projects/call_centre_stt_server/'
 
 # Quick'n'dirty SSL certificate generation:
 #
@@ -21,7 +22,7 @@ def ms_sql_con():
     sql_server = '10.2.4.124'
     sql_login = 'ICECORP\\1c_sql'
 
-    with open('../sql.pass','r') as file:
+    with open(script_path+'sql.pass','r') as file:
         sql_pass = file.read().replace('\n', '')
         file.close()
 
