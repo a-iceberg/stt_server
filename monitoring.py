@@ -24,6 +24,10 @@ def connect_mssql():
                           ms_sql_base)
 
 
+def read_sql(query):
+    return pd.read_sql(query, con=connect_mssql(), parse_dates=None)
+
+
 def queue_len():
     result = ''
     ms_sql_conn = connect_mssql()
@@ -188,6 +192,42 @@ def queue_time_vs_date(group):
         bot.send_photo(group, data_file)
 
 
+def summarization():
+    message = ''
+    query = "SELECT count(linkedid) from summarization"
+    query += " where isnull(load_msk,0) = 0 or isnull(load_spb,0) = 0 or isnull(load_reg,0) = 0;"
+    df = read_sql(query)
+    message += '\nСуммаризации, ожидающие загрузку: ' + str(df.iloc()[0][0])
+    
+    message += '\n== За вчера =='
+    
+    currentdate = datetime.datetime.today()
+    start_of_day = currentdate.combine(currentdate.date(), currentdate.min.time())
+    yesterday = start_of_day + datetime.timedelta(days=-1)
+    df = str(yesterday)
+    dt = str(start_of_day)
+    f_0 = '%Y-%m-%d %H:%M:%S'
+    f_1 = '%Y-%m-%dT%H:%M:%S'
+    date_from = datetime.datetime.strptime(df, f_0).strftime(f_1)
+    date_toto = datetime.datetime.strptime(dt, f_0).strftime(f_1)
+    
+    query = "SELECT count(linkedid) from summarization"
+    query += " where sum_date>'" + date_from + "'"
+    query += " and sum_date<'" + date_toto + "';"
+    df = read_sql(query)
+    message += '\nНовых суммаризаций: ' + str(df.iloc()[0][0])
+    
+    for city in ['load_msk', 'load_spb', 'load_reg']:
+        query = "SELECT count(linkedid) from summarization"
+        query += " where sum_date>'" + date_from + "'"
+        query += " and sum_date<'" + date_toto + "'"
+        query += " and isnull("+city+",0) = 1;"
+        df = read_sql(query)
+        message += '\n'+city+': ' + str(df.iloc()[0][0])      
+    
+    return message
+
+
 msg = 'Состояние системы расшифровки аудиозаписей\n'
 msg += transcribed_yesterday() + '\n'
 msg += queue_len() + '\n'
@@ -198,6 +238,7 @@ msg += '/ ' + disk_usage('/')+ '\n'
 msg += '/mnt/share/audio/ ' + disk_usage('/mnt/share/audio/')+ '\n'
 msg += '/mnt/share/audio_master/ ' + disk_usage('/mnt/share/audio_master/')+ '\n'
 msg += '/mnt/share/audio_call/ ' + disk_usage('/mnt/share/audio_call/')
+msg += summarization()
 print(msg)
 send_to_telegram('-1001443983697', msg)
 queue_time_vs_date('-1001443983697')
