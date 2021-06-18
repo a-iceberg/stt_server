@@ -97,9 +97,10 @@ if len(df):
     queue_first_record = str(df.iloc()[0][0])
 else:
     queue_first_record = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-query = "select max(record_date) from summarization;"
+
+"""query = "select max(record_date) from summarization;"
 df = read_sql(query)
-summarization_first_record = str(df.iloc()[0][0])
+summarization_first_record = str(df.iloc()[0][0])"""
 
 print(datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S'), 'select from transcribations..')
 
