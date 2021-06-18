@@ -86,7 +86,7 @@ def sum_to_sql(linkedid, recor_date, side, text, phrases_count, text_length, sou
     cursor.execute(query)
 
 
-
+print('=== start ===')
 
 # obtain datetime limits
 query = "select linkedid from queue;"
