@@ -91,9 +91,9 @@ def get_jaccard_sim(str1, str2):
     a = set(str1.split()) 
     b = set(str2.split())
     c = a.intersection(b)
-    bottom = (len(a) + len(b) - len(c)
-    if bottom>0:
-        return float(len(c)) / bottom)
+    denominator = (len(a) + len(b) - len(c)
+    if denominator>0:
+        return float(len(c)) / denominator)
     else:
         return 0
 
