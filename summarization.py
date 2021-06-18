@@ -87,6 +87,13 @@ def sum_to_sql(linkedid, recor_date, side, text, phrases_count, text_length, sou
     cursor.execute(query)
 
 
+def get_jaccard_sim(str1, str2): 
+    a = set(str1.split()) 
+    b = set(str2.split())
+    c = a.intersection(b)
+    return float(len(c)) / (len(a) + len(b) - len(c))
+
+
 print('=== start ===')
 
 # obtain datetime limits
@@ -135,11 +142,14 @@ for _id, row in df.iterrows():
 
         # stage 1: find better approach
         text_short = summarize(text_full, phrases_count)
-        best_result = difflib.SequenceMatcher(None, text_full, text_short).ratio()
+        #best_result = difflib.SequenceMatcher(None, text_full, text_short).ratio()
+        # https://www.machinelearningmastery.ru/overview-of-text-similarity-metrics-3397c4601f50/
+        best_result = get_jaccard_sim(text_full, text_short)
         # best_replacer = [',']
         for replacer in [' ', ' - ']:
             try_short = summarize(text_full.replace(',', replacer), phrases_count)
-            try_result = difflib.SequenceMatcher(None, text_full, try_short).ratio()
+            #try_result = difflib.SequenceMatcher(None, text_full, try_short).ratio()
+            try_result = get_jaccard_sim(text_full, text_short)
             if try_result > best_result:
                 text_short = try_short
                 best_result = try_result
