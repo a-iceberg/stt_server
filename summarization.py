@@ -132,16 +132,29 @@ for _id, row in df.iterrows():
         text_full, phrases_count, source_id = concatenate_linkedid_side(side, row.record_date, row.linkedid)
         text_short = summarize(text_full.replace(',',' - '), phrases_count)
 
+        # stage 1: find better approach
+        text_short = summarize(text_full, phrases_count)
+        best_result = difflib.SequenceMatcher(None, text_full, text_short).ratio()
+        # best_replacer = [',']
+        for replacer in [' ', ' - ']:
+            try_short = summarize(text_full.replace(',', replacer), phrases_count)
+            try_result = difflib.SequenceMatcher(None, text_full, try_short).ratio()
+            if try_result > best_result:
+                text_short = try_short
+                best_result = try_result
+                # best_replacer = replacer
+
+        #for wrong in wrong_words:
+        #    if wrong in text_short:
+        #        text_short = summarize(text_full.replace(',',' '), phrases_count)
+        #        break
+        
         # fix wrong summarizations
-        wrong_words = ['погиб']
-        # stage 1: remove commas
-        for wrong in wrong_words:
-            if wrong in text_short:
-                text_short = summarize(text_full.replace(',',' '), phrases_count)
-                break
+        wrong_words = ['погиб', 'смерть', 'путин'] # high frequency newspaper words
         # stage 2: just crop if wrong words still in summarization
         for wrong in wrong_words:
             if wrong in text_short:
+                print(row.linkedid, side, 'replaced, because found', wrong, 'in:', text_short)
                 text_short = text_full[:1023]
                 break
 
