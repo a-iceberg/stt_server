@@ -92,9 +92,10 @@ def get_jaccard_sim(str1, str2):
     b = set(str2.split())
     c = a.intersection(b)
     bottom = (len(a) + len(b) - len(c)
-    if bottom > 0:
+    if bottom>0:
         return float(len(c)) / bottom)
-    else return 0
+    else:
+        return 0
 
 
 print('=== start ===')
