@@ -130,14 +130,14 @@ for _id, row in df.iterrows():
             side
         )
         text_full, phrases_count, source_id = concatenate_linkedid_side(side, row.record_date, row.linkedid)
-        text_short = summarize(text_full, phrases_count)
+        text_short = summarize(text_full.replace(',',' - '), phrases_count)
 
         # fix wrong summarizations
         wrong_words = ['погиб']
         # stage 1: remove commas
         for wrong in wrong_words:
             if wrong in text_short:
-                text_short = summarize(text_full.replace(',',''), phrases_count)
+                text_short = summarize(text_full.replace(',',' '), phrases_count)
                 break
         # stage 2: just crop if wrong words still in summarization
         for wrong in wrong_words:
