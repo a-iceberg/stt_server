@@ -3,6 +3,7 @@ import pandas as pd
 import redis
 import time
 import datetime
+import difflib
 
 REDIS_IP = '10.2.5.212'
 BATCH_SIZE = 1000
