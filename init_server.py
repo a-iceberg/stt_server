@@ -19,7 +19,10 @@ class stt_server:
 
 		# settings ++
 		self.cpu_id = cpu_id
-		self.cpu_cores = [i for i in range(0, 14)]  # 8 is best
+		with open('cores.count', 'r') as file:
+			cores_count = int(file.read().replace('\n', ''))
+			file.close()
+		self.cpu_cores = [i for i in range(0, cores_count)]
 
 		# telegram
 		# self.telegram_chat = '106129214' # alex
