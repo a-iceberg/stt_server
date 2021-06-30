@@ -636,9 +636,11 @@ class stt_server:
 				message += 's[' + str(f_size) + ']  '
 				message += 'd[' + str(file_duration) + ']  '
 				message += str(filename)
-				self.save_file_for_analysis(filepath, filename, file_duration)
+				# self.save_file_for_analysis(filepath, filename, file_duration)
 				print(message)
 				# self.send_to_telegram(message)
+			else:
+				self.save_file_for_analysis(filepath, filename, file_duration)
 
 			cursor = self.conn.cursor()
 			current_date = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
