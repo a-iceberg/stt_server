@@ -718,7 +718,7 @@ class stt_server:
 				copyfile(file_path + file_name, self.saved_for_analysis_path + prefix + file_name)
 			else:
 				prefix = 'any/'
-				copyfile(file_path + file_name, self.saved_for_analysis_path + prefix + file_name)
+				#copyfile(file_path + file_name, self.saved_for_analysis_path + prefix + file_name)
 			
 			"""if duration > 10 and duration < 60:
 				if self.confidence_of_file > confidence_treshold_top:
