@@ -747,7 +747,7 @@ class stt_server:
 			if	duration > 50 and \
 				duration < 60 and \
 				self.confidence_of_file > 0.9 and \
-				not wer_file_exist():
+				not self.wer_file_exist():
 				prefix = 'wer/cpu'+str(self.cpu_id)+'_'+current_date+'_'
 				copyfile(file_path + file_name, self.saved_for_analysis_path + prefix + file_name)
 			else:
