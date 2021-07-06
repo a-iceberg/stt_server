@@ -719,7 +719,7 @@ class stt_server:
 		cursor.execute(sql_query)
 		self.conn.commit() # autocommit
 
-	def wer_file_exist():
+	def wer_file_exist(self):
 		
 		current_date = datetime.datetime.now().strftime('%Y-%m-%d')
 		comparator = 'cpu'+str(self.cpu_id)+'_'+current_date+'_'
