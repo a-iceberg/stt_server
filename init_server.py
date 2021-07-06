@@ -744,6 +744,7 @@ class stt_server:
 			#else:
 			#	prefix = 'any/'
 				#copyfile(file_path + file_name, self.saved_for_analysis_path + prefix + file_name)
+			current_date = datetime.datetime.now().strftime('%Y-%m-%d')
 			if	duration > 50 and \
 				duration < 60 and \
 				self.confidence_of_file > 0.9 and \
