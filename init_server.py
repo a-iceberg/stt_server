@@ -704,6 +704,16 @@ class stt_server:
 		cursor.execute(sql_query)
 		self.conn.commit() # autocommit
 
+	def wer_file_exist():
+		
+		current_date = datetime.datetime.now().strftime('%Y-%m-%d')
+		comparator = 'cpu'+str(self.cpu_id)+'_'+current_date+'_'
+		for root, dirs, files in os.walk(self.saved_for_analysis_path + 'wer'):
+			for filename in files:
+				if comparator in filename:
+					return True
+		return False
+
 	def save_file_for_analysis(self, file_path, file_name, duration):
 
 		try:
@@ -716,10 +726,16 @@ class stt_server:
 			if duration == 0:
 				prefix = 'zero/'
 				copyfile(file_path + file_name, self.saved_for_analysis_path + prefix + file_name)
-			else:
-				prefix = 'any/'
+			#else:
+			#	prefix = 'any/'
 				#copyfile(file_path + file_name, self.saved_for_analysis_path + prefix + file_name)
-			
+			if	duration > 50 and \
+				duration < 60 and \
+				self.confidence_of_file > 0.9 and \
+				not wer_file_exist():
+				prefix = 'wer/cpu'+str(self.cpu_id)+'_'+current_date+'_'
+				copyfile(file_path + file_name, self.saved_for_analysis_path + prefix + file_name)
+
 			"""if duration > 10 and duration < 60:
 				if self.confidence_of_file > confidence_treshold_top:
 					prefix = 'hi/'
