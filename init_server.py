@@ -258,7 +258,18 @@ class stt_server:
 		except OSError as e:  ## if failed, report it back to the user ##
 			print("Error: %s - %s." % (e.filename, e.strerror))"""
 
-	def transcribe_to_sql(self, duration, side, original_file_name, rec_date, src, dst, linkedid, file_size, queue_date):
+	def transcribe_to_sql(
+		self, 
+		duration, 
+		side, 
+		original_file_name, 
+		rec_date, 
+		src, 
+		dst, 
+		linkedid, 
+		file_size, 
+		queue_date
+		):
 
 		trans_start = time.time() # datetime.datetime.now()
 
@@ -324,8 +335,12 @@ class stt_server:
 			self.confidence_of_file = sum(confidences)/len(confidences)
 		else:
 			self.confidence_of_file = 0
+		
 		trans_end = time.time() # datetime.datetime.now()
 		self.perf_log(2, trans_start, trans_end, duration, linkedid)
+		
+		# quality control
+		self.save_file_for_analysis(self.temp_file_path, self.temp_file_name, duration)
 
 		if phrases_count == 0:
 			self.save_result(
@@ -717,9 +732,9 @@ class stt_server:
 	def save_file_for_analysis(self, file_path, file_name, duration):
 
 		try:
-			"""prefix = 'any/'
-			# query = "SELECT avg(conf) FROM transcribations where not text = '';"
 			midlle_confidence = 0.8697060696547252
+			"""prefix = 'any/'
+			# query = "SELECT avg(conf) FROM transcribations where not text = '';"			
 			confidence_treshold_top = midlle_confidence + 0.1
 			confidence_treshold_bottom = midlle_confidence - 0.1"""
 
@@ -735,6 +750,11 @@ class stt_server:
 				not wer_file_exist():
 				prefix = 'wer/cpu'+str(self.cpu_id)+'_'+current_date+'_'
 				copyfile(file_path + file_name, self.saved_for_analysis_path + prefix + file_name)
+			else:
+				print(
+					'save_file_for_analysis skip:\nduration:', duration, 
+					'\nconfidence', self.confidence_of_file
+					)
 
 			"""if duration > 10 and duration < 60:
 				if self.confidence_of_file > confidence_treshold_top:
