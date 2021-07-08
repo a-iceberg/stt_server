@@ -21,6 +21,7 @@ import numpy as np
 file_path = '/mnt/share/audio_call/saved_for_analysis/wer/'
 # model_path = '/media/alex/nvme-a/vosk-model-ru-0.10'
 model_path = '/mnt/share/audio_call/model_v0/model'
+script_path = '/home/alex/projects/call_centre_stt_server/'
 
 def transcribe_google(file_path):
     
@@ -133,7 +134,7 @@ for file in files:
         evals_wer.append(measures['wer'])
         evals_mer.append(measures['mer'])
         evals_wil.append(measures['wil'])
-        # os.unlink(file_path+file) # disabled due premission troubles
+        os.unlink(file_path+file) # should be disabled due premission troubles
 
 print('avg: wer', np.average(evals_wer), 'mer', np.average(evals_mer), 'wil', np.average(evals_wil))
 print('med: wer', np.median(evals_wer), 'mer', np.median(evals_mer), 'wil', np.median(evals_wil))
@@ -146,7 +147,9 @@ current['avg_mer'] = [np.average(evals_mer)]
 current['med_wil'] = [np.median(evals_wil)]
 current['med_wer'] = [np.median(evals_wer)]
 current['med_mer'] = [np.median(evals_mer)]
-current.to_csv('evaluation.csv')
-#pickle.dump(evals_wer, file=open('evals_wer.pickle', 'wb'))
-#pickle.dump(evals_mer, file=open('evals_mer.pickle', 'wb'))
-#pickle.dump(evals_wil, file=open('evals_wil.pickle', 'wb'))
+
+evaluation_file = script_path + 'evaluation.csv'
+evaluation = pd.read_csv(evaluation_file)
+evaluation = evaluation.append(pd.DataFrame([current.iloc[0]]))
+evaluation.to_csv(script_path + 'evaluation.csv')
+print(datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S'), 'job complete')
