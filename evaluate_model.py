@@ -133,7 +133,7 @@ for file in files:
         evals_wer.append(measures['wer'])
         evals_mer.append(measures['mer'])
         evals_wil.append(measures['wil'])
-        os.unlink(file_path+file)
+        # os.unlink(file_path+file) # disabled due premission troubles
 
 print('avg: wer', np.average(evals_wer), 'mer', np.average(evals_mer), 'wil', np.average(evals_wil))
 print('med: wer', np.median(evals_wer), 'mer', np.median(evals_mer), 'wil', np.median(evals_wil))
