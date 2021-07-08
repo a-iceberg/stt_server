@@ -7,7 +7,7 @@ import wave
 # python3.7 -m pip install -U https://github.com/alphacep/vosk-api/releases/download/0.3.30/vosk-0.3.30-py3-none-linux_x86_64.whl
 from vosk import Model, KaldiRecognizer, SetLogLevel
 import json
-
+import sys
 import pandas as pd
 import jiwer
 import matplotlib.pyplot as plt
