@@ -8,3 +8,5 @@ pendulum
 ThreadPoolExecutorPlus
 redis
 git+https://github.com/deepmipt/bert.git@feat/multi_gpu
+google-cloud-speech
+jiwer
