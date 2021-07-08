@@ -4,6 +4,7 @@ from google.cloud import speech
 from google.oauth2 import service_account
 import pickle
 import wave
+# python3.7 -m pip install -U https://github.com/alphacep/vosk-api/releases/download/0.3.30/vosk-0.3.30-py3-none-linux_x86_64.whl
 from vosk import Model, KaldiRecognizer, SetLogLevel
 import json
 
@@ -13,6 +14,8 @@ import matplotlib.pyplot as plt
 import datetime
 import os
 import numpy as np
+
+# python3.7 -m pip install jiwer
 
 def transcribe_google(file_path):
     
