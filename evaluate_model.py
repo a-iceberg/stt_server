@@ -29,7 +29,7 @@ def transcribe_google(file_path):
     # https://cloud.google.com/speech-to-text/docs/reference/rest/v1/RecognitionConfig?hl=ru#AudioEncoding
     # https://cloud.google.com/speech-to-text/docs/samples/speech-transcribe-async#speech_transcribe_async-python
     # conda deactivate
-    # python3 -m pip install --upgrade google-cloud-speech
+    # python3.7 -m pip install --upgrade google-cloud-speech
 
     credentials_json = 'iceberg-318906-dbe1223570ba.json'
     creds = service_account.Credentials.from_service_account_file(
@@ -117,9 +117,10 @@ def error(ground_truth, hypothesis):
     return measures
 
 files = get_files(file_path)
-current_date = datetime.datetime.now().strftime('%Y-%m-%d')
 param_date = sys.argv[1]
-if not param_date =='default':
+if param_date =='default':
+    current_date = (datetime.datetime.now() + datetime.timedelta(days=-1)).strftime('%Y-%m-%d')
+else:
     current_date = sys.argv[1]
 evals_wer = []
 evals_mer = []
