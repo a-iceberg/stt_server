@@ -17,6 +17,11 @@ import numpy as np
 
 # python3.7 -m pip install jiwer
 
+# file_path = '/media/alex/nvme-a/word_1/'
+file_path = '/mnt/share/audio_call/saved_for_analysis/wer/'
+# model_path = '/media/alex/nvme-a/vosk-model-ru-0.10'
+model_path = '/mnt/share/audio_call/model_v0/model'
+
 def transcribe_google(file_path):
     
     # https://cloud.google.com/speech-to-text
@@ -110,10 +115,6 @@ def error(ground_truth, hypothesis):
     measures = jiwer.compute_measures(ground_truth, hypothesis)
     return measures
 
-# file_path = '/media/alex/nvme-a/word_1/'
-file_path = '/mnt/share/audio_call/saved_for_analysis/wer/'
-# model_path = '/media/alex/nvme-a/vosk-model-ru-0.10'
-model_path = '/mnt/share/audio_call/model_v0/model'
 files = get_files(file_path)
 current_date = datetime.datetime.now().strftime('%Y-%m-%d')
 param_date = sys.argv[1]
