@@ -115,15 +115,16 @@ file_path = '/mnt/share/audio_call/saved_for_analysis/wer/'
 # model_path = '/media/alex/nvme-a/vosk-model-ru-0.10'
 model_path = '/mnt/share/audio_call/model_v0/model'
 files = get_files(file_path)
-current_date = datetime.datetime.now().strftime('%Y-%m-%d')+'_'
+current_date = datetime.datetime.now().strftime('%Y-%m-%d')
 param_date = sys.argv[1]
 if not param_date =='default':
-    current_date = sys.argv[1]+'_'
+    current_date = sys.argv[1]
 evals_wer = []
 evals_mer = []
 evals_wil = []
 for file in files:
-    if current_date in file:
+    if current_date+'_' in file:
+        print('file:', file)
         text_google = transcribe_google(file_path+file).replace('  ',' ')
         text_vosk = ' '.join(transcribe_vosk(file_path+file, model_path)).replace('  ',' ')
         measures = error(text_google, text_vosk)
@@ -131,18 +132,20 @@ for file in files:
         evals_wer.append(measures['wer'])
         evals_mer.append(measures['mer'])
         evals_wil.append(measures['wil'])
+        os.unlink(file_path+file)
 
 print('avg: wer', np.average(evals_wer), 'mer', np.average(evals_mer), 'wil', np.average(evals_wil))
 print('med: wer', np.median(evals_wer), 'mer', np.median(evals_mer), 'wil', np.median(evals_wil))
 
 current = pd.DataFrame(columns = ['date', 'avg_wil', 'avg_wer', 'avg_mer', 'med_wil', 'med_wer', 'med_mer'])
+current['date'] = pd.to_datetime(current_date).date()
 current['avg_wil'] = [np.average(evals_wil)]
 current['avg_wer'] = [np.average(evals_wer)]
 current['avg_mer'] = [np.average(evals_mer)]
 current['med_wil'] = [np.median(evals_wil)]
 current['med_wer'] = [np.median(evals_wer)]
 current['med_mer'] = [np.median(evals_mer)]
-current.to_csv('error_rate.csv')
+current.to_csv('evaluation.csv')
 #pickle.dump(evals_wer, file=open('evals_wer.pickle', 'wb'))
 #pickle.dump(evals_mer, file=open('evals_mer.pickle', 'wb'))
 #pickle.dump(evals_wil, file=open('evals_wil.pickle', 'wb'))
