@@ -149,8 +149,19 @@ current['med_wil'] = [np.median(evals_wil)]
 current['med_wer'] = [np.median(evals_wer)]
 current['med_mer'] = [np.median(evals_mer)]
 
+row = dict()
+row['date'] = pd.to_datetime(current_date).date()
+row['avg_wil'] = [np.average(evals_wil)]
+row['avg_wer'] = [np.average(evals_wer)]
+row['avg_mer'] = [np.average(evals_mer)]
+row['med_wil'] = [np.median(evals_wil)]
+row['med_wer'] = [np.median(evals_wer)]
+row['med_mer'] = [np.median(evals_mer)]
+current  = pd.DataFrame([row], columns=row.keys())
+
 evaluation_file = script_path + 'evaluation.csv'
 evaluation = pd.read_csv(evaluation_file)
-evaluation = evaluation.append(pd.DataFrame([current.iloc[0]]))
-evaluation.to_csv(script_path + 'evaluation.csv')
+evaluation = pd.concat([evaluation, current], axis = 0)
+evaluation.to_csv(evaluation_file, index = False)
+
 print(datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S'), 'job complete')
