@@ -14,6 +14,7 @@ import matplotlib.pyplot as plt
 import datetime
 import os
 import numpy as np
+import telebot
 
 # python3.7 -m pip install jiwer
 
@@ -22,6 +23,7 @@ file_path = '/mnt/share/audio_call/saved_for_analysis/wer/'
 # model_path = '/media/alex/nvme-a/vosk-model-ru-0.10'
 model_path = '/mnt/share/audio_call/model_v0/model'
 script_path = '/home/alex/projects/call_centre_stt_server/'
+tg_group = '-1001443983697'
 
 def transcribe_google(file_path):
     
@@ -116,6 +118,28 @@ def error(ground_truth, hypothesis):
     measures = jiwer.compute_measures(ground_truth, hypothesis)
     return measures
 
+def send_report(evaluation, script_path, tg_group):
+    try:
+        mycolors = ['tab:red', 'tab:blue', 'tab:green', 'tab:orange', 'tab:brown', 'tab:gray']
+        fig, ax = plt.subplots(1,1,figsize=(16, 9), dpi= 80)
+        columns = evaluation.columns[1:]
+        for i, column in enumerate(columns):
+            plt.plot(evaluation.date.values, evaluation[column].values, lw=1.5, color=mycolors[i], label=column)
+        plt.xticks(evaluation.date.values, rotation=60)
+        plt.title('Model error rate\nlower - better')
+        plt.legend()
+        plt.savefig(script_path+'evaluation.png')
+
+        with open(script_path+'telegram_token.key', 'r') as file:
+            token = file.read().replace('\n', '')
+            file.close()
+        bot = telebot.TeleBot(token)
+        with open(script_path+'report.png', 'rb') as data_file:
+            print('sending photo to ', tg_group)
+            bot.send_photo(tg_group, data_file)
+    except Exception as e:
+        print('send_report error:', str(e))
+
 files = get_files(file_path)
 param_date = sys.argv[1]
 if param_date =='default':
@@ -163,5 +187,7 @@ evaluation_file = script_path + 'evaluation.csv'
 evaluation = pd.read_csv(evaluation_file)
 evaluation = pd.concat([evaluation, current], axis = 0)
 evaluation.to_csv(evaluation_file, index = False)
+
+send_report(evaluation, script_path, tg_group)
 
 print(datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S'), 'job complete')
