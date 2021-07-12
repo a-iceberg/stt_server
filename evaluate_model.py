@@ -207,6 +207,9 @@ if len(evals_wer) + len(evals_mer) + len(evals_wil) > 0:
     evaluation = pd.concat([evaluation, current], axis = 0)
     evaluation.to_csv(evaluation_file, index = False)
 
+start_date = (datetime.datetime.now() + datetime.timedelta(days=-10)).strftime('%Y-%m-%d')
+evaluation = pd.DataFrame(evaluation[evaluation.date>start_date])
+
 send_report(evaluation.drop(['med_wil', 'med_wer', 'med_mer'], 1), script_path, tg_group, 'average')
 send_report(evaluation.drop(['avg_wil', 'avg_wer', 'avg_mer'], 1), script_path, tg_group, 'median')
 
