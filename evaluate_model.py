@@ -134,7 +134,7 @@ def send_report(evaluation, script_path, tg_group):
             token = file.read().replace('\n', '')
             file.close()
         bot = telebot.TeleBot(token)
-        with open(script_path+'report.png', 'rb') as data_file:
+        with open(script_path+'evaluation.png', 'rb') as data_file:
             print('sending photo to ', tg_group)
             bot.send_photo(tg_group, data_file)
     except Exception as e:
@@ -167,7 +167,7 @@ for file in files:
         evals_wer.append(measures['wer'])
         evals_mer.append(measures['mer'])
         evals_wil.append(measures['wil'])
-        os.unlink(file_path+file) # should be disabled due premission troubles
+        os.unlink(file_path+file)
 
 print('avg: wer', np.average(evals_wer), 'mer', np.average(evals_mer), 'wil', np.average(evals_wil))
 print('med: wer', np.median(evals_wer), 'mer', np.median(evals_mer), 'wil', np.median(evals_wil))
@@ -196,6 +196,7 @@ evaluation = pd.read_csv(evaluation_file)
 evaluation = pd.concat([evaluation, current], axis = 0)
 evaluation.to_csv(evaluation_file, index = False)
 
-send_report(evaluation, script_path, tg_group)
+send_report(evaluation.drop(['med_wil', 'med_wer', 'med_mer'], 1), script_path, tg_group) # avg
+send_report(evaluation.drop(['avg_wil', 'avg_wer', 'avg_mer'], 1), script_path, tg_group) # med
 
 print(datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S'), 'job complete')
