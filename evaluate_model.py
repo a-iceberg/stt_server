@@ -118,27 +118,25 @@ def error(ground_truth, hypothesis):
     measures = jiwer.compute_measures(ground_truth, hypothesis)
     return measures
 
-def send_report(evaluation, script_path, tg_group):
-    try:
-        mycolors = ['tab:red', 'tab:blue', 'tab:green', 'tab:orange', 'tab:brown', 'tab:gray']
-        fig, ax = plt.subplots(1,1,figsize=(16, 9), dpi= 80)
-        columns = evaluation.columns[1:]
-        for i, column in enumerate(columns):
-            plt.plot(evaluation.date.values, evaluation[column].values, lw=1.5, color=mycolors[i], label=column)
-        plt.xticks(evaluation.date.values, rotation=60)
-        plt.title('Model error rate\nlower - better')
-        plt.legend()
-        plt.savefig(script_path+'evaluation.png')
+def send_report(evaluation, script_path, tg_group, description):
 
-        with open(script_path+'telegram_token.key', 'r') as file:
-            token = file.read().replace('\n', '')
-            file.close()
-        bot = telebot.TeleBot(token)
-        with open(script_path+'evaluation.png', 'rb') as data_file:
-            print('sending photo to ', tg_group)
-            bot.send_photo(tg_group, data_file)
-    except Exception as e:
-        print('send_report error:', str(e))
+    mycolors = ['tab:red', 'tab:blue', 'tab:green', 'tab:orange', 'tab:brown', 'tab:gray']
+    fig, ax = plt.subplots(1,1,figsize=(16, 9), dpi= 80)
+    columns = evaluation.columns[1:]
+    for i, column in enumerate(columns):
+        plt.plot(evaluation.date.values, evaluation[column].values, lw=1.5, color=mycolors[i], label=column)
+    plt.xticks(evaluation.date.values, rotation=60)
+    plt.title(description+' error rate\nlower - better')
+    plt.legend()
+    plt.savefig(script_path+'evaluation.png')
+
+    with open(script_path+'telegram_token.key', 'r') as file:
+        token = file.read().replace('\n', '')
+        file.close()
+    bot = telebot.TeleBot(token)
+    with open(script_path+'evaluation.png', 'rb') as data_file:
+        print('sending photo to ', tg_group)
+        bot.send_photo(tg_group, data_file)
 
 files = get_files(file_path)
 param_date = sys.argv[1]
@@ -196,7 +194,7 @@ evaluation = pd.read_csv(evaluation_file)
 evaluation = pd.concat([evaluation, current], axis = 0)
 evaluation.to_csv(evaluation_file, index = False)
 
-send_report(evaluation.drop(['med_wil', 'med_wer', 'med_mer'], 1), script_path, tg_group) # avg
-send_report(evaluation.drop(['avg_wil', 'avg_wer', 'avg_mer'], 1), script_path, tg_group) # med
+send_report(evaluation.drop(['med_wil', 'med_wer', 'med_mer'], 1), script_path, tg_group, 'average')
+send_report(evaluation.drop(['avg_wil', 'avg_wer', 'avg_mer'], 1), script_path, tg_group, 'median')
 
 print(datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S'), 'job complete')
