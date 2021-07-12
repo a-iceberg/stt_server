@@ -153,7 +153,15 @@ for file in files:
     if current_date+'_' in file:
         print('file:', file)
         text_google = transcribe_google(file_path+file).replace('  ',' ')
+        if len(text_google)<10:
+            print('google len', len(text_google))
+            continue
+        print('google:', text_google)
         text_vosk = ' '.join(transcribe_vosk(file_path+file, model_path)).replace('  ',' ')
+        if len(text_vosk)<10:
+            print('vosk len', len(text_vosk))
+            continue
+        print('vosk:', text_google)
         measures = error(text_google, text_vosk)
         print(measures)
         evals_wer.append(measures['wer'])
