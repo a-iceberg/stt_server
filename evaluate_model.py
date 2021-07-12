@@ -161,7 +161,7 @@ for file in files:
         if len(text_vosk)<10:
             print('vosk len', len(text_vosk))
             continue
-        print('vosk:', text_google)
+        print('vosk:', text_vosk)
         measures = error(text_google, text_vosk)
         print(measures)
         evals_wer.append(measures['wer'])
