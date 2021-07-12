@@ -92,6 +92,13 @@ def get_files(path):
         files.sort()
         return files
 
+def string_have_numbers(example):
+    numbers = [str(i) for i in range(0,10)]
+    for i in example:
+        if i in numbers:
+            return True
+    return False
+
 def evaluate(df, name):
     
     wer = []
@@ -157,6 +164,8 @@ for file in files:
         text_google = transcribe_google(file_path+file).replace('  ',' ')
         if len(text_google)<10:
             print('google len', len(text_google))
+            continue
+        if string_have_numbers(text_google):
             continue
         print('google:', text_google)
         text_vosk = ' '.join(transcribe_vosk(file_path+file, model_path)).replace('  ',' ')
