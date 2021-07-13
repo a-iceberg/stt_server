@@ -197,8 +197,8 @@ for row in cursor.fetchall():
 	server_object.perf_log(0, queue_start, queue_end, original_file_duration, linkedid)
 
 	processed += 1
-	print(' === processed:', processed, 'files_converted:', files_converted, '/', batch_size, '===')
-	if files_converted > batch_size:
+	print(' === processed:', processed, '/', batch_size, 'files_converted:', files_converted, '===')
+	if processed > batch_size:
 		break
 
 print(server_object.cpu_id,datetime.datetime.now().strftime('%Y-%m-%dT%H:%M:%S'), 'exit to next job..')
