@@ -10,7 +10,7 @@ import pendulum
 
 #def recognize_once():
 
-batch_size = 10
+batch_size = 100
 
 print('cpu', sys.argv[1])
 server_object = stt_server(sys.argv[1])
