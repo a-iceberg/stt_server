@@ -10,6 +10,8 @@ import pendulum
 
 #def recognize_once():
 
+batch_size = 10
+
 print('cpu', sys.argv[1])
 server_object = stt_server(sys.argv[1])
 cursor = server_object.conn.cursor()
@@ -70,9 +72,10 @@ for row in cursor.fetchall():
 					file_size,
 					queue_date
 				)
-				files_converted += 1
+				files_converted += 1				
 			else:
 				print('mrm file not found', server_object.temp_file_path + server_object.temp_file_name)
+			
 			server_object.delete_current_queue(original_file_name, linkedid)
 
 
@@ -125,7 +128,7 @@ for row in cursor.fetchall():
 				server_object.delete_current_queue(original_file_name, linkedid)
 
 		print('files_converted', files_converted)		
-
+		
 		server_object.delete_source_file(original_file_path, original_file_name, linkedid)
 
 	else:
@@ -194,8 +197,8 @@ for row in cursor.fetchall():
 	server_object.perf_log(0, queue_start, queue_end, original_file_duration, linkedid)
 
 	processed += 1
-	# print('processed, files_converted', processed, files_converted)
-	if files_converted > 0:
+	print('processed:', processed, 'files_converted:', files_converted)
+	if files_converted > batch_size:
 		break
 
 print(server_object.cpu_id,datetime.datetime.now().strftime('%Y-%m-%dT%H:%M:%S'), 'exit to next job..')
