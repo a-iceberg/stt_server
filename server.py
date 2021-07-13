@@ -197,7 +197,7 @@ for row in cursor.fetchall():
 	server_object.perf_log(0, queue_start, queue_end, original_file_duration, linkedid)
 
 	processed += 1
-	print('processed:', processed, 'files_converted:', files_converted)
+	print(' === processed:', processed, 'files_converted:', files_converted, '/', batch_size, '===')
 	if files_converted > batch_size:
 		break
 
