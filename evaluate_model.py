@@ -156,21 +156,25 @@ evals_mer = []
 evals_wil = []
 
 evaluation_file = script_path + 'evaluation.csv'
-evaluation = pd.read_csv(evaluation_file)
+evaluation = pd.read_csv(evaluation_file, parse_dates = False)
 
 for file in files:
     if current_date+'_' in file:
         print('file:', file)
         text_google = transcribe_google(file_path+file).replace('  ',' ')
         if len(text_google)<10:
-            print('google len', len(text_google))
+            print('break google len', len(text_google))
+            os.unlink(file_path+file)
             continue
         if string_have_numbers(text_google):
+            print('break google numbers:', text_google)
+            os.unlink(file_path+file)
             continue
         print('google:', text_google)
         text_vosk = ' '.join(transcribe_vosk(file_path+file, model_path)).replace('  ',' ')
         if len(text_vosk)<10:
-            print('vosk len', len(text_vosk))
+            print('break vosk len', len(text_vosk))
+            os.unlink(file_path+file)
             continue
         print('vosk:', text_vosk)
         measures = error(text_google, text_vosk)
@@ -207,7 +211,8 @@ if len(evals_wer) + len(evals_mer) + len(evals_wil) > 0:
     evaluation = pd.concat([evaluation, current], axis = 0)
     evaluation.to_csv(evaluation_file, index = False)
 
-start_date = (datetime.datetime.now() + datetime.timedelta(days=-10)).strftime('%Y-%m-%d')
+start_date = pd.to_datetime((datetime.datetime.now() + datetime.timedelta(days=-10)).strftime('%Y-%m-%d'))
+evaluation.date = pd.to_datetime(evaluation.date)
 evaluation = pd.DataFrame(evaluation[evaluation.date>start_date])
 
 send_report(evaluation.drop(['med_wil', 'med_wer', 'med_mer'], 1), script_path, tg_group, 'average')
