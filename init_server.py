@@ -80,6 +80,8 @@ class stt_server:
 			2: self.connect_mysql(2),
 		}
 
+		self.model = Model(self.model_path)
+
 	def send_to_telegram(self, message):
 		headers = {
 			"Origin": "https://api.telegram.org",
@@ -285,8 +287,8 @@ class stt_server:
 		wf = wave.open(self.temp_file_path + self.temp_file_name, "rb")
 
 		# read model
-		model = Model(self.model_path)
-		rec = KaldiRecognizer(model, wf.getframerate())
+		# self.model = Model(self.model_path)
+		rec = KaldiRecognizer(self.model, wf.getframerate())
 
 		# recognizing
 		phrases_count = 0
