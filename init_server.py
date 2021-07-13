@@ -119,7 +119,9 @@ class stt_server:
 		spent_time = (time_end - time_start)
 		current_date = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
 		cursor = self.conn.cursor()
-		sql_query = "insert into perf_log(cores, event_date, step, time, cpu, file_name, duration, linkedid, source_id) "
+		sql_query = "insert into perf_log("
+		sql_query += "cores, event_date, step, time, cpu, file_name, duration, linkedid, source_id"
+		sql_query += ") "
 		sql_query += "values ("
 		sql_query += str(len(self.cpu_cores)) + ", "
 		sql_query += "'" + current_date + "', "
