@@ -33,7 +33,7 @@ def transcribe_google(file_path):
     # conda deactivate
     # python3.7 -m pip install --upgrade google-cloud-speech
 
-    credentials_json = 'iceberg-318906-dbe1223570ba.json'
+    credentials_json = script_path+'iceberg-318906-dbe1223570ba.json'
     creds = service_account.Credentials.from_service_account_file(
     credentials_json,
     scopes=['https://www.googleapis.com/auth/cloud-platform'])
