@@ -13,9 +13,9 @@ sudo systemctl enable call_stt_11.service
 sudo systemctl enable call_stt_12.service
 sudo systemctl enable call_stt_13.service
 sudo systemctl enable call_stt_14.service
-#sudo systemctl enable call_stt_15.service
-#sudo systemctl enable call_stt_16.service
-#sudo systemctl enable call_stt_17.service
+sudo systemctl enable call_stt_15.service
+sudo systemctl enable call_stt_16.service
+sudo systemctl enable call_stt_17.service
 #sudo systemctl enable call_stt_18.service
 #sudo systemctl enable call_stt_19.service
 #sudo systemctl enable call_stt_20.service

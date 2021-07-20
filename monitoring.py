@@ -7,6 +7,8 @@ import matplotlib.pyplot as plt
 import telebot
 import os
 from collections import namedtuple
+import numpy as np
+import matplotlib.pyplot as plt
 
 
 def connect_mssql():
@@ -226,7 +228,91 @@ def summarization():
         message += '\n'+city+': ' + str(df.iloc()[0][0])      
     
     return message
+	
 
+def summarization_plot(group):
+	start_time = (datetime.datetime.now() + datetime.timedelta(days=-2)).strftime('%Y-%m-%dT%H:%M:%S')
+	print('summarization plot from', start_time)
+	query = "SELECT distinct linkedid, record_date from summarization where record_date>'"+start_time+"' and not text='';"
+	summarized = read_sql(query)
+	query = "SELECT distinct linkedid, record_date from transcribations where record_date>'"+start_time+"' and not text='';"
+	transcribed = read_sql(query)
+
+	df = pd.merge(transcribed, summarized, how = 'left', on = 'linkedid')
+	def isnat(s):
+		return not s is pd.NaT
+	df['summarized'] = df.record_date_y.apply(isnat)
+
+	def start_of_minute(d):
+		return d.strftime('%Y-%m-%dT%H:00:00')
+	df.record_date_x = df.record_date_x.apply(start_of_minute)
+
+	df.drop('record_date_y', 1, inplace = True)
+	df.drop('linkedid', 1, inplace = True)
+
+	sum_count = df[df.summarized].groupby('record_date_x').count()
+	sum_count.reset_index(inplace = True)
+	sum_count.columns = ['date', 'summarized']
+
+	unsum_count = df[df.summarized == False].groupby('record_date_x').count()
+	unsum_count.reset_index(inplace = True)
+	unsum_count.columns = ['date', 'unsummarized']
+
+	df = pd.merge(sum_count,unsum_count, how = 'outer', on = 'date')
+
+	df.summarized.fillna(0, inplace=True)
+	df.unsummarized.fillna(0, inplace=True)
+
+	def crop_date(d):
+		return d[:13].replace('T', ' ')
+	df.date = df.date.apply(crop_date)
+
+	query = "select min(record_date) from queue where not isnull(record_date,'')='';"
+	queue_first_record = read_sql(query)
+	queue_first_record = str(queue_first_record.iloc()[0][0])
+	header = 'Суммаризации \n_с '+str(start_time).replace('T', ' ')+'\nпо '+str(queue_first_record)
+
+	#header = 'Суммаризации'
+	columns = df.columns[1:]
+	mycolors = ['tab:blue', 'tab:red']
+
+	# Draw Plot and Annotate
+	fig, ax = plt.subplots(1,1,figsize=(16, 9), dpi = 80)
+
+	labs = columns.values.tolist()
+
+	# Prepare data
+	x  = df['date'].values.tolist()
+	y0 = df[columns[0]].values.tolist()
+	y1 = df[columns[1]].values.tolist()
+	y = np.vstack([y0, y1])
+
+	# Plot for each column
+	labs = columns.values.tolist()
+	ax = plt.gca()
+	ax.stackplot(x, y, labels=labs, colors=mycolors, alpha=0.8)
+
+	# Decorations
+	ax.set_title(header, fontsize=18)
+	ax.legend(fontsize=10, ncol=4)
+	plt.grid(alpha=0.5)
+
+	# Lighten borders
+	plt.gca().spines["top"].set_alpha(0)
+	plt.gca().spines["bottom"].set_alpha(.3)
+	plt.gca().spines["right"].set_alpha(0)
+	plt.gca().spines["left"].set_alpha(.3)
+	plt.gca().set_xticklabels(labels = df.date, rotation=30)
+	plt.show()
+	plt.savefig('/home/alex/projects/call_centre_stt_server/summarization.png')
+	
+	with open('/home/alex/projects/call_centre_stt_server/telegram_token.key', 'r') as file:
+		token = file.read().replace('\n', '')
+		file.close()
+	bot = telebot.TeleBot(token)
+	data_file = open('/home/alex/projects/call_centre_stt_server/summarization.png', 'rb')
+	# bot.send_photo(group, data_file, caption="queue_time_vs_date")
+	bot.send_photo(group, data_file)
 
 msg = 'Состояние системы расшифровки аудиозаписей\n'
 msg += transcribed_yesterday() + '\n'
@@ -241,4 +327,5 @@ msg += '/mnt/share/audio_call/ ' + disk_usage('/mnt/share/audio_call/')
 msg += summarization()
 print(msg)
 send_to_telegram('-1001443983697', msg)
+summarization_plot('-1001443983697')
 queue_time_vs_date('-1001443983697')
