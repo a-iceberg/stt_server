@@ -263,6 +263,27 @@ class stt_server:
 		except OSError as e:  ## if failed, report it back to the user ##
 			print("Error: %s - %s." % (e.filename, e.strerror))"""
 
+	def summarization_add_queue(self, linkedid, record_date, side, phrases_count, text, version):
+		current_date = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+		text_length = len(text)
+		query = "insert into summarization_queue"
+		query += "(linkedid, record_date, append_date, side, phrases_count, text, text_length, version) "
+		query += " values("
+		query += "'"+str(linkedid)+"',"
+		query += "'"+str(record_date)+"',"
+		query += "'"+str(current_date)+"',"
+		query += str(side)+","
+		query += "'"+str(phrases_count)+"',"
+		query += "'"+str(text)+"',"
+		query += "'"+str(text_length)+"',"
+		query += "'"+str(version)+"'"
+		query += ");"
+
+		cursor = self.conn.cursor()
+		#conn = ms_sql_con()
+		#cursor = self.conn.cursor()
+		cursor.execute(query)
+
 	def transcribe_to_sql(
 		self, 
 		duration, 
@@ -294,7 +315,9 @@ class stt_server:
 		phrases_count = 0
 
 		confidences = []
-
+		
+		phrases = []
+		
 		while True:
 
 			conf_score = []
@@ -334,6 +357,8 @@ class stt_server:
 						queue_date
 					)
 					
+					phrases.append(accept_text)
+					
 					phrases_count += 1
 
 		if len(confidences):
@@ -364,6 +389,17 @@ class stt_server:
 				file_size,
 				queue_date
 			)
+		else:
+			version = 0
+			for replacer in [' ', ' - ', '. ']:
+				text_for_queue = replacer.join(phrases)
+				while '  ' in text_for_queue:
+					text_for_queue = text_for_queue.replace('  ',' ')
+				#print('self.summarization_add_queue', version, text_for_queue)
+				self.summarization_add_queue(linkedid, rec_date, side, phrases_count, text_for_queue, version)
+				version += 1
+				
+			
 
 	def save_result(
 			self,

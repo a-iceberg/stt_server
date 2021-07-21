@@ -231,11 +231,22 @@ def summarization():
 	
 
 def summarization_plot(group):
+
+	query = "select min(record_date) from queue where not isnull(record_date,'')='';"
+	queue_first_record = read_sql(query)
+	queue_first_record = str(queue_first_record.iloc()[0][0])
+	if queue_first_record == 'None':
+		queue_first_record = datetime.datetime.now().strftime('%Y-%m-%dT%H:%M:%S')
+	else:
+		queue_first_record = queue_first_record.strftime('%Y-%m-%dT%H:%M:%S')
+
 	start_time = (datetime.datetime.now() + datetime.timedelta(days=-2)).strftime('%Y-%m-%dT%H:%M:%S')
 	print('summarization plot from', start_time)
-	query = "SELECT distinct linkedid, record_date from summarization where record_date>'"+start_time+"' and not text='';"
+	query = "SELECT distinct linkedid, record_date from summarization where"
+	query += " record_date>'"+start_time+"' and not text='';"
 	summarized = read_sql(query)
-	query = "SELECT distinct linkedid, record_date from transcribations where record_date>'"+start_time+"' and not text='';"
+	query = "SELECT distinct linkedid, record_date from transcribations where"
+	query += " record_date>'"+start_time+"' and record_date<'"+queue_first_record+"' and not text='';"
 	transcribed = read_sql(query)
 
 	df = pd.merge(transcribed, summarized, how = 'left', on = 'linkedid')
@@ -267,10 +278,8 @@ def summarization_plot(group):
 		return d[:13].replace('T', ' ')
 	df.date = df.date.apply(crop_date)
 
-	query = "select min(record_date) from queue where not isnull(record_date,'')='';"
-	queue_first_record = read_sql(query)
-	queue_first_record = str(queue_first_record.iloc()[0][0])
-	header = 'Суммаризации \n_с '+str(start_time).replace('T', ' ')+'\nпо '+str(queue_first_record)
+	
+	header = 'Суммаризации \n_с '+str(start_time).replace('T', ' ')+'\nпо '+str(queue_first_record).replace('T', ' ')
 
 	#header = 'Суммаризации'
 	columns = df.columns[1:]
@@ -314,6 +323,8 @@ def summarization_plot(group):
 	# bot.send_photo(group, data_file, caption="queue_time_vs_date")
 	bot.send_photo(group, data_file)
 
+summarization_plot('-1001443983697')
+
 msg = 'Состояние системы расшифровки аудиозаписей\n'
 msg += transcribed_yesterday() + '\n'
 msg += queue_len() + '\n'
@@ -327,5 +338,4 @@ msg += '/mnt/share/audio_call/ ' + disk_usage('/mnt/share/audio_call/')
 msg += summarization()
 print(msg)
 send_to_telegram('-1001443983697', msg)
-summarization_plot('-1001443983697')
 queue_time_vs_date('-1001443983697')

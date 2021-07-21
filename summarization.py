@@ -116,12 +116,18 @@ summarization_first_record = str(df.iloc()[0][0])"""
 
 print(datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S'), 'select from transcribations..')
 
+start_date = (datetime.datetime.now() + datetime.timedelta(days=-30)).strftime('%Y-%m-%dT%H:%M:%S')
+
 # concatenate transcribations
 query = "SELECT distinct top "+str(BATCH_SIZE)+" record_date, linkedid"
 query += " from transcribations"
 query += " where "
 query += " record_date < '"+queue_first_record+"' and"
-query += " not linkedid in (select distinct linkedid from summarization)"
+query += " record_date > '"+start_date+"' and"
+query += " not linkedid in ("
+query += " select distinct linkedid from summarization where"
+query += " record_date > '"+start_date+"'"
+query += ")"
 query += " order by record_date desc;"
 df = read_sql(query)
 
@@ -141,17 +147,22 @@ for _id, row in df.iterrows():
             row.linkedid,
             side
         )
+		
+
         text_full, phrases_count, source_id = concatenate_linkedid_side(side, row.record_date, row.linkedid)
-        text_short = summarize(text_full.replace(',',' - '), phrases_count)
+        print(datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S'), 'concatenated')
+        # text_short = summarize(text_full.replace(',',' - '), phrases_count)
 
         # stage 1: find better approach
         text_short = summarize(text_full, phrases_count)
+        print(datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S'), 'sum 1')
         #best_result = difflib.SequenceMatcher(None, text_full, text_short).ratio()
         # https://www.machinelearningmastery.ru/overview-of-text-similarity-metrics-3397c4601f50/
         best_result = get_jaccard_sim(text_full, text_short)
         # best_replacer = [',']
         for replacer in [' ', ' - ']:
             try_short = summarize(text_full.replace(',', replacer), phrases_count)
+            print(datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S'), 'sum ', '"'+replacer+'"')
             #try_result = difflib.SequenceMatcher(None, text_full, try_short).ratio()
             try_result = get_jaccard_sim(text_full, text_short)
             if try_result > best_result:
@@ -165,6 +176,7 @@ for _id, row in df.iterrows():
         #        break
         
         # fix wrong summarizations
+        print(datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S'), 'saving..')
         wrong_words = ['погиб', 'смерть', 'путин'] # high frequency newspaper words
         # stage 2: just crop if wrong words still in summarization
         for wrong in wrong_words:
@@ -172,8 +184,8 @@ for _id, row in df.iterrows():
                 print(row.linkedid, side, 'replaced, because found', wrong, 'in:', text_short)
                 text_short = text_full[:1023]
                 break
-
         sum_to_sql(row.linkedid, row.record_date, side, text_short, phrases_count, len(text_full), source_id)
+		
 
 print(
     datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
