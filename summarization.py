@@ -112,7 +112,7 @@ def replace_wrong_by_row(row, wrong_words):
 print('=== start ===')
 
 query = "SELECT top 6"
-query += " linkedid, record_date, side, phrases_count, text_length, text, version,"
+query += " linkedid, record_date, side, phrases_count, text_length, text, version, source_id, "
 query += " '' as text_short, 0 as jaccard_sim"
 query += " from summarization_queue"
 query += " order by record_date, linkedid, side, version;"
