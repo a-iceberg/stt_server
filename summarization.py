@@ -135,6 +135,10 @@ while True:
     query += " order by record_date, linkedid, side, version;"
     df = read_sql(query)
 
+    if len(df) == 0:
+        time.sleep(1)
+        continue
+        
     # summarize
     df.text_short = df.apply(summarize_by_row, axis=1)
 
