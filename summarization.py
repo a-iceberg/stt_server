@@ -136,9 +136,10 @@ while True:
     df = read_sql(query)
 
     if len(df) == 0:
+        print(datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S'), 'nothing to do. sleeping..')
         time.sleep(1)
         continue
-        
+
     # summarize
     df.text_short = df.apply(summarize_by_row, axis=1)
 
