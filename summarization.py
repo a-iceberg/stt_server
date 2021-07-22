@@ -75,7 +75,12 @@ def commit(df):
 
     conn = ms_sql_con()  
     cursor = conn.cursor()
-    cursor.execute(insert+delete)
+    try:
+        cursor.execute(insert+delete)
+    except Exception as e:
+        print(e)
+        print(insert)
+        print(delete)
 
 
 def get_jaccard_sim(str1, str2): 
@@ -111,7 +116,7 @@ def replace_wrong_by_row(row, wrong_words):
 
 print('=== start ===')
 
-query = "SELECT top 6"
+query = "SELECT top 30"
 query += " linkedid, record_date, side, phrases_count, text_length, text, version, source_id, "
 query += " '' as text_short, 0 as jaccard_sim"
 query += " from summarization_queue"
