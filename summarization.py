@@ -33,6 +33,7 @@ def read_sql(query):
 
 
 def summarize(text, phrases_count):
+    print(datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S'), 'summarizing')
     if phrases_count<2 or len(text)<255:
         return text
     subscriber = redis.StrictRedis(host=REDIS_IP)
@@ -110,7 +111,7 @@ def replace_wrong_by_row(row, wrong_words):
 
 print('=== start ===')
 
-query = "SELECT top 6"
+query = "SELECT "
 query += " linkedid, record_date, side, phrases_count, text_length, text, version, source_id, "
 query += " '' as text_short, 0 as jaccard_sim"
 query += " from summarization_queue"
