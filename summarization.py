@@ -66,7 +66,7 @@ def commit(df):
         insert += "'"+str(row.text)+"',"
         insert += "'"+str(row.phrases_count)+"',"
         insert += "'"+str(row.text_length)+"',"
-        insert += ""+str(row.source_id)+""
+        insert += str(row.source_id)
         insert += ");"
 
         delete += "delete from summarization_queue where"
@@ -111,7 +111,7 @@ def replace_wrong_by_row(row, wrong_words):
 
 print('=== start ===')
 
-query = "SELECT "
+query = "SELECT top 6"
 query += " linkedid, record_date, side, phrases_count, text_length, text, version, source_id, "
 query += " '' as text_short, 0 as jaccard_sim"
 query += " from summarization_queue"
@@ -121,6 +121,7 @@ df = read_sql(query)
 # summarize
 df.text_short = df.apply(summarize_by_row, axis=1)
 
+print(datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S'), 'preparing')
 # evaluate error
 wrong_words = ['погиб', 'смерть', 'путин'] # high frequency and not relevant newspaper words
 df.jaccard_sim = df.apply(jaccard_sim_by_row, axis=1, wrong_words = wrong_words)
@@ -137,6 +138,8 @@ df = pd.merge(df, jfirst, how = 'inner', on = ['linkedid','side', 'version'])
 
 # replace wrong words
 df.text_short = df.apply(replace_wrong_by_row, axis=1, wrong_words = wrong_words)
+
+print(datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S'), 'saving')
 
 # save
 current_date = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
