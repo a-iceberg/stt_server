@@ -81,6 +81,7 @@ def commit(df):
         print(e)
         print(insert)
         print(delete)
+        b = input()
 
 
 def get_jaccard_sim(str1, str2): 
@@ -116,46 +117,48 @@ def replace_wrong_by_row(row, wrong_words):
 
 print('=== start ===')
 
-query = "SELECT top 300"
-query += " linkedid, record_date, side, phrases_count, text_length, text, version, source_id, "
-query += " '' as text_short, 0 as jaccard_sim"
-query += " from summarization_queue"
-query += " order by record_date, linkedid, side, version;"
-df = read_sql(query)
+while True:
 
-# summarize
-df.text_short = df.apply(summarize_by_row, axis=1)
+    query = "SELECT top 3"
+    query += " linkedid, record_date, side, phrases_count, text_length, text, version, source_id, "
+    query += " '' as text_short, 0 as jaccard_sim"
+    query += " from summarization_queue"
+    query += " order by record_date, linkedid, side, version;"
+    df = read_sql(query)
 
-print(datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S'), 'preparing')
-# evaluate error
-wrong_words = ['погиб', 'смерть', 'путин'] # high frequency and not relevant newspaper words
-df.jaccard_sim = df.apply(jaccard_sim_by_row, axis=1, wrong_words = wrong_words)
-jsims = pd.DataFrame(df.groupby(by=['linkedid','side']).max().jaccard_sim)
-jsims.reset_index(inplace = True)
+    # summarize
+    df.text_short = df.apply(summarize_by_row, axis=1)
 
-# drop wroworst results
-df = pd.merge(df, jsims, how = 'inner', on = ['linkedid','side', 'jaccard_sim'])
+    print(datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S'), 'preparing')
+    # evaluate error
+    wrong_words = ['погиб', 'смерть', 'путин'] # high frequency and not relevant newspaper words
+    df.jaccard_sim = df.apply(jaccard_sim_by_row, axis=1, wrong_words = wrong_words)
+    jsims = pd.DataFrame(df.groupby(by=['linkedid','side']).max().jaccard_sim)
+    jsims.reset_index(inplace = True)
 
-# group the same results
-jfirst = pd.DataFrame(df.groupby(by=['linkedid','side']).min().version)
-jfirst.reset_index(inplace = True)
-df = pd.merge(df, jfirst, how = 'inner', on = ['linkedid','side', 'version'])
+    # drop wroworst results
+    df = pd.merge(df, jsims, how = 'inner', on = ['linkedid','side', 'jaccard_sim'])
 
-# replace wrong words
-df.text_short = df.apply(replace_wrong_by_row, axis=1, wrong_words = wrong_words)
+    # group the same results
+    jfirst = pd.DataFrame(df.groupby(by=['linkedid','side']).min().version)
+    jfirst.reset_index(inplace = True)
+    df = pd.merge(df, jfirst, how = 'inner', on = ['linkedid','side', 'version'])
 
-print(datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S'), 'saving')
+    # replace wrong words
+    df.text_short = df.apply(replace_wrong_by_row, axis=1, wrong_words = wrong_words)
 
-# save
-current_date = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-df['sum_date'] = [current_date for i in range(len(df))]
-df.drop(['jaccard_sim', 'text', 'version'], axis = 1, inplace = True)
-df.rename(columns={'text_short': 'text'}, inplace=True)
-commit(df)
+    print(datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S'), 'saving')
 
-print(
-    datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
-    'job complete:', len(df),
-    'from:', min(df.record_date),
-    'to:', max(df.record_date)
-    )
+    # save
+    current_date = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+    df['sum_date'] = [current_date for i in range(len(df))]
+    df.drop(['jaccard_sim', 'text', 'version'], axis = 1, inplace = True)
+    df.rename(columns={'text_short': 'text'}, inplace=True)
+    commit(df)
+
+    print(
+        datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
+        'job complete:', len(df),
+        'from:', min(df.record_date),
+        'to:', max(df.record_date)
+        )
