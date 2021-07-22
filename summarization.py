@@ -81,7 +81,7 @@ def commit(df):
         print(e)
         print(insert)
         print(delete)
-        b = input()
+        #b = input()
 
 
 def get_jaccard_sim(str1, str2): 
@@ -128,7 +128,7 @@ print('=== start ===')
 
 while True:
 
-    query = "SELECT top 3"
+    query = "SELECT"
     query += " linkedid, record_date, side, phrases_count, text_length, text, version, source_id, "
     query += " '' as text_short, 0 as jaccard_sim"
     query += " from summarization_queue"
