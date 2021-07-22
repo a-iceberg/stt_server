@@ -72,10 +72,9 @@ def commit(df):
         delete += " linkedid='"+str(row.linkedid)+"' and"
         delete += " side="+('1' if str(row.side) == 'True' else '0')+";"
 
-    #conn = ms_sql_con()  
-    #cursor = conn.cursor()
-    #cursor.execute(insert+delete)
-    print(insert+delete)
+    conn = ms_sql_con()  
+    cursor = conn.cursor()
+    cursor.execute(insert+delete)
 
 
 def get_jaccard_sim(str1, str2): 
