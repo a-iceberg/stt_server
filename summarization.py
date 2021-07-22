@@ -61,7 +61,7 @@ def commit(df):
         insert += "'"+str(row.linkedid)+"',"
         insert += "'"+str(row.record_date)+"',"
         insert += "'"+str(row.sum_date)+"',"
-        insert += str(row.side)+","
+        insert += ('1' if str(row.side) == 'True' else '0')+","
         insert += "'"+str(row.text)+"',"
         insert += "'"+str(row.phrases_count)+"',"
         insert += "'"+str(row.text_length)+"',"
@@ -70,7 +70,7 @@ def commit(df):
 
         delete += "delete from summarization_queue where"
         delete += " linkedid='"+str(row.linkedid)+"' and"
-        delete += " side='"+str(row.side)+"';"
+        delete += " side="+('1' if str(row.side) == 'True' else '0')+";"
 
     #conn = ms_sql_con()  
     #cursor = conn.cursor()
