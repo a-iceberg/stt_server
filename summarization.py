@@ -115,6 +115,15 @@ def replace_wrong_by_row(row, wrong_words):
     return row.text_short
 
 
+def fix_wrong_symbols(row):
+    result = row.text_short
+    if "'" in result:
+        result = result.replace("'","")
+    if '"' in result:
+        result = result.replace('"','')
+    return result
+
+
 print('=== start ===')
 
 while True:
@@ -144,8 +153,9 @@ while True:
     jfirst.reset_index(inplace = True)
     df = pd.merge(df, jfirst, how = 'inner', on = ['linkedid','side', 'version'])
 
-    # replace wrong words
+    # replace wrong words and symbols
     df.text_short = df.apply(replace_wrong_by_row, axis=1, wrong_words = wrong_words)
+    df.text_short = df.apply(fix_wrong_symbols, axis=1)
 
     print(datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S'), 'saving')
 
