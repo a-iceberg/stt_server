@@ -263,11 +263,11 @@ class stt_server:
 		except OSError as e:  ## if failed, report it back to the user ##
 			print("Error: %s - %s." % (e.filename, e.strerror))"""
 
-	def summarization_add_queue(self, linkedid, record_date, side, phrases_count, text, version):
+	def summarization_add_queue(self, linkedid, record_date, side, phrases_count, text, version, source_id):
 		current_date = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
 		text_length = len(text)
 		query = "insert into summarization_queue"
-		query += "(linkedid, record_date, append_date, side, phrases_count, text, text_length, version) "
+		query += "(linkedid, record_date, append_date, side, phrases_count, text, text_length, version, source_id) "
 		query += " values("
 		query += "'"+str(linkedid)+"',"
 		query += "'"+str(record_date)+"',"
@@ -276,12 +276,11 @@ class stt_server:
 		query += "'"+str(phrases_count)+"',"
 		query += "'"+str(text)+"',"
 		query += "'"+str(text_length)+"',"
-		query += "'"+str(version)+"'"
+		query += "'"+str(version)+"',"
+		query += "'"+str(source_id)+"'"
 		query += ");"
 
 		cursor = self.conn.cursor()
-		#conn = ms_sql_con()
-		#cursor = self.conn.cursor()
 		cursor.execute(query)
 
 	def transcribe_to_sql(
@@ -396,7 +395,15 @@ class stt_server:
 				while '  ' in text_for_queue:
 					text_for_queue = text_for_queue.replace('  ',' ')
 				#print('self.summarization_add_queue', version, text_for_queue)
-				self.summarization_add_queue(linkedid, rec_date, side, phrases_count, text_for_queue, version)
+				self.summarization_add_queue(
+					linkedid, 
+					rec_date, 
+					side, 
+					phrases_count, 
+					text_for_queue, 
+					version, 
+					self.source_id
+					)
 				version += 1
 				
 			

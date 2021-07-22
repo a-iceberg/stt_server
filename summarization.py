@@ -6,7 +6,6 @@ import datetime
 import difflib
 
 REDIS_IP = '10.2.5.212'
-BATCH_SIZE = 1000
 MAX_TEXT_SIZE = 1023
 SCRIPT_PATH = '/home/alex/projects/call_centre_stt_server/'
 
@@ -33,17 +32,6 @@ def read_sql(query):
     return pd.read_sql(query, con=ms_sql_con(), parse_dates=None)
 
 
-def concatenate_linkedid_side(side, record_date, linkedid):
-    query = "SELECT text, source_id from transcribations where "
-    query += " side="+str(side)+" and "
-    query += " record_date = '"+str(record_date)+"' and "
-    query += " linkedid = '"+str(linkedid)+"';"
-    text_df = read_sql(query)
-    phrases_count = len(text_df)
-    text_full = ', '.join([row.text for _id, row in text_df.iterrows()])
-    return text_full, phrases_count, min(text_df.source_id)
-
-
 def summarize(text, phrases_count):
     if phrases_count<2 or len(text)<255:
         return text
@@ -62,29 +50,32 @@ def summarize(text, phrases_count):
         time.sleep(1)
 
 
-def sum_to_sql(linkedid, recor_date, side, text, phrases_count, text_length, source_id):    
-    current_date = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-    query = "insert into summarization"
-    query += "(linkedid, record_date, sum_date, side, text, phrases_count, text_length, source_id) "
-    query += " values("
-    query += "'"+str(linkedid)+"',"
-    query += "'"+str(recor_date)+"',"
-    query += "'"+str(current_date)+"',"
-    query += str(side)+","
-    query += "'"+str(text[:MAX_TEXT_SIZE]).replace("'","").replace('"','')+"',"
-    query += "'"+str(phrases_count)+"',"
-    query += "'"+str(text_length)+"',"
-    query += ""+str(source_id)+""
-    query += ");"
+def commit(df):
+    insert = ''
+    delete = ''
+    for idx, row in df.iterrows():    
+        
+        insert += "insert into summarization"
+        insert += "(linkedid, record_date, sum_date, side, text, phrases_count, text_length, source_id) "
+        insert += " values("
+        insert += "'"+str(row.linkedid)+"',"
+        insert += "'"+str(row.record_date)+"',"
+        insert += "'"+str(row.sum_date)+"',"
+        insert += str(row.side)+","
+        insert += "'"+str(row.text)+"',"
+        insert += "'"+str(row.phrases_count)+"',"
+        insert += "'"+str(row.text_length)+"',"
+        insert += ""+str(row.source_id)+""
+        insert += ");"
 
-    # debug ++
-    #print(current_date, linkedid, side)
-    #print(query)
-    # debug ++
+        delete += "delete from summarization_queue where"
+        delete += " linkedid='"+str(row.linkedid)+"' and"
+        delete += " side='"+str(row.side)+"';"
 
-    conn = ms_sql_con()  
-    cursor = conn.cursor()
-    cursor.execute(query)
+    #conn = ms_sql_con()  
+    #cursor = conn.cursor()
+    #cursor.execute(insert+delete)
+    print(insert+delete)
 
 
 def get_jaccard_sim(str1, str2): 
@@ -98,94 +89,61 @@ def get_jaccard_sim(str1, str2):
         return 0
 
 
+def summarize_by_row(row):
+    return summarize(row.text, row.phrases_count)
+
+
+def jaccard_sim_by_row(row, wrong_words):
+    for wrong in wrong_words:
+        if wrong in row.text_short:
+            print('jaccard_sim_by_row ratet as 0:', wrong)
+            return 0
+    return get_jaccard_sim(row.text, row.text_short)
+
+
+def replace_wrong_by_row(row, wrong_words):
+    for wrong in wrong_words:
+        if wrong in row.text_short:
+            print('replace_wrong_by_row replaced:', wrong)
+            return row.text[:MAX_TEXT_SIZE]
+    return row.text_short
+
+
 print('=== start ===')
 
-# obtain datetime limits
-query = "select linkedid from queue;"
-df = read_sql(query)
-if len(df):
-    query = "select min(record_date) from queue where not isnull(record_date,'')='';"
-    df = read_sql(query)
-    queue_first_record = str(df.iloc()[0][0])
-else:
-    queue_first_record = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-
-"""query = "select max(record_date) from summarization;"
-df = read_sql(query)
-summarization_first_record = str(df.iloc()[0][0])"""
-
-print(datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S'), 'select from transcribations..')
-
-start_date = (datetime.datetime.now() + datetime.timedelta(days=-30)).strftime('%Y-%m-%dT%H:%M:%S')
-
-# concatenate transcribations
-query = "SELECT distinct top "+str(BATCH_SIZE)+" record_date, linkedid"
-query += " from transcribations"
-query += " where "
-query += " record_date < '"+queue_first_record+"' and"
-query += " record_date > '"+start_date+"' and"
-query += " not linkedid in ("
-query += " select distinct linkedid from summarization where"
-query += " record_date > '"+start_date+"'"
-query += ")"
-query += " order by record_date desc;"
+query = "SELECT top 6"
+query += " linkedid, record_date, side, phrases_count, text_length, text, version,"
+query += " '' as text_short, 0 as jaccard_sim"
+query += " from summarization_queue"
+query += " order by record_date, linkedid, side, version;"
 df = read_sql(query)
 
-print(
-    datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
-    'received:', len(df),
-    'from:', min(df.record_date),
-    'to:', max(df.record_date)
-    )
+# summarize
+df.text_short = df.apply(summarize_by_row, axis=1)
 
-for _id, row in df.iterrows():
-    
-    for side in range(2):
-        print(datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S'), 
-        'concatenating',
-            row.record_date,
-            row.linkedid,
-            side
-        )
-		
+# evaluate error
+wrong_words = ['погиб', 'смерть', 'путин'] # high frequency and not relevant newspaper words
+df.jaccard_sim = df.apply(jaccard_sim_by_row, axis=1, wrong_words = wrong_words)
+jsims = pd.DataFrame(df.groupby(by=['linkedid','side']).max().jaccard_sim)
+jsims.reset_index(inplace = True)
 
-        text_full, phrases_count, source_id = concatenate_linkedid_side(side, row.record_date, row.linkedid)
-        print(datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S'), 'concatenated')
-        # text_short = summarize(text_full.replace(',',' - '), phrases_count)
+# drop wroworst results
+df = pd.merge(df, jsims, how = 'inner', on = ['linkedid','side', 'jaccard_sim'])
 
-        # stage 1: find better approach
-        text_short = summarize(text_full, phrases_count)
-        print(datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S'), 'sum 1')
-        #best_result = difflib.SequenceMatcher(None, text_full, text_short).ratio()
-        # https://www.machinelearningmastery.ru/overview-of-text-similarity-metrics-3397c4601f50/
-        best_result = get_jaccard_sim(text_full, text_short)
-        # best_replacer = [',']
-        for replacer in [' ', ' - ']:
-            try_short = summarize(text_full.replace(',', replacer), phrases_count)
-            print(datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S'), 'sum ', '"'+replacer+'"')
-            #try_result = difflib.SequenceMatcher(None, text_full, try_short).ratio()
-            try_result = get_jaccard_sim(text_full, text_short)
-            if try_result > best_result:
-                text_short = try_short
-                best_result = try_result
-                # best_replacer = replacer
+# group the same results
+jfirst = pd.DataFrame(df.groupby(by=['linkedid','side']).min().version)
+jfirst.reset_index(inplace = True)
+df = pd.merge(df, jfirst, how = 'inner', on = ['linkedid','side', 'version'])
 
-        #for wrong in wrong_words:
-        #    if wrong in text_short:
-        #        text_short = summarize(text_full.replace(',',' '), phrases_count)
-        #        break
-        
-        # fix wrong summarizations
-        print(datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S'), 'saving..')
-        wrong_words = ['погиб', 'смерть', 'путин'] # high frequency newspaper words
-        # stage 2: just crop if wrong words still in summarization
-        for wrong in wrong_words:
-            if wrong in text_short:
-                print(row.linkedid, side, 'replaced, because found', wrong, 'in:', text_short)
-                text_short = text_full[:1023]
-                break
-        sum_to_sql(row.linkedid, row.record_date, side, text_short, phrases_count, len(text_full), source_id)
-		
+# replace wrong words
+df.text_short = df.apply(replace_wrong_by_row, axis=1, wrong_words = wrong_words)
+
+# save
+current_date = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+df['sum_date'] = [current_date for i in range(len(df))]
+df.drop(['jaccard_sim', 'text', 'version'], axis = 1, inplace = True)
+df.rename(columns={'text_short': 'text'}, inplace=True)
+commit(df)
 
 print(
     datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
