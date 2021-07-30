@@ -47,7 +47,7 @@ class stt_server:
 
 		self.script_path = '/home/alex/projects/call_centre_stt_server/'
 		# self.model_path = '/home/alex/projects/vosk-api/python/example/model'
-		self.model_path = '/mnt/share/audio_call/model_v1/model' # important to naming last directory 'model'
+		self.model_path = '/mnt/share/audio_call/model_v0/model' # important to naming last directory 'model'
 		self.source_id = 0
 		self.sources = {
 			'call': 1,
