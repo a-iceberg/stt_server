@@ -251,7 +251,8 @@ def summarization_plot(group):
     query = "SELECT distinct linkedid, record_date from transcribations where"
     query += " record_date>'"+start_time+"' and record_date<'"+queue_first_record+"' and not text='';"
     transcribed = read_sql(query)
-
+    if len(summarized)==0 or len(transcribed==0):
+        print('summarized, transcribed', len(summarized)==0, len(transcribed==0), 'summarization_plot canceled')
     df = pd.merge(transcribed, summarized, how = 'left', on = 'linkedid')
     
     def isnat(s):
@@ -261,7 +262,7 @@ def summarization_plot(group):
     def start_of_minute(d):
         return d.strftime('%Y-%m-%dT%H:00:00')
 
-    df['record_date_x'] = df.record_date.apply(start_of_minute)
+    df.record_date_x = df.record_date_x.apply(start_of_minute)
 
     df.drop('record_date_y', 1, inplace = True)
     df.drop('linkedid', 1, inplace = True)
