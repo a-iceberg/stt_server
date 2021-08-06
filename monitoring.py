@@ -232,7 +232,8 @@ def summarization():
 
 def summarization_plot(group):
 
-	query = "select min(record_date) from queue where not isnull(record_date,'')='';"
+    query = "select min(record_date) from queue where not isnull(record_date,'')='';"
+
     queue_first_record = read_sql(query)
     queue_first_record = str(queue_first_record.iloc()[0][0])
     if queue_first_record == 'None':
@@ -242,14 +243,14 @@ def summarization_plot(group):
             queue_first_record = datetime.datetime.fromisoformat(queue_first_record)
         queue_first_record = queue_first_record.strftime('%Y-%m-%dT%H:%M:%S')
 
-	start_time = (datetime.datetime.now() + datetime.timedelta(days=-2)).strftime('%Y-%m-%dT%H:%M:%S')
-	print('summarization plot from', start_time)
-	query = "SELECT distinct linkedid, record_date from summarization where"
-	query += " record_date>'"+start_time+"' and not text='';"
-	summarized = read_sql(query)
-	query = "SELECT distinct linkedid, record_date from transcribations where"
-	query += " record_date>'"+start_time+"' and record_date<'"+queue_first_record+"' and not text='';"
-	transcribed = read_sql(query)
+    start_time = (datetime.datetime.now() + datetime.timedelta(days=-2)).strftime('%Y-%m-%dT%H:%M:%S')
+    print('summarization plot from', start_time)
+    query = "SELECT distinct linkedid, record_date from summarization where"
+    query += " record_date>'"+start_time+"' and not text='';"
+    summarized = read_sql(query)
+    query = "SELECT distinct linkedid, record_date from transcribations where"
+    query += " record_date>'"+start_time+"' and record_date<'"+queue_first_record+"' and not text='';"
+    transcribed = read_sql(query)
 
 	df = pd.merge(transcribed, summarized, how = 'left', on = 'linkedid')
 	def isnat(s):
