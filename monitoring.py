@@ -252,79 +252,79 @@ def summarization_plot(group):
     query += " record_date>'"+start_time+"' and record_date<'"+queue_first_record+"' and not text='';"
     transcribed = read_sql(query)
 
-	df = pd.merge(transcribed, summarized, how = 'left', on = 'linkedid')
-	def isnat(s):
-		return not s is pd.NaT
-	df['summarized'] = df.record_date_y.apply(isnat)
+    df = pd.merge(transcribed, summarized, how = 'left', on = 'linkedid')
+    def isnat(s):
+        return not s is pd.NaT
+    df['summarized'] = df.record_date_y.apply(isnat)
 
-	def start_of_minute(d):
-		return d.strftime('%Y-%m-%dT%H:00:00')
-	df.record_date_x = df.record_date_x.apply(start_of_minute)
+    def start_of_minute(d):
+        return d.strftime('%Y-%m-%dT%H:00:00')
+    df.record_date_x = df.record_date_x.apply(start_of_minute)
 
-	df.drop('record_date_y', 1, inplace = True)
-	df.drop('linkedid', 1, inplace = True)
+    df.drop('record_date_y', 1, inplace = True)
+    df.drop('linkedid', 1, inplace = True)
 
-	sum_count = df[df.summarized].groupby('record_date_x').count()
-	sum_count.reset_index(inplace = True)
-	sum_count.columns = ['date', 'summarized']
+    sum_count = df[df.summarized].groupby('record_date_x').count()
+    sum_count.reset_index(inplace = True)
+    sum_count.columns = ['date', 'summarized']
 
-	unsum_count = df[df.summarized == False].groupby('record_date_x').count()
-	unsum_count.reset_index(inplace = True)
-	unsum_count.columns = ['date', 'unsummarized']
+    unsum_count = df[df.summarized == False].groupby('record_date_x').count()
+    unsum_count.reset_index(inplace = True)
+    unsum_count.columns = ['date', 'unsummarized']
 
-	df = pd.merge(sum_count,unsum_count, how = 'outer', on = 'date')
+    df = pd.merge(sum_count,unsum_count, how = 'outer', on = 'date')
 
-	df.summarized.fillna(0, inplace=True)
-	df.unsummarized.fillna(0, inplace=True)
+    df.summarized.fillna(0, inplace=True)
+    df.unsummarized.fillna(0, inplace=True)
 
-	def crop_date(d):
-		return d[:13].replace('T', ' ')
-	df.date = df.date.apply(crop_date)
+    def crop_date(d):
+        return d[:13].replace('T', ' ')
+    df.date = df.date.apply(crop_date)
 
-	
-	header = 'Суммаризации \n_с '+str(start_time).replace('T', ' ')+'\nпо '+str(queue_first_record).replace('T', ' ')
 
-	#header = 'Суммаризации'
-	columns = df.columns[1:]
-	mycolors = ['tab:blue', 'tab:red']
+    header = 'Суммаризации \n_с '+str(start_time).replace('T', ' ')+'\nпо '+str(queue_first_record).replace('T', ' ')
 
-	# Draw Plot and Annotate
-	fig, ax = plt.subplots(1,1,figsize=(16, 9), dpi = 80)
+    #header = 'Суммаризации'
+    columns = df.columns[1:]
+    mycolors = ['tab:blue', 'tab:red']
 
-	labs = columns.values.tolist()
+    # Draw Plot and Annotate
+    fig, ax = plt.subplots(1,1,figsize=(16, 9), dpi = 80)
 
-	# Prepare data
-	x  = df['date'].values.tolist()
-	y0 = df[columns[0]].values.tolist()
-	y1 = df[columns[1]].values.tolist()
-	y = np.vstack([y0, y1])
+    labs = columns.values.tolist()
 
-	# Plot for each column
-	labs = columns.values.tolist()
-	ax = plt.gca()
-	ax.stackplot(x, y, labels=labs, colors=mycolors, alpha=0.8)
+    # Prepare data
+    x  = df['date'].values.tolist()
+    y0 = df[columns[0]].values.tolist()
+    y1 = df[columns[1]].values.tolist()
+    y = np.vstack([y0, y1])
 
-	# Decorations
-	ax.set_title(header, fontsize=18)
-	ax.legend(fontsize=10, ncol=4)
-	plt.grid(alpha=0.5)
+    # Plot for each column
+    labs = columns.values.tolist()
+    ax = plt.gca()
+    ax.stackplot(x, y, labels=labs, colors=mycolors, alpha=0.8)
 
-	# Lighten borders
-	plt.gca().spines["top"].set_alpha(0)
-	plt.gca().spines["bottom"].set_alpha(.3)
-	plt.gca().spines["right"].set_alpha(0)
-	plt.gca().spines["left"].set_alpha(.3)
-	plt.gca().set_xticklabels(labels = df.date, rotation=30)
-	plt.show()
-	plt.savefig('/home/alex/projects/call_centre_stt_server/summarization.png')
-	
-	with open('/home/alex/projects/call_centre_stt_server/telegram_token.key', 'r') as file:
-		token = file.read().replace('\n', '')
-		file.close()
-	bot = telebot.TeleBot(token)
-	data_file = open('/home/alex/projects/call_centre_stt_server/summarization.png', 'rb')
-	# bot.send_photo(group, data_file, caption="queue_time_vs_date")
-	bot.send_photo(group, data_file)
+    # Decorations
+    ax.set_title(header, fontsize=18)
+    ax.legend(fontsize=10, ncol=4)
+    plt.grid(alpha=0.5)
+
+    # Lighten borders
+    plt.gca().spines["top"].set_alpha(0)
+    plt.gca().spines["bottom"].set_alpha(.3)
+    plt.gca().spines["right"].set_alpha(0)
+    plt.gca().spines["left"].set_alpha(.3)
+    plt.gca().set_xticklabels(labels = df.date, rotation=30)
+    plt.show()
+    plt.savefig('/home/alex/projects/call_centre_stt_server/summarization.png')
+
+    with open('/home/alex/projects/call_centre_stt_server/telegram_token.key', 'r') as file:
+        token = file.read().replace('\n', '')
+        file.close()
+    bot = telebot.TeleBot(token)
+    data_file = open('/home/alex/projects/call_centre_stt_server/summarization.png', 'rb')
+    # bot.send_photo(group, data_file, caption="queue_time_vs_date")
+    bot.send_photo(group, data_file)
 
 summarization_plot('-1001443983697')
 
