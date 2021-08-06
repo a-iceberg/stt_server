@@ -253,13 +253,15 @@ def summarization_plot(group):
     transcribed = read_sql(query)
 
     df = pd.merge(transcribed, summarized, how = 'left', on = 'linkedid')
+    
     def isnat(s):
         return not s is pd.NaT
     df['summarized'] = df.record_date_y.apply(isnat)
 
     def start_of_minute(d):
         return d.strftime('%Y-%m-%dT%H:00:00')
-    df.record_date_x = df.record_date_x.apply(start_of_minute)
+
+    df['record_date_x'] = df.record_date.apply(start_of_minute)
 
     df.drop('record_date_y', 1, inplace = True)
     df.drop('linkedid', 1, inplace = True)
