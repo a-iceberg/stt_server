@@ -233,12 +233,14 @@ def summarization():
 def summarization_plot(group):
 
 	query = "select min(record_date) from queue where not isnull(record_date,'')='';"
-	queue_first_record = read_sql(query)
-	queue_first_record = str(queue_first_record.iloc()[0][0])
-	if queue_first_record == 'None':
-		queue_first_record = datetime.datetime.now().strftime('%Y-%m-%dT%H:%M:%S')
-	else:
-		queue_first_record = queue_first_record.strftime('%Y-%m-%dT%H:%M:%S')
+    queue_first_record = read_sql(query)
+    queue_first_record = str(queue_first_record.iloc()[0][0])
+    if queue_first_record == 'None':
+        queue_first_record = datetime.datetime.now().strftime('%Y-%m-%dT%H:%M:%S')
+    else:
+        if type(queue_first_record)==type(''):
+            queue_first_record = datetime.datetime.fromisoformat(queue_first_record)
+        queue_first_record = queue_first_record.strftime('%Y-%m-%dT%H:%M:%S')
 
 	start_time = (datetime.datetime.now() + datetime.timedelta(days=-2)).strftime('%Y-%m-%dT%H:%M:%S')
 	print('summarization plot from', start_time)
