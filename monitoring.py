@@ -231,7 +231,8 @@ def summarization():
 	
 
 def summarization_plot(group):
-
+    print('summarization_plot temporary disabled')
+    return
     query = "select min(record_date) from queue where not isnull(record_date,'')='';"
 
     queue_first_record = read_sql(query)
