@@ -308,8 +308,6 @@ class stt_server:
 
 		# read file
 		wf = wave.open(self.temp_file_path + self.temp_file_name, "rb")
-
-		if self.gpu_uri == '':
 		
 		# recognizing
 		phrases_count = 0
