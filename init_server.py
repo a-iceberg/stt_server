@@ -328,38 +328,38 @@ class stt_server:
 				if len(data) == 0:
 					break
 				
-					if rec.AcceptWaveform(data):
-						accept = json.loads(rec.Result())
+				if rec.AcceptWaveform(data):
+					accept = json.loads(rec.Result())
 
-						if accept['text'] != '':
+					if accept['text'] != '':
 
-							accept_start = str(accept['result'][0]['start'])
-							accept_end = accept['result'][-1:][0]['end']
-							accept_text = str(accept['text'])
-							
-							for result_rec in accept['result']:
-								conf_score.append(float(result_rec['conf']))
-							conf_mid = str(sum(conf_score)/len(conf_score))
-							confidences.append(sum(conf_score)/len(conf_score))
-							
-							self.save_result(
-								duration,
-								accept_text,
-								accept_start,
-								accept_end,
-								side,
-								transcribation_date,
-								conf_mid,
-								original_file_name,
-								rec_date,
-								src,
-								dst,
-								linkedid,
-								file_size,
-								queue_date
-							)						
-							phrases.append(accept_text)						
-							phrases_count += 1
+						accept_start = str(accept['result'][0]['start'])
+						accept_end = accept['result'][-1:][0]['end']
+						accept_text = str(accept['text'])
+						
+						for result_rec in accept['result']:
+							conf_score.append(float(result_rec['conf']))
+						conf_mid = str(sum(conf_score)/len(conf_score))
+						confidences.append(sum(conf_score)/len(conf_score))
+						
+						self.save_result(
+							duration,
+							accept_text,
+							accept_start,
+							accept_end,
+							side,
+							transcribation_date,
+							conf_mid,
+							original_file_name,
+							rec_date,
+							src,
+							dst,
+							linkedid,
+							file_size,
+							queue_date
+						)						
+						phrases.append(accept_text)						
+						phrases_count += 1
 
 		else:
 
@@ -368,7 +368,7 @@ class stt_server:
 				wf = open(original_file_path + original_file_name, "rb")
 				while True:
 					conf_score = []
-					data = wf.read(8000)
+					data = wf.read(4000)
 					if len(data) == 0:
 						break
 					await websocket.send(data)
