@@ -372,10 +372,8 @@ class stt_server:
 					if len(data) == 0:
 						break
 					await websocket.send(data)
-					accept = json.loads(await websocket.recv())
-					print('*', accept)
+					accept = json.loads(await websocket.recv())					
 					if len(accept)>1 and accept['text'] != '':
-
 						accept_start = str(accept['result'][0]['start'])
 						accept_end = accept['result'][-1:][0]['end']
 						accept_text = str(accept['text'])
