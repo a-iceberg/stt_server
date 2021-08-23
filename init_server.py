@@ -306,21 +306,19 @@ class stt_server:
 		):
 
 		print('side:', side, 'file_size:', file_size, '### transcribing:', self.temp_file_path + self.temp_file_name)
-
-		# read file
-		wf = wave.open(self.temp_file_path + self.temp_file_name, "rb")
 		
 		# recognizing
 		phrases_count = 0
-		confidences = []		
+		confidences = []
 		phrases = []
 
 		if self.gpu_uri == '':
 
 			print('== CPU:', self.cpu_id)
+			# read file
+			wf = wave.open(self.temp_file_path + self.temp_file_name, "rb")
 			# read model
 			rec = KaldiRecognizer(self.model, wf.getframerate())
-
 			while True:
 
 				conf_score = []
@@ -366,6 +364,8 @@ class stt_server:
 
 			print('== GPU:', self.gpu_uri, '===')
 			async with websockets.connect(self.gpu_uri) as websocket:
+				# read file
+				wf = open(self.temp_file_path + self.temp_file_name, "rb")
 				while True:
 					conf_score = []
 					data = wf.read(4000)
