@@ -287,7 +287,7 @@ class stt_server:
 		cursor = self.conn.cursor()
 		cursor.execute(query)
 
-	def trascribe_cpu(
+	async def trascribe_cpu(
 		self,
 		duration, 
 		side, 
@@ -311,9 +311,7 @@ class stt_server:
 		
 		# recognizing
 		phrases_count = 0
-
-		confidences = []
-		
+		confidences = []		
 		phrases = []
 		
 		while True:
@@ -358,6 +356,77 @@ class stt_server:
 					phrases.append(accept_text)
 					
 					phrases_count += 1
+
+		return phrases_count, phrases, confidences
+
+
+	async def trascribe_gpu(
+		self,
+		duration, 
+		side, 
+		original_file_name, 
+		rec_date, 
+		src, 
+		dst, 
+		linkedid, 
+		file_size, 
+		queue_date,
+		transcribation_date
+		):
+
+		print('GPU # side:', side, 'file_size:', file_size, '### transcribing:', self.temp_file_path + self.temp_file_name)
+
+		async with websockets.connect(uri) as websocket:
+			wf = wave.open(self.temp_file_path + self.temp_file_name, "rb")
+		
+			# recognizing
+			phrases_count = 0
+			confidences = []		
+			phrases = []
+
+			while True:
+				conf_score = []
+				data = wf.read(8000)
+				if len(data) == 0:
+					break
+
+				await websocket.send(data)
+				accept = json.loads(await websocket.recv())
+				
+				if len(accept)>1 and accept['text'] != '':
+
+					accept_start = str(accept['result'][0]['start'])
+					accept_end = accept['result'][-1:][0]['end']
+					accept_text = str(accept['text'])
+
+					for result_rec in accept['result']:
+						conf_score.append(float(result_rec['conf']))
+					conf_mid = str(sum(conf_score)/len(conf_score))
+					confidences.append(sum(conf_score)/len(conf_score))					
+
+					self.save_result(
+						duration,
+						accept_text,
+						accept_start,
+						accept_end,
+						side,
+						transcribation_date,
+						conf_mid,
+						original_file_name,
+						rec_date,
+						src,
+						dst,
+						linkedid,
+						file_size,
+						queue_date
+					)
+					
+					phrases.append(accept_text)
+					
+					phrases_count += 1
+
+        await websocket.send('{"eof" : 1}')
+        print(await websocket.recv())
 
 		return phrases_count, phrases, confidences
 
