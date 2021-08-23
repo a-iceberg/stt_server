@@ -381,7 +381,7 @@ class stt_server:
 
 		transcribation_date = datetime.datetime.now().strftime('%Y-%m-%dT%H:%M:%S')		
 		
-		self.trascribe_cpu(
+		phrases_count, phrases, confidences = self.trascribe_cpu(
 			duration, 
 			side, 
 			original_file_name, 
