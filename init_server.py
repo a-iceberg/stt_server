@@ -291,7 +291,7 @@ class stt_server:
 		cursor = self.conn.cursor()
 		cursor.execute(query)
 
-	async def trascribation_process(
+	async def transcribation_process(
 		self,
 		duration, 
 		side, 
@@ -366,7 +366,6 @@ class stt_server:
 
 			print('== GPU:', self.gpu_uri, '===')
 			async with websockets.connect(self.gpu_uri) as websocket:
-				wf = open(original_file_path + original_file_name, "rb")
 				while True:
 					conf_score = []
 					data = wf.read(4000)
@@ -430,7 +429,7 @@ class stt_server:
 		transcribation_date = datetime.datetime.now().strftime('%Y-%m-%dT%H:%M:%S')		
 		
 		phrases_count, phrases, confidences = asyncio.get_event_loop().run_until_complete(
-			self.trascribation_process(
+			self.transcribation_process(
 				duration, 
 				side, 
 				original_file_name, 
