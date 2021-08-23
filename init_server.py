@@ -12,6 +12,9 @@ import sys
 import time
 import requests
 from shutil import copyfile
+import asyncio
+import websockets
+
 
 class stt_server:
 
