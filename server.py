@@ -12,8 +12,14 @@ import pendulum
 
 batch_size = 100
 
-print('cpu', sys.argv[1])
+print('cpu:', sys.argv[1])
 server_object = stt_server(sys.argv[1])
+
+if len(sys.argv) > 2:
+	print('gpu uri:', sys.argv[2])
+	# ws://10.2.5.212:2700
+	server_object.gpu_uri = sys.argv[2]
+
 cursor = server_object.conn.cursor()
 past_in_minutes = pendulum.now().add(minutes=-6).strftime('%Y-%m-%d %H:%M:%S')
 sql_query = "select filepath, filename, duration, source_id, "
