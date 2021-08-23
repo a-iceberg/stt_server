@@ -425,8 +425,8 @@ class stt_server:
 					
 					phrases_count += 1
 
-        await websocket.send('{"eof" : 1}')
-        print(await websocket.recv())
+		await websocket.send('{"eof" : 1}')
+		print(await websocket.recv())
 
 		return phrases_count, phrases, confidences
 
@@ -450,17 +450,19 @@ class stt_server:
 
 		transcribation_date = datetime.datetime.now().strftime('%Y-%m-%dT%H:%M:%S')		
 		
-		phrases_count, phrases, confidences = self.trascribe_cpu(
-			duration, 
-			side, 
-			original_file_name, 
-			rec_date, 
-			src, 
-			dst, 
-			linkedid, 
-			file_size, 
-			queue_date,
-			transcribation_date
+		phrases_count, phrases, confidences = asyncio.get_event_loop().run_until_complete(
+			self.trascribe_cpu(
+				duration, 
+				side, 
+				original_file_name, 
+				rec_date, 
+				src, 
+				dst, 
+				linkedid, 
+				file_size, 
+				queue_date,
+				transcribation_date
+				)
 			)
 
 		"""
