@@ -298,7 +298,8 @@ class stt_server:
 		linkedid, 
 		file_size, 
 		queue_date,
-		transcribation_date)
+		transcribation_date
+		):
 
 		print('CPU # side:', side, 'file_size:', file_size, '### transcribing:', self.temp_file_path + self.temp_file_name)
 
