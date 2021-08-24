@@ -203,7 +203,7 @@ class stt_server:
 		os_cmd 	= 'ffmpeg -y -i '
 		os_cmd += original_file_path
 		os_cmd += original_file_name
-		os_cmd += ' -ar 16000 -af "pan=mono|c0=F'
+		os_cmd += ' -ar 8000 -af "pan=mono|c0=F'
 		os_cmd += 'R' if side else 'L'
 		os_cmd += '" '
 		os_cmd += self.temp_file_path
@@ -942,7 +942,7 @@ class stt_server:
 				print('saving for analysis..', file_path, file_name)
 				prefix = 'any/'
 				copyfile(file_path + file_name, self.saved_for_analysis_path + prefix + file_name)
-				
+
 			else:
 				print(
 					'save_file_for_analysis skip:\nduration:', duration, 
