@@ -938,10 +938,10 @@ class stt_server:
 				prefix = 'wer/cpu'+str(self.cpu_id)+'_'+current_date+'_'
 				copyfile(file_path + file_name, self.saved_for_analysis_path + prefix + file_name)
 
-			elif self.gpu_uri != '':
+			"""elif self.gpu_uri != '':
 				print('saving for analysis..', file_path, file_name)
 				prefix = 'any/'
-				copyfile(file_path + file_name, self.saved_for_analysis_path + prefix + file_name)
+				copyfile(file_path + file_name, self.saved_for_analysis_path + prefix + file_name)"""
 
 			else:
 				print(
