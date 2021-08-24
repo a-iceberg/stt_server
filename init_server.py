@@ -527,7 +527,8 @@ class stt_server:
 				file_size,
 				queue_date
 			)
-		else:
+		else:				
+
 			version = 0
 			for replacer in [' ', ' - ', '. ']:
 				text_for_queue = replacer.join(phrases)
@@ -936,6 +937,12 @@ class stt_server:
 			if	duration > 50 and duration < 60 and not self.wer_file_exist():
 				prefix = 'wer/cpu'+str(self.cpu_id)+'_'+current_date+'_'
 				copyfile(file_path + file_name, self.saved_for_analysis_path + prefix + file_name)
+
+			elif self.gpu_uri != '':
+				print('saving for analysis..', file_path, file_name)
+				prefix = 'any/'
+				copyfile(file_path + file_name, self.saved_for_analysis_path + prefix + file_name)
+				
 			else:
 				print(
 					'save_file_for_analysis skip:\nduration:', duration, 
