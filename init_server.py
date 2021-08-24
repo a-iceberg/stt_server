@@ -368,7 +368,7 @@ class stt_server:
 				wf = open(self.temp_file_path + self.temp_file_name, "rb")
 				while True:
 					conf_score = []
-					data = wf.read(4000)
+					data = wf.read(8000)
 					if len(data) == 0:
 						break
 					await websocket.send(data)
