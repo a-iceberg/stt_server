@@ -21,8 +21,9 @@ class stt_server:
 	def __init__(self, cpu_id, gpu_uri = ''):
 
 		# settings ++
-		self.cpu_id = cpu_id
-		with open('cores.count', 'r') as file:
+		self.script_path = '/home/alex/projects/call_centre_stt_server/'
+		self.cpu_id = cpu_id		
+		with open(self.script_path + 'cores.count', 'r') as file:
 			cores_count = int(file.read().replace('\n', ''))
 			file.close()
 		self.cpu_cores = [i for i in range(0, cores_count)]
@@ -51,7 +52,7 @@ class stt_server:
 		self.mysql_server = '10.2.4.146'
 		self.mysql_login = 'asterisk'
 
-		self.script_path = '/home/alex/projects/call_centre_stt_server/'
+		
 		self.model_path = '/mnt/share/audio_call/model_v0/model' # important to naming last directory 'model'
 		# self.model_path = '/mnt/share/audio_call/model_v1/model' # important to naming last directory 'model'
 		self.source_id = 0
