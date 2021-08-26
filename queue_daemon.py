@@ -1,7 +1,7 @@
 import datetime
 import time
 from init_server import stt_server
-server_object = stt_server(0)
+server_object = stt_server(0, 'queue')
 
 for source_id in server_object.sources: # ['call', 'master']
 
