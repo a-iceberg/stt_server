@@ -4,10 +4,12 @@ import redis
 import time
 import datetime
 import difflib
+import sys
 
-REDIS_IP = '10.2.5.212'
+REDIS_IP = sys.argv[1] # '10.2.5.212'
 MAX_TEXT_SIZE = 1023
 SCRIPT_PATH = '/home/alex/projects/call_centre_stt_server/'
+print('summarization server:', sys.argv[1])
 
 
 def ms_sql_con():
@@ -134,7 +136,8 @@ while True:
     query += " linkedid, record_date, side, phrases_count, text_length, text, version, source_id, "
     query += " '' as text_short, 0 as jaccard_sim"
     query += " from summarization_queue"
-    query += " order by record_date, linkedid, side, version;"
+    query += " where source_id = "+str(sys.argv[1])
+    query += " order by record_date desc, linkedid, side, version;"
     df = read_sql(query)
 
     crop_marker = pd.DataFrame()
