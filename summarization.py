@@ -35,6 +35,7 @@ def read_sql(query):
 def summarize(text, phrases_count):
     print(datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S'), 'summarizing')
     if phrases_count<2 or len(text)<255:
+        print('short return', phrases_count, len(text))
         return text
     subscriber = redis.StrictRedis(host=REDIS_IP)
     publisher = redis.StrictRedis(host=REDIS_IP) 
@@ -47,6 +48,7 @@ def summarize(text, phrases_count):
     while True:
         message = sub.get_message()
         if message and message['type']!='subscribe':
+            print('return', len(message['data'].decode("utf-8")))
             return message['data'].decode("utf-8")
         time.sleep(1)
 
@@ -128,17 +130,26 @@ print('=== start ===')
 
 while True:
 
-    query = "SELECT"
+    query = "SELECT top 2000"
     query += " linkedid, record_date, side, phrases_count, text_length, text, version, source_id, "
     query += " '' as text_short, 0 as jaccard_sim"
     query += " from summarization_queue"
     query += " order by record_date, linkedid, side, version;"
     df = read_sql(query)
 
+    crop_marker = pd.DataFrame()
+    crop_marker['linkedid'] = df.linkedid
+    crop_marker['record_date'] = df.record_date
+    crop_marker.sort_values('record_date', ascending = False, inplace = True)
+
+    df = df[df.linkedid.isin( pd.Series(crop_marker[:300].linkedid.unique()) )]
+
     if len(df) == 0:
         print(datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S'), 'nothing to do. sleeping..')
         time.sleep(1)
         continue
+
+    print('batch size:', len(df), 'from:', df.record_date.min(), 'to:', df.record_date.max())
 
     # summarize
     df.text_short = df.apply(summarize_by_row, axis=1)
