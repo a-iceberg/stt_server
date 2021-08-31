@@ -319,7 +319,7 @@ def summarization_plot(group):
     plt.gca().spines["right"].set_alpha(0)
     plt.gca().spines["left"].set_alpha(.3)
     plt.gca().set_xticklabels(labels = df.date, rotation=30)
-    plt.show()
+    # plt.show()
     plt.savefig('/home/alex/projects/call_centre_stt_server/summarization.png')
 
     with open('/home/alex/projects/call_centre_stt_server/telegram_token.key', 'r') as file:
@@ -330,7 +330,31 @@ def summarization_plot(group):
     # bot.send_photo(group, data_file, caption="queue_time_vs_date")
     bot.send_photo(group, data_file)
 
-summarization_plot('-1001443983697')
+def summarization_queue_state(group):
+    header = 'Очередь суммаризации'
+    query = "SELECT CAST(sum_date AS DATE) as date, count(distinct linkedid) as linkedid"
+    query += " FROM summarization"
+    query += " group by CAST(sum_date AS DATE)"
+    query += " order by CAST(sum_date AS DATE);"
+    df = read_sql(query)
+    fig, ax = plt.subplots(figsize=(16,10), dpi= 80)    
+    sns.stripplot(df.date, df.linkedid, jitter=0.25, size=8, ax=ax, linewidth=.5)
+    plt.gca().set_xticklabels(labels = df.date, rotation=90)
+    # Decorations
+    plt.grid(linestyle='--', alpha=0.5)
+    plt.title(header, fontsize=22)
+    # plt.show()
+    plt.savefig('/home/alex/projects/call_centre_stt_server/summarization_2.png')
+    with open('/home/alex/projects/call_centre_stt_server/telegram_token.key', 'r') as file:
+        token = file.read().replace('\n', '')
+        file.close()
+    bot = telebot.TeleBot(token)
+    data_file = open('/home/alex/projects/call_centre_stt_server/summarization_2.png', 'rb')
+    # bot.send_photo(group, data_file, caption="queue_time_vs_date")
+    bot.send_photo(group, data_file)
+
+summarization_queue_state('-1001443983697')
+# summarization_plot('-1001443983697')
 
 msg = 'Состояние системы расшифровки аудиозаписей\n'
 msg += transcribed_yesterday() + '\n'
