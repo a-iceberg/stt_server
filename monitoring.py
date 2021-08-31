@@ -109,7 +109,7 @@ def earliest_records():
 
 
 def send_to_telegram(chat_id, message):
-    with open('/home/alex/projects/call_centre_stt_server/telegram_token.key', 'r') as file:
+    with open('/home/alex/projects/call_centre_stt_server/telegram_bot.token', 'r') as file:
         token = file.read().replace('\n', '')
         file.close()
     session = requests.Session()
@@ -186,7 +186,7 @@ def queue_time_vs_date(group):
         plt.legend(bbox_to_anchor=(1, 1), loc='upper left', ncol=1)
         plt.savefig('queue.png')
 
-        with open('/home/alex/projects/call_centre_stt_server/telegram_token.key', 'r') as file:
+        with open('/home/alex/projects/call_centre_stt_server/telegram_bot.token', 'r') as file:
             token = file.read().replace('\n', '')
             file.close()
         bot = telebot.TeleBot(token)
@@ -323,7 +323,7 @@ def summarization_plot(group):
     # plt.show()
     plt.savefig('/home/alex/projects/call_centre_stt_server/summarization.png')
 
-    with open('/home/alex/projects/call_centre_stt_server/telegram_token.key', 'r') as file:
+    with open('/home/alex/projects/call_centre_stt_server/telegram_bot.token', 'r') as file:
         token = file.read().replace('\n', '')
         file.close()
     bot = telebot.TeleBot(token)
@@ -346,7 +346,7 @@ def summarization_queue_state(group):
     plt.title(header, fontsize=22)
     # plt.show()
     plt.savefig('/home/alex/projects/call_centre_stt_server/summarization_2.png')
-    with open('/home/alex/projects/call_centre_stt_server/telegram_token.key', 'r') as file:
+    with open('/home/alex/projects/call_centre_stt_server/telegram_bot.token', 'r') as file:
         token = file.read().replace('\n', '')
         file.close()
     bot = telebot.TeleBot(token)
