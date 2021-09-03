@@ -1,10 +1,19 @@
 version: '3.8'
 services:
-  vosk_cpu_worker_default:
-    environment:
-      - TELEGRAM_BOT_TOKEN=1257968138:AAECy2F0n8fLTM8qqwTMGbzuot1piL1gKTM
-      - TELEGRAM_CHAT=-1001347504766
-      - PATH_AUDIO_FILES_MONO=/mnt/share/audio_master/
-    build: vosk_cpu_worker
+  vosk_cpu_worker:
+    # restart: always
+    deploy:
+      mode: replicated
+      replicas: 3
+      #update_config:
+      #  parallelism: 2
+      #  delay: 2s
+      #restart_policy:
+      #  condition: on-failure
     volumes:
+      - /mnt/share/audio_call/:/worker/audio/stereo
       - /mnt/share/audio_master/:/worker/audio/mono
+      - ./vosk_cpu_worker/id_garden:/worker/id_garden
+    build: vosk_cpu_worker
+    environment:
+      - WORKERS_COUNT=3

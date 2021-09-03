@@ -7,4 +7,4 @@ echo 'Uncomment mkdir section if directories are not exists'
 #sudo mkdir /mnt/share/audio_master
 sudo mount -t nfs 10.2.4.239:/opt/Call_TO_1C/ /mnt/share/audio_call/ # call
 sudo mount -t nfs 10.2.4.254:/opt/Call_TO_1C/ /mnt/share/audio_master/ # mrm
-echio 'Mounting complete'
+echo 'Mounting complete'
