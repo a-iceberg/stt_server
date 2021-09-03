@@ -1,0 +1,7 @@
+version: '3.8'
+services:
+  vosk_cpu_worker_default:
+    environment:
+      - TELEGRAM_BOT_TOKEN=1257968138:AAECy2F0n8fLTM8qqwTMGbzuot1piL1gKTM
+      - TELEGRAM_CHAT=-1001347504766
+    build: vosk_cpu_worker
