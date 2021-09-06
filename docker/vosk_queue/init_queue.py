@@ -42,8 +42,8 @@ class stt_server:
 		}
 
 		self.original_storage_path = {
-			1: 'audio/stereo/', # call centre records path
-			2: 'audio/mono/' # masters records path
+			1: 'audio/stereo/MSK_SRVCALL/RX_TX/', # call centre records path
+			2: 'audio/mono/MSK_MRM/REC_IN_OUT/' # masters records path
 		}
 		#self.saved_for_analysis_path = '/mnt/share/audio_call/saved_for_analysis/'
 		self.confidence_of_file = 0

@@ -6,8 +6,8 @@ services:
       mode: replicated
       replicas: 1
     volumes:
-      - /mnt/share/audio_call/:/worker/audio/stereo
-      - /mnt/share/audio_master/:/worker/audio/mono
+      - /mnt/share/audio_call/MSK_SRVCALL/RX_TX/:/worker/audio/stereo
+      - /mnt/share/audio_master/MSK_MRM/REC_IN_OUT/:/worker/audio/mono
       - ./vosk_cpu_worker/id_garden:/worker/id_garden
     build: vosk_cpu_worker
     environment:
@@ -24,8 +24,8 @@ services:
   vosk_queue:
     # restart: always
     volumes:
-      - /mnt/share/audio_call/:/worker/audio/stereo
-      - /mnt/share/audio_master/:/worker/audio/mono
+      - /mnt/share/audio_call/MSK_SRVCALL/RX_TX/:/worker/audio/stereo
+      - /mnt/share/audio_master/MSK_MRM/REC_IN_OUT/:/worker/audio/mono
     build: vosk_queue
     environment:
       - WORKERS_COUNT=10
