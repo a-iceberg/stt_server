@@ -335,7 +335,7 @@ class stt_server:
 				# self.save_file_for_analysis(filepath, filename, file_duration)
 				print(message)
 				# self.send_to_telegram(message)
-			else:
+				#else:
 				#self.save_file_for_analysis(filepath, filename, file_duration)
 
 			cursor = self.conn.cursor()
