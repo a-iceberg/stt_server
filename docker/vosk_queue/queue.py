@@ -20,8 +20,9 @@ for source_id in server_object.sources: # ['call', 'master']
 	print(incomplete_count, 'files sent to queue', server_object.sources[source_id])
 
 sleep_time = 3
-print(
-	datetime.datetime.now().strftime('%Y-%m-%dT%H:%M:%S'),
-	'sleeping '+str(sleep_time)+'s..'
-)
-time.sleep(sleep_time)
+while True:
+	print(
+		datetime.datetime.now().strftime('%Y-%m-%dT%H:%M:%S'),
+		'sleeping '+str(sleep_time)+'s..'
+	)
+	time.sleep(sleep_time)
