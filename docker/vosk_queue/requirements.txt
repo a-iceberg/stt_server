@@ -1,0 +1,6 @@
+PyMySQL
+pymssql
+pandas
+requests
+websockets
+pendulum

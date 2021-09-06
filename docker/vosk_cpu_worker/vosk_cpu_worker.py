@@ -2,6 +2,8 @@ import os
 import time
 import datetime
 import pendulum
+#import sys
+#sys.path.insert(0,'../')
 from init_server import stt_server
 
 server_object = stt_server()
