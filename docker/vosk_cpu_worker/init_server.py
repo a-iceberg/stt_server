@@ -356,8 +356,8 @@ class stt_server:
 		self.perf_log(2, trans_start, trans_end, duration, linkedid)
 		
 		# quality control
-		self.save_file_for_analysis(self.temp_file_path, self.temp_file_name, duration)
-
+		#self.save_file_for_analysis(self.temp_file_path, self.temp_file_name, duration)
+		send_to_telegram(str(self.cpu_id)+': '+phrases_count+' # '+self.temp_file_name)
 		if phrases_count == 0:
 			self.save_result(
 				duration,
