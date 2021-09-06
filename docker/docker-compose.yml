@@ -4,7 +4,7 @@ services:
     # restart: always
     deploy:
       mode: replicated
-      replicas: 1
+      replicas: 2
     volumes:
       - /mnt/share/audio_call/:/worker/audio/stereo
       - /mnt/share/audio_master/:/worker/audio/mono
