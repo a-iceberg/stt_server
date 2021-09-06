@@ -4,14 +4,14 @@ services:
     # restart: always
     deploy:
       mode: replicated
-      replicas: 4
+      replicas: 18
     volumes:
       - /mnt/share/audio_call/MSK_SRVCALL/RX_TX/:/worker/audio/stereo
       - /mnt/share/audio_master/MSK_MRM/REC_IN_OUT/:/worker/audio/mono
       - ./vosk_cpu_worker/id_garden:/worker/id_garden
     build: vosk_cpu_worker
     environment:
-      - WORKERS_COUNT=4
+      - WORKERS_COUNT=18
       - MYSQL_SERVER=10.2.4.146
       - MYSQL_LOGIN=asterisk
       - MYSQL_PASSWORD=12WsxcdE34
@@ -25,6 +25,16 @@ services:
       - VOSK_SERVER_WORKER_1=ws://10.2.5.212:2700
       - VOSK_SERVER_WORKER_2=ws://10.2.5.212:2700
       - VOSK_SERVER_WORKER_3=ws://10.2.5.212:2700
+      - VOSK_SERVER_WORKER_4=ws://95.165.139.53:42711
+      - VOSK_SERVER_WORKER_5=ws://95.165.139.53:42711
+      - VOSK_SERVER_WORKER_6=ws://95.165.139.53:42712
+      - VOSK_SERVER_WORKER_7=ws://95.165.139.53:42712
+      - VOSK_SERVER_WORKER_8=ws://95.165.139.53:42713
+      - VOSK_SERVER_WORKER_9=ws://95.165.139.53:42713
+      - VOSK_SERVER_WORKER_10=ws://95.165.139.53:42714
+      - VOSK_SERVER_WORKER_11=ws://95.165.139.53:42714
+      - VOSK_SERVER_WORKER_12=ws://95.165.139.53:42715
+      - VOSK_SERVER_WORKER_13=ws://95.165.139.53:42715
   vosk_queue:
     # restart: always
     volumes:
@@ -32,7 +42,7 @@ services:
       - /mnt/share/audio_master/MSK_MRM/REC_IN_OUT/:/queue/audio/mono
     build: vosk_queue
     environment:
-      - WORKERS_COUNT=10
+      - WORKERS_COUNT=18
       - MYSQL_SERVER=10.2.4.146
       - MYSQL_LOGIN=asterisk
       - MYSQL_PASSWORD=12WsxcdE34

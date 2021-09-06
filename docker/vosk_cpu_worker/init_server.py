@@ -268,36 +268,27 @@ class stt_server:
 		confidences = []
 		phrases = []
 
-		if self.gpu_uri == '':
-
-			print('== CPU:', self.cpu_id)
+		print('== Worker:', self.gpu_uri, '===')
+		async with websockets.connect(self.gpu_uri) as websocket:
 			# read file
-			wf = wave.open(self.temp_file_path + self.temp_file_name, "rb")
-			# read model
-			rec = KaldiRecognizer(self.model, wf.getframerate())
+			wf = open(self.temp_file_path + self.temp_file_name, "rb")
 			while True:
-
 				conf_score = []
-				
-				data = wf.readframes(4000)
+				data = wf.read(8000)
 				if len(data) == 0:
 					break
-				
-				if rec.AcceptWaveform(data):
-					accept = json.loads(rec.Result())
+				await websocket.send(data)
+				accept = json.loads(await websocket.recv())					
+				if len(accept)>1 and accept['text'] != '':
+					accept_start = str(accept['result'][0]['start'])
+					accept_end = accept['result'][-1:][0]['end']
+					accept_text = str(accept['text'])
 
-					if accept['text'] != '':
-
-						accept_start = str(accept['result'][0]['start'])
-						accept_end = accept['result'][-1:][0]['end']
-						accept_text = str(accept['text'])
-						
-						for result_rec in accept['result']:
-							conf_score.append(float(result_rec['conf']))
-						conf_mid = str(sum(conf_score)/len(conf_score))
-						confidences.append(sum(conf_score)/len(conf_score))
-						
-						self.save_result(
+					for result_rec in accept['result']:
+						conf_score.append(float(result_rec['conf']))
+					conf_mid = str(sum(conf_score)/len(conf_score))
+					confidences.append(sum(conf_score)/len(conf_score))
+					self.save_result(
 							duration,
 							accept_text,
 							accept_start,
@@ -313,52 +304,11 @@ class stt_server:
 							file_size,
 							queue_date
 						)						
-						phrases.append(accept_text)						
-						phrases_count += 1
+					phrases.append(accept_text)						
+					phrases_count += 1
 
-		else:
-
-			print('== GPU:', self.gpu_uri, '===')
-			async with websockets.connect(self.gpu_uri) as websocket:
-				# read file
-				wf = open(self.temp_file_path + self.temp_file_name, "rb")
-				while True:
-					conf_score = []
-					data = wf.read(8000)
-					if len(data) == 0:
-						break
-					await websocket.send(data)
-					accept = json.loads(await websocket.recv())					
-					if len(accept)>1 and accept['text'] != '':
-						accept_start = str(accept['result'][0]['start'])
-						accept_end = accept['result'][-1:][0]['end']
-						accept_text = str(accept['text'])
-
-						for result_rec in accept['result']:
-							conf_score.append(float(result_rec['conf']))
-						conf_mid = str(sum(conf_score)/len(conf_score))
-						confidences.append(sum(conf_score)/len(conf_score))
-						self.save_result(
-								duration,
-								accept_text,
-								accept_start,
-								accept_end,
-								side,
-								transcribation_date,
-								conf_mid,
-								original_file_name,
-								rec_date,
-								src,
-								dst,
-								linkedid,
-								file_size,
-								queue_date
-							)						
-						phrases.append(accept_text)						
-						phrases_count += 1
-
-				await websocket.send('{"eof" : 1}')
-				print(await websocket.recv())
+			await websocket.send('{"eof" : 1}')
+			print(await websocket.recv())
 
 		return phrases_count, phrases, confidences
 
@@ -807,17 +757,17 @@ class stt_server:
 
 	def wer_file_exist(self):
 		
-		current_date = datetime.datetime.now().strftime('%Y-%m-%d')
+		"""current_date = datetime.datetime.now().strftime('%Y-%m-%d')
 		comparator = 'cpu'+str(self.cpu_id)+'_'+current_date+'_'
 		for root, dirs, files in os.walk(self.saved_for_analysis_path + 'wer'):
 			for filename in files:
 				if comparator in filename:
-					return True
+					return True"""
 		return False
 
 	def save_file_for_analysis(self, file_path, file_name, duration):
-
-		try:
+		pass
+		"""try:
 			midlle_confidence = 0.8697060696547252
 
 			if duration == 0:
@@ -832,4 +782,4 @@ class stt_server:
 
 		except Exception as e:
 			print("Error:", str(e))
-			self.send_to_telegram('save_file_for_analysis error:\n' + str(e))
+			self.send_to_telegram('save_file_for_analysis error:\n' + str(e))"""

@@ -10,7 +10,7 @@ server_object = stt_server()
 
 print('cpu:', server_object.cpu_id)
 
-batch_size = 3
+batch_size = 1
 
 cursor = server_object.conn.cursor()
 past_in_minutes = pendulum.now().add(minutes=-6).strftime('%Y-%m-%d %H:%M:%S')
