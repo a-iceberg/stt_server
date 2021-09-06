@@ -186,7 +186,7 @@ class stt_server:
 
 		#elif self.source_id == self.sources['call']:
 		# crop '.wav' & append postfix
-		self.temp_file_path = self.script_path+'files/'
+		self.temp_file_path = 'files/'
 		self.temp_file_name = original_file_name[:-4]+('_R' if side else '_L')+'.wav'
 
 		os_cmd 	= 'ffmpeg -y -i '
