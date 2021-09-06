@@ -413,7 +413,7 @@ class stt_server:
 			file_size,
 			queue_date
 		):
-
+		print('=== save_result', accept_text)
 		if not str(rec_date) == 'Null' and \
 				len(re.findall(r'\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}', str(rec_date))) == 0:
 			print(str(linkedid), 'save_result - wrong rec_date:', str(rec_date), 'converting to Null..')
@@ -459,6 +459,7 @@ class stt_server:
 		try:
 			cursor.execute(sql_query)
 			self.conn.commit() # autocommit
+			print('sent query', sql_query)
 		except Exception as e:
 			print('query error:',sql_query) # DEBUG
 			print(str(e))
