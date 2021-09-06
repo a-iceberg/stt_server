@@ -18,8 +18,9 @@ for source_id in server_object.sources: # ['call', 'master']
 		server_object.set_shortest_queue_cpu()
 		server_object.add_queue(filepath, filename, rec_date, src, dst, linkedid, version)
 		incomplete_count += 1
-		if incomplete_count>batch_size
+		if incomplete_count>batch_size:
 			print('batch size reached. break')
+			break
 
 	print('id', source_id)
 	print(incomplete_count, 'files sent to queue', server_object.sources[source_id])
