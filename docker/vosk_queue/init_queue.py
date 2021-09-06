@@ -172,7 +172,7 @@ class stt_server:
 						else:
 							print('1 Unable to extract date:', root, filename)
 							self.send_to_telegram('1 Unable to extract date: ' + str(root) + ' ' + str(filename))
-							self.save_file_for_analysis(root, filename, 0)
+							#self.save_file_for_analysis(root, filename, 0)
 				# break # ToDo: remove
 
 		elif self.source_id == self.sources['master']:
@@ -336,7 +336,7 @@ class stt_server:
 				print(message)
 				# self.send_to_telegram(message)
 			else:
-				self.save_file_for_analysis(filepath, filename, file_duration)
+				#self.save_file_for_analysis(filepath, filename, file_duration)
 
 			cursor = self.conn.cursor()
 			current_date = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
