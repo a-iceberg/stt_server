@@ -33,6 +33,8 @@ class stt_server:
 			os.environ.get('VOSK_SERVER_DEFAULT', '')
 			)
 		
+		self.send_to_telegram('Started transcribation worker ', str(self.cpu_id)+' : '+self.gpu_uri)
+
 		# ms sql
 		self.sql_name = 'voice_ai'
 
@@ -357,7 +359,7 @@ class stt_server:
 		
 		# quality control
 		#self.save_file_for_analysis(self.temp_file_path, self.temp_file_name, duration)
-		self.send_to_telegram(str(self.cpu_id)+': '+str(phrases_count)+' # '+self.temp_file_name)
+		#self.send_to_telegram(str(self.cpu_id)+': '+str(phrases_count)+' # '+self.temp_file_name)
 		if phrases_count == 0:
 			self.save_result(
 				duration,
