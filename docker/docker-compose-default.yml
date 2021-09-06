@@ -1,0 +1,41 @@
+version: '3.8'
+services:
+  vosk_cpu_worker:
+    # restart: always
+    deploy:
+      mode: replicated
+      replicas: 18
+    volumes:
+      - /mnt/share/audio_call/MSK_SRVCALL/RX_TX/:/worker/audio/stereo
+      - /mnt/share/audio_master/MSK_MRM/REC_IN_OUT/:/worker/audio/mono
+      - ./vosk_cpu_worker/id_garden:/worker/id_garden
+    build: vosk_cpu_worker
+    environment:
+      - WORKERS_COUNT=18
+      - MYSQL_SERVER=
+      - MYSQL_LOGIN=
+      - MYSQL_PASSWORD=
+      - MSSQL_SERVER=
+      - MSSQL_LOGIN=
+      - MSSQL_PASSWORD=
+      - TELEGRAM_CHAT=
+      - TELEGRAM_BOT_TOKEN=
+      - VOSK_SERVER_DEFAULT=ws://10.2.5.212:2700
+      - VOSK_SERVER_WORKER_0=ws://10.2.5.212:2700
+      - VOSK_SERVER_WORKER_1=ws://10.2.5.212:2700      
+  vosk_queue:
+    # restart: always
+    volumes:
+      - /mnt/share/audio_call/MSK_SRVCALL/RX_TX/:/queue/audio/stereo
+      - /mnt/share/audio_master/MSK_MRM/REC_IN_OUT/:/queue/audio/mono
+    build: vosk_queue
+    environment:
+      - WORKERS_COUNT=18
+      - MYSQL_SERVER=
+      - MYSQL_LOGIN=
+      - MYSQL_PASSWORD=
+      - MSSQL_SERVER=
+      - MSSQL_LOGIN=
+      - MSSQL_PASSWORD=
+      - TELEGRAM_CHAT=
+      - TELEGRAM_BOT_TOKEN=
