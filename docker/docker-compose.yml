@@ -11,7 +11,7 @@ services:
       - ./vosk_cpu_worker/id_garden:/worker/id_garden
     build: vosk_cpu_worker
     environment:
-      - WORKERS_COUNT=1
+      - WORKERS_COUNT=4
       - MYSQL_SERVER=10.2.4.146
       - MYSQL_LOGIN=asterisk
       - MYSQL_PASSWORD=12WsxcdE34
