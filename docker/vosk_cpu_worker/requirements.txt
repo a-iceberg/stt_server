@@ -4,4 +4,4 @@ pandas
 requests
 websockets
 pendulum
-urllib
+urllib3
