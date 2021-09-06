@@ -5,6 +5,6 @@ RUN pip3 install -r requirements.txt --no-cache-dir
 COPY vosk_cpu_worker.py /worker
 COPY init_server.py /worker
 RUN mkdir /worker/files
-RUN sudo apt-get install ffmpeg
+RUN apt-get install ffmpeg
 ENTRYPOINT ["python3"]
 CMD ["vosk_cpu_worker.py"]
