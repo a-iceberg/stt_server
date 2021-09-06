@@ -15,6 +15,7 @@ from shutil import copyfile
 import asyncio
 import websockets
 import socket
+import urllib
 
 
 class stt_server:
@@ -28,7 +29,7 @@ class stt_server:
 
 		
 		self.gpu_uri = os.environ.get(
-			os.environ.get('VOSK_SERVER_WORKER_'+str(self.cpu_id), ''), 
+			'VOSK_SERVER_WORKER_'+str(self.cpu_id), 
 			os.environ.get('VOSK_SERVER_DEFAULT', '')
 			)
 		
