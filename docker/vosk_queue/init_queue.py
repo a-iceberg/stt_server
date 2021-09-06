@@ -42,8 +42,8 @@ class stt_server:
 		}
 
 		self.original_storage_path = {
-			1: 'audio/stereo/MSK_SRVCALL/RX_TX/', # call centre records path
-			2: 'audio/mono/MSK_MRM/REC_IN_OUT/' # masters records path
+			1: 'audio/stereo/', # call centre records path
+			2: 'audio/mono/' # masters records path
 		}
 		#self.saved_for_analysis_path = '/mnt/share/audio_call/saved_for_analysis/'
 		self.confidence_of_file = 0
@@ -141,6 +141,7 @@ class stt_server:
 		fd_list = []
 
 		if self.source_id == self.sources['call']:
+			print('call path', self.original_storage_path[self.source_id])
 			for root, dirs, files in os.walk(self.original_storage_path[self.source_id]):
 				for filename in files:
 					if filename[-4:] == '.wav' and not filename in queue:
@@ -176,6 +177,7 @@ class stt_server:
 
 		elif self.source_id == self.sources['master']:
 			files_list = []
+			print('master path', self.original_storage_path[self.source_id])
 			for (dirpath, dirnames, filenames) in os.walk(self.original_storage_path[self.source_id]):
 				files_list.extend(filenames)
 
