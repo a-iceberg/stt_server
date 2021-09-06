@@ -28,7 +28,7 @@ services:
       - /mnt/share/audio_master/:/worker/audio/mono
     build: vosk_queue
     environment:
-      - WORKERS_COUNT=1
+      - WORKERS_COUNT=10
       - MYSQL_SERVER=10.2.4.146
       - MYSQL_LOGIN=asterisk
       - MYSQL_PASSWORD=12WsxcdE34
