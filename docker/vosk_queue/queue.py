@@ -4,7 +4,7 @@ from init_queue import stt_server
 
 exit()
 
-batch_size = 1000
+batch_size = 10
 
 server_object = stt_server()
 
