@@ -357,7 +357,7 @@ class stt_server:
 		
 		# quality control
 		#self.save_file_for_analysis(self.temp_file_path, self.temp_file_name, duration)
-		send_to_telegram(str(self.cpu_id)+': '+phrases_count+' # '+self.temp_file_name)
+		self.send_to_telegram(str(self.cpu_id)+': '+phrases_count+' # '+self.temp_file_name)
 		if phrases_count == 0:
 			self.save_result(
 				duration,
