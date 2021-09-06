@@ -26,7 +26,11 @@ class stt_server:
 		cores_count = int(os.environ.get('WORKERS_COUNT', '0'))
 		self.cpu_cores = [i for i in range(0, cores_count)]
 
-		self.gpu_uri = os.environ.get('VOSK_SERVER_DEFAULT', '')
+		
+		self.gpu_uri = os.environ.get(
+			os.environ.get('VOSK_SERVER_WORKER_'+str(self.cpu_id), ''), 
+			os.environ.get('VOSK_SERVER_DEFAULT', '')
+			)
 		
 		# ms sql
 		self.sql_name = 'voice_ai'
@@ -59,9 +63,6 @@ class stt_server:
 			1: self.connect_mysql(1),
 			2: self.connect_mysql(2),
 		}
-
-		"""if self.gpu_uri == '':
-			self.model = Model(self.model_path)"""
 
 	def get_worker_id(self):
 
@@ -174,16 +175,6 @@ class stt_server:
 		#split_start = datetime.datetime.now()
 		split_start = time.time()
 
-		"""if self.source_id == self.sources['master']:
-			self.temp_file_path = original_file_path
-			if side == 0:
-				# original_file_name = linkedid + '-in.wav'
-				self.temp_file_name = linkedid + '-in.wav'
-			else:
-				# original_file_name = linkedid + '-out.wav'
-				self.temp_file_name = linkedid + '-out.wav'
-			print(side, 'master', self.temp_file_path + self.temp_file_name)"""
-
 		#elif self.source_id == self.sources['call']:
 		# crop '.wav' & append postfix
 		self.temp_file_path = 'files/'
@@ -221,16 +212,6 @@ class stt_server:
 		cursor.execute(sql_query)
 		self.conn.commit() # autocommit
 
-	"""def send_to_telegram(self, message):
-		headers = {
-			"Origin": "http://scriptlab.net",
-			"Referer": "http://scriptlab.net/telegram/bots/relaybot/",
-			'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/70.0.3538.110 Safari/537.36'}
-
-		url = "http://scriptlab.net/telegram/bots/relaybot/relaylocked.php?chat=" + self.telegram_chat
-		url += "&text=" + 'cpu: ' + self.cpu_id + ' # ' + message
-		requests.get(url, headers=headers)"""
-
 	def delete_source_file(self, original_file_path, original_file_name, linkedid):
 
 		#if self.source_id == self.sources['call']:
@@ -244,21 +225,6 @@ class stt_server:
 		except OSError as e:  ## if failed, report it back to the user ##
 			print("Error: %s - %s." % (e.filename, e.strerror))
 			self.send_to_telegram('delete_source_file error:\n' + str(e))
-
-
-		#elif self.source_id == self.sources['master']:
-		"""myfile = original_file_path + linkedid + '-in.wav'
-		try:
-			os.remove(myfile)
-			print('succesfully removed', myfile)
-		except OSError as e:  ## if failed, report it back to the user ##
-			print("Error: %s - %s." % (e.filename, e.strerror))
-		myfile = original_file_path + linkedid + '-out.wav'
-		try:
-			os.remove(myfile)
-			print('succesfully removed', myfile)
-		except OSError as e:  ## if failed, report it back to the user ##
-			print("Error: %s - %s." % (e.filename, e.strerror))"""
 
 	def summarization_add_queue(self, linkedid, record_date, side, phrases_count, text, version, source_id):
 		current_date = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
@@ -429,64 +395,6 @@ class stt_server:
 				transcribation_date
 				)
 			)
-
-		"""
-		# read file
-		wf = wave.open(self.temp_file_path + self.temp_file_name, "rb")
-
-		# read model
-		# self.model = Model(self.model_path)
-		rec = KaldiRecognizer(self.model, wf.getframerate())
-
-		# recognizing
-		phrases_count = 0
-
-		confidences = []
-		
-		phrases = []
-		
-		while True:
-
-			conf_score = []
-			
-			data = wf.readframes(4000)
-			if len(data) == 0:
-				break
-
-			if rec.AcceptWaveform(data):
-				accept = json.loads(rec.Result())
-				if accept['text'] != '':
-
-					accept_start = str(accept['result'][0]['start'])
-					accept_end = accept['result'][-1:][0]['end']
-					accept_text = str(accept['text'])
-					
-					for result_rec in accept['result']:
-						conf_score.append(float(result_rec['conf']))
-					conf_mid = str(sum(conf_score)/len(conf_score))
-					confidences.append(sum(conf_score)/len(conf_score))
-					# conf_score = []
-					
-					self.save_result(
-						duration,
-						accept_text,
-						accept_start,
-						accept_end,
-						side,
-						transcribation_date,
-						conf_mid,
-						original_file_name,
-						rec_date,
-						src,
-						dst,
-						linkedid,
-						file_size,
-						queue_date
-					)
-					
-					phrases.append(accept_text)
-					
-					phrases_count += 1"""
 
 		if len(confidences):
 			self.confidence_of_file = sum(confidences)/len(confidences)
@@ -910,41 +818,16 @@ class stt_server:
 
 		try:
 			midlle_confidence = 0.8697060696547252
-			"""prefix = 'any/'
-			# query = "SELECT avg(conf) FROM transcribations where not text = '';"			
-			confidence_treshold_top = midlle_confidence + 0.1
-			confidence_treshold_bottom = midlle_confidence - 0.1"""
 
 			if duration == 0:
 				prefix = 'zero/'
 				copyfile(file_path + file_name, self.saved_for_analysis_path + prefix + file_name)
-			#else:
-			#	prefix = 'any/'
-				#copyfile(file_path + file_name, self.saved_for_analysis_path + prefix + file_name)
+
 			current_date = datetime.datetime.now().strftime('%Y-%m-%d')
 			#self.confidence_of_file > 0.9 and \
 			if	duration > 50 and duration < 60 and not self.wer_file_exist():
 				prefix = 'wer/cpu'+str(self.cpu_id)+'_'+current_date+'_'
 				copyfile(file_path + file_name, self.saved_for_analysis_path + prefix + file_name)
-			#elif self.gpu_uri != '':
-			#	print('saving for analysis..', file_path, file_name)
-			#	prefix = 'any/'
-			#	copyfile(file_path + file_name, self.saved_for_analysis_path + prefix + file_name)
-			"""else:
-				print(
-					'save_file_for_analysis skip:\nduration:', duration, 
-					'\nconfidence', self.confidence_of_file
-					)
-
-			if duration > 10 and duration < 60:
-				if self.confidence_of_file > confidence_treshold_top:
-					prefix = 'hi/'
-				elif self.confidence_of_file < confidence_treshold_bottom:
-					prefix = 'low/'
-
-				if prefix == 'hi/' or prefix == 'low/':
-					#print('cp', file_path + file_name, 'to', self.saved_for_analysis_path + prefix + file_name)
-					copyfile(file_path + file_name, self.saved_for_analysis_path + prefix + file_name)"""
 
 		except Exception as e:
 			print("Error:", str(e))
