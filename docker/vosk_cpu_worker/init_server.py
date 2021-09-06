@@ -19,14 +19,14 @@ import socket
 
 class stt_server:
 
-	def __init__(self, gpu_uri = ''):
+	def __init__(self):
 
 		# settings ++
 		self.cpu_id = self.get_worker_id()
 		cores_count = int(os.environ.get('WORKERS_COUNT', '0'))
 		self.cpu_cores = [i for i in range(0, cores_count)]
 
-		self.gpu_uri = gpu_uri
+		self.gpu_uri = os.environ.get('VOSK_SERVER_DEFAULT', '')
 		
 		# ms sql
 		self.sql_name = 'voice_ai'
@@ -99,8 +99,8 @@ class stt_server:
 			user=os.environ.get('MSSQL_LOGIN', ''),
 			password=os.environ.get('MSSQL_PASSWORD', ''),
 			database=self.sql_name,
-			#autocommit=True
-		)
+			#autocommit=True			
+		)		
 
 	def connect_mysql(self, source_id):
 
