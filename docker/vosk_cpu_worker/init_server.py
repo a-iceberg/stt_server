@@ -1,4 +1,4 @@
-from vosk import Model, KaldiRecognizer, SetLogLevel
+#from vosk import Model, KaldiRecognizer, SetLogLevel
 import json
 import pymssql
 import pymysql as mysql
@@ -14,72 +14,45 @@ import requests
 from shutil import copyfile
 import asyncio
 import websockets
+import socket
 
 
 class stt_server:
 
-	def __init__(self, cpu_id, gpu_uri = ''):
+	def __init__(self, gpu_uri = ''):
 
 		# settings ++
-		self.script_path = '/home/alex/projects/call_centre_stt_server/'
-		self.cpu_id = cpu_id		
-		with open(self.script_path + 'cores.count', 'r') as file:
-			cores_count = int(file.read().replace('\n', ''))
-			file.close()
+		self.cpu_id = self.get_worker_id()
+		cores_count = int(os.environ.get('WORKERS_COUNT', '0'))
 		self.cpu_cores = [i for i in range(0, cores_count)]
 
 		self.gpu_uri = gpu_uri
-
-		# telegram
-		# self.telegram_chat = '106129214' # Alex
-		# 
-		self.telegram_chat = '-1001443983697'  # log 1c
-		with open('telegram_bot.token', 'r') as file:
-			self.telegram_bot_token = file.read().replace('\n', '')
-			file.close()
 		
 		# ms sql
 		self.sql_name = 'voice_ai'
-		self.sql_server = '10.2.4.124'
-		self.sql_login = 'ICECORP\\1c_sql'
 
 		# mysql
 		self.mysql_name = {
 			1: 'MICO_96',
 			2: 'asterisk',
 		}
-		self.mysql_server = '10.2.4.146'
-		self.mysql_login = 'asterisk'
 
-		
-		self.model_path = '/mnt/share/audio_call/model_v0/model' # important to naming last directory 'model'
-		# self.model_path = '/mnt/share/audio_call/model_v1/model' # important to naming last directory 'model'
 		self.source_id = 0
 		self.sources = {
 			'call': 1,
 			'master': 2,
 		}
+
 		self.original_storage_path = {
-			# 1: '/mnt/share/audio_call/MSK_SRVCALL/RX_TX/',
-			1: '/mnt/share/audio/MSK_SRVCALL/RX_TX/',
-			# 2: '/mnt/share/audio/MSK_SRVCALL/REC_IN_OUT/'
-			2: '/mnt/share/audio_master/MSK_MRM/REC_IN_OUT/'
+			1: 'audio/stereo/', # call centre records path
+			2: 'audio/mono/' # masters records path
 		}
-		self.saved_for_analysis_path = '/mnt/share/audio_call/saved_for_analysis/'
+		#self.saved_for_analysis_path = '/mnt/share/audio_call/saved_for_analysis/'
 		self.confidence_of_file = 0
 		# settings --
 
 		self.temp_file_path = ''
-		self.temp_file_name = ''
-
-		# store pass in file, to prevent pass publication on git
-		with open(self.script_path+'sql.pass','r') as file:
-			self.sql_pass = file.read().replace('\n', '')
-			file.close()
-
-		with open(self.script_path+'mysql.pass','r') as file:
-			self.mysql_pass = file.read().replace('\n', '')
-			file.close()
+		self.temp_file_name = ''		
 			
 		self.conn = self.connect_sql()
 		self.mysql_conn = {
@@ -87,28 +60,44 @@ class stt_server:
 			2: self.connect_mysql(2),
 		}
 
-		if self.gpu_uri == '':
-			self.model = Model(self.model_path)
+		"""if self.gpu_uri == '':
+			self.model = Model(self.model_path)"""
+
+	def get_worker_id(self):
+
+		workers_count = int(os.environ.get('WORKERS_COUNT', '0'))
+		hostname = str(socket.gethostname())
+
+		with open('id_garden/'+hostname, "w") as f:
+			f.write('')
+
+		files = []
+		while len(files)<workers_count:
+			for root, dirs, files in os.walk('id_garden'):
+				filenames = sorted([filename for filename in files])
+				break
+
+		for i in range(0, len(filenames)):
+			if filenames[i] == hostname:
+				break
+
+		return i
 
 	def send_to_telegram(self, message):
-		headers = {
-			"Origin": "https://api.telegram.org",
-			"Referer": 'https://api.telegram.org/bot' + self.telegram_bot_token,
-			'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/70.0.3538.110 Safari/537.36'}
-		url = 'https://api.telegram.org/bot' + self.telegram_bot_token
-		url += '/sendMessage?chat_id=' + str(self.telegram_chat)
-		url += '&text=' + message + '\nStt cpu: ' + str(self.cpu_id)
-		try:
-			requests.get(url, headers=headers)
-		except Exception as e:
-			print('Telegram send message error:', str(e))
+		token = os.environ.get('TELEGRAM_BOT_TOKEN', '')
+		chat_id = os.environ.get('TELEGRAM_CHAT', '')
+		session = requests.Session()
+		get_request = 'https://api.telegram.org/bot' + token	
+		get_request += '/sendMessage?chat_id=' + chat_id
+		get_request += '&text=' + urllib.parse.quote_plus(message)
+		session.get(get_request)
 			
 	def connect_sql(self):
 
 		return pymssql.connect(
-			server=self.sql_server,
-			user=self.sql_login,
-			password=self.sql_pass,
+			server=os.environ.get('MSSQL_SERVER', ''),
+			user=os.environ.get('MSSQL_LOGIN', ''),
+			password=os.environ.get('MSSQL_PASSWORD', ''),
 			database=self.sql_name,
 			#autocommit=True
 		)
@@ -116,9 +105,9 @@ class stt_server:
 	def connect_mysql(self, source_id):
 
 		return mysql.connect(
-			host=self.mysql_server,
-			user=self.mysql_login,
-			passwd=self.mysql_pass,
+			host=os.environ.get('MYSQL_SERVER', ''),
+			user=os.environ.get('MYSQL_LOGIN', ''),
+			passwd=os.environ.get('MYSQL_PASSWORD', ''),
 			db=self.mysql_name[source_id],
 			# autocommit = True
 			# cursorclass=mysql.cursors.DictCursor,

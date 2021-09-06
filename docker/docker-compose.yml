@@ -4,16 +4,19 @@ services:
     # restart: always
     deploy:
       mode: replicated
-      replicas: 3
-      #update_config:
-      #  parallelism: 2
-      #  delay: 2s
-      #restart_policy:
-      #  condition: on-failure
+      replicas: 1
     volumes:
       - /mnt/share/audio_call/:/worker/audio/stereo
       - /mnt/share/audio_master/:/worker/audio/mono
       - ./vosk_cpu_worker/id_garden:/worker/id_garden
     build: vosk_cpu_worker
     environment:
-      - WORKERS_COUNT=3
+      - WORKERS_COUNT=1
+      - MYSQL_SERVER=10.2.4.146
+      - MYSQL_LOGIN=asterisk
+      - MYSQL_PASSWORD=12WsxcdE34
+      - MSSQL_SERVER=10.2.4.124
+      - MSSQL_LOGIN=ICECORP\\1c_sql
+      - MSSQL_PASSWORD=dpCEoF1e4A6XPOL
+      - TELEGRAM_CHAT=-1001443983697
+      - TELEGRAM_BOT_TOKEN=1257968138:AAECy2F0n8fLTM8qqwTMGbzuot1piL1gKTM

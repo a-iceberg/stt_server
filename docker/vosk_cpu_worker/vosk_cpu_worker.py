@@ -1,29 +1,29 @@
 import os
 import socket
+from init_server import stt_server
 
-# master path 'audio/mono'
-# call path 'audio/stereo'
+server_object = stt_server('http://127.0.0.1/transcribe')
 
-def get_worker_id():
+print('worker_id:', server_object.cpu_id)
 
-	workers_count = int(os.environ.get('WORKERS_COUNT', '0'))
-	hostname = str(socket.gethostname())
+server_object.source_id=1 # call centre
+mysql_conn = server_object.connect_mysql(server_object.source_id)
+with mysql_conn:
+	query = "select linkedid from PT1C_cdr_MICO limit 1;"
+	cursor = mysql_conn.cursor()
+	cursor.execute(query)
+	for row in cursor.fetchall():
+		print('mysql_conn[1]',row[0])
 
-	with open('id_garden/'+hostname, "w") as f:
-		f.write('')
-
-	files = []
-	while len(files)<workers_count:
-		for root, dirs, files in os.walk('id_garden'):
-			filenames = sorted([filename for filename in files])
-			break
-
-	for i in range(0, len(filenames)):
-		if filenames[i] == hostname:
-			break
-
-	return i
+server_object.source_id=2 # call centre
+mysql_conn = server_object.connect_mysql(server_object.source_id)
+with mysql_conn:
+	query = "select calldate from cdr limit 1;"
+	cursor = mysql_conn.cursor()
+	cursor.execute(query)
+	for row in cursor.fetchall():
+		print('mysql_conn[2]',row[0])
 
 
-worker_id = get_worker_id()
-print('worker_id:', worker_id)
+
+print('exit')
