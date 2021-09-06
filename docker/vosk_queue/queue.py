@@ -2,6 +2,8 @@ import datetime
 import time
 from init_queue import stt_server
 
+exit()
+
 batch_size = 1000
 
 server_object = stt_server()
