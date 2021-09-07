@@ -33,7 +33,9 @@ class stt_server:
 			os.environ.get('VOSK_SERVER_DEFAULT', '')
 			)
 		
-		self.send_to_telegram('Started transcribation worker '+str(self.cpu_id)+' # '+self.gpu_uri)
+		message = str(datetime.datetime.now())
+		message += 'Started transcribation worker '+str(self.cpu_id)+' # '+self.gpu_uri
+		self.send_to_telegram(message)
 
 		# ms sql
 		self.sql_name = 'voice_ai'
