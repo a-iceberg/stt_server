@@ -1,5 +1,5 @@
 import datetime
-import pymysql
+import pymssql
 import time
 
 def connect_sql():
