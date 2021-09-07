@@ -1,31 +1,22 @@
-### call centre speech to text server
-
-#### Installation
-inside repo   
+# Call centre transcribation service
+Additional mysql and mssql databases and tables configure required.  
+- Works with [Kaldi Vosk](https://hub.docker.com/r/alphacep/kaldi-vosk-server)   
+- Inside docker container   
+- Scalable   
+- Russian language   
+- [GPU](https://github.com/sskorol/vosk-api-gpu) and CPU support   
+### Installation
 ```
-cd ../
-python3 -m pip install vosk   
-git clone https://github.com/alphacep/vosk-api.git   
-cd vosk-api/python/   
-python3 setup.py install --user --single-version-externally-managed --root=/   
-python3 -m pip install vosk
+git clone https://github.com/format37/call_centre_stt_server.git
 cd call_centre_stt_server
-wget https://alphacephei.com/vosk/models/vosk-model-ru-0.10.zip   
-unzip vosk-model-ru-0.10.zip   
-mv vosk-model-ru-0.10 model  
-pip3 install -r requirements.txt
-```  
-additional libraries:   
 ```
-python3 -m pip install pymssql
-pip install -U gast==0.2.2
+Configure your server:
 ```
-solving "No matching distribution found for vosk" under root
-```pip install --upgrade pip```
-
-#### Run
-
-#### More info on   
-https://alphacephei.com/vosk/install   
-#### Models   
-https://alphacephei.com/vosk/models
+mv docker-compose-default.yml docker-compose.yml
+nano docker-compose.yml
+```
+Run:
+```
+sh compose.sh
+```
+Logs and performance monitoring available in [Portainer](https://www.portainer.io)
