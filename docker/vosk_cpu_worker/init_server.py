@@ -33,8 +33,8 @@ class stt_server:
 			os.environ.get('VOSK_SERVER_DEFAULT', '')
 			)
 		
-		message = str(datetime.datetime.now())
-		message += 'Started transcribation worker '+str(self.cpu_id)+' # '+self.gpu_uri
+		message = str(datetime.datetime.now())+'\n'
+		message += 'New vosk worker: '+str(self.cpu_id)+' # '+self.gpu_uri
 		self.send_to_telegram(message)
 
 		# ms sql
@@ -188,7 +188,7 @@ class stt_server:
 		os_cmd 	= 'ffmpeg -y -i '
 		os_cmd += original_file_path
 		os_cmd += original_file_name
-		os_cmd += ' -ar 8000 -af "pan=mono|c0=F'
+		os_cmd += ' -ar 16000 -af "pan=mono|c0=F'
 		os_cmd += 'R' if side else 'L'
 		os_cmd += '" '
 		os_cmd += self.temp_file_path
@@ -312,7 +312,36 @@ class stt_server:
 					phrases_count += 1
 
 			await websocket.send('{"eof" : 1}')
-			print(await websocket.recv())
+			accept = json.loads(await websocket.recv())
+			#print(await websocket.recv())
+			# TODO: merge this cloned section:
+			if len(accept)>1 and accept['text'] != '':
+				accept_start = str(accept['result'][0]['start'])
+				accept_end = accept['result'][-1:][0]['end']
+				accept_text = str(accept['text'])
+
+				for result_rec in accept['result']:
+					conf_score.append(float(result_rec['conf']))
+				conf_mid = str(sum(conf_score)/len(conf_score))
+				confidences.append(sum(conf_score)/len(conf_score))
+				self.save_result(
+						duration,
+						accept_text,
+						accept_start,
+						accept_end,
+						side,
+						transcribation_date,
+						conf_mid,
+						original_file_name,
+						rec_date,
+						src,
+						dst,
+						linkedid,
+						file_size,
+						queue_date
+					)						
+				phrases.append(accept_text)						
+				phrases_count += 1
 
 		return phrases_count, phrases, confidences
 
