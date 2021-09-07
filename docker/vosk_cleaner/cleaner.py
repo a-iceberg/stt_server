@@ -1,6 +1,7 @@
 import datetime
 import pymssql
 import time
+import os
 
 def connect_sql():
 
