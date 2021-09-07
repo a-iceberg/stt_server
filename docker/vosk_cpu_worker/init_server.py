@@ -777,18 +777,6 @@ class stt_server:
 			# self.send_to_telegram('file length calculate error:\n'+fname+'\n'+str(e))
 		return file_duration
 
-	def delete_old_results(self):
-
-		cur_date = datetime.datetime.now()
-		DD = datetime.timedelta(days=int(365 / 2))
-		crop_date = str(cur_date - DD)
-		crop_date = re.findall(r'\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}', crop_date)[0]
-		bottom_limit = datetime.datetime.strptime(str(crop_date), '%Y-%m-%d %H:%M:%S').strftime('%Y-%m-%dT%H:%M:%S')
-		cursor = self.conn.cursor()
-		sql_query = "delete from transcribations where record_date<'"+str(bottom_limit)+"';"
-		cursor.execute(sql_query)
-		self.conn.commit() # autocommit
-
 	def wer_file_exist(self):
 		
 		"""current_date = datetime.datetime.now().strftime('%Y-%m-%d')
