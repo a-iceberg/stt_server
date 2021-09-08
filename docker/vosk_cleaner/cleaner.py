@@ -37,12 +37,20 @@ def clean_summarization_queue(conn, bottom_limit):
 	conn.commit() # autocommit
 	print(datetime.datetime.now(), 'summarization_queue cleaned')
 
+print(datetime.datetime.now(), 'Start')
+
 conn = connect_sql()
+
+print(datetime.datetime.now(), 'Connected. Waiting 10 min..')
+
+time.sleep(10 * 60)
+
+print(datetime.datetime.now(), 'Go')
 
 while True:
 
 	bottom_limit = str((datetime.datetime.now() - datetime.timedelta(days=180)).strftime('%Y-%m-%dT%H:%M:%S'))
-	print(datetime.datetime.now(), 'deleting before', bottom_limit)
+	print(datetime.datetime.now(), 'Deleting before', bottom_limit)
 	clean_transcribations(conn, bottom_limit)
 	clean_perf_log(conn, bottom_limit)
 	clean_summarization_queue(conn, bottom_limit)
