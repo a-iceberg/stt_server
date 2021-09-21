@@ -56,7 +56,7 @@ class stt_server:
 			1: 'audio/stereo/', # call centre records path
 			2: 'audio/mono/' # masters records path
 		}
-		self.saved_for_analysis_path = '/mnt/share/audio_call/saved_for_analysis/'
+		self.saved_for_analysis_path = 'audio/wer/'
 		self.confidence_of_file = 0
 		# settings --
 
@@ -787,7 +787,7 @@ class stt_server:
 		
 		current_date = datetime.datetime.now().strftime('%Y-%m-%d')
 		comparator = 'cpu'+str(self.cpu_id)+'_'+current_date+'_'
-		for root, dirs, files in os.walk(self.saved_for_analysis_path + 'wer'):
+		for root, dirs, files in os.walk(self.saved_for_analysis_path):
 			for filename in files:
 				if comparator in filename:
 					return True
@@ -802,5 +802,5 @@ class stt_server:
 		current_date = datetime.datetime.now().strftime('%Y-%m-%d')
 		#self.confidence_of_file > 0.9 and \
 		#if	duration > 50 and duration < 60 and not self.wer_file_exist():
-		prefix = 'wer/cpu'+str(self.cpu_id)+'_'+current_date+'_'
+		prefix = 'cpu'+str(self.cpu_id)+'_'+current_date+'_'
 		copyfile(file_path + file_name, self.saved_for_analysis_path + prefix + file_name)
