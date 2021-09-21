@@ -5,6 +5,7 @@ services:
       mode: replicated
       replicas: 3
     volumes:
+      - /home/alex/projects/wer/:/worker/audio/wer
       - /mnt/share/audio_call/MSK_SRVCALL/RX_TX/:/worker/audio/stereo
       - /mnt/share/audio_master/MSK_MRM/REC_IN_OUT/:/worker/audio/mono
       - ./vosk_cpu_worker/id_garden:/worker/id_garden
@@ -24,7 +25,7 @@ services:
       - TELEGRAM_BOT_TOKEN=
       - VOSK_SERVER_DEFAULT=ws://10.2.5.212:2700
       - VOSK_SERVER_WORKER_0=ws://10.2.5.212:2700
-      - VOSK_SERVER_WORKER_1=ws://10.2.5.212:2700    
+      - VOSK_SERVER_WORKER_1=ws://10.2.5.212:2700
   vosk_queue:
     restart: always
     volumes:

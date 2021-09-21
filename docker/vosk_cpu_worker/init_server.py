@@ -786,7 +786,8 @@ class stt_server:
 	def wer_file_exist(self):
 		
 		current_date = datetime.datetime.now().strftime('%Y-%m-%d')
-		comparator = 'cpu'+str(self.cpu_id)+'_'+current_date+'_'
+		# comparator = 'cpu'+str(self.cpu_id)+'_'+current_date+'_'
+		comparator = '_'+current_date+'_'
 		for root, dirs, files in os.walk(self.saved_for_analysis_path):
 			for filename in files:
 				if comparator in filename:
