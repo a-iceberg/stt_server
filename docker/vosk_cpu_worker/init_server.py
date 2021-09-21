@@ -56,7 +56,7 @@ class stt_server:
 			1: 'audio/stereo/', # call centre records path
 			2: 'audio/mono/' # masters records path
 		}
-		#self.saved_for_analysis_path = '/mnt/share/audio_call/saved_for_analysis/'
+		self.saved_for_analysis_path = '/mnt/share/audio_call/saved_for_analysis/'
 		self.confidence_of_file = 0
 		# settings --
 
@@ -389,8 +389,14 @@ class stt_server:
 		self.perf_log(2, trans_start, trans_end, duration, linkedid)
 		
 		# quality control
-		#self.save_file_for_analysis(self.temp_file_path, self.temp_file_name, duration)
-		#self.send_to_telegram(str(self.cpu_id)+': '+str(phrases_count)+' # '+self.temp_file_name)
+		if phrases_count>3 and \
+			self.confidence_of_file>0.5 and \
+			duration > 50 and \
+			duration < 60 and \
+			not self.wer_file_exist():
+			self.save_file_for_analysis(self.temp_file_path, self.temp_file_name, duration)
+			#self.send_to_telegram(str(self.cpu_id)+': '+str(phrases_count)+' # '+self.temp_file_name)
+
 		if phrases_count == 0:
 			self.save_result(
 				duration,
@@ -562,7 +568,7 @@ class stt_server:
 						else:
 							print('1 Unable to extract date:', root, filename)
 							self.send_to_telegram('1 Unable to extract date: ' + str(root) + ' ' + str(filename))
-							self.save_file_for_analysis(root, filename, 0)
+							#self.save_file_for_analysis(root, filename, 0)
 				# break # ToDo: remove
 
 		elif self.source_id == self.sources['master']:
@@ -724,8 +730,8 @@ class stt_server:
 				# self.save_file_for_analysis(filepath, filename, file_duration)
 				print(message)
 				# self.send_to_telegram(message)
-			else:
-				self.save_file_for_analysis(filepath, filename, file_duration)
+			#else:
+			#	self.save_file_for_analysis(filepath, filename, file_duration)
 
 			cursor = self.conn.cursor()
 			current_date = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
@@ -779,29 +785,22 @@ class stt_server:
 
 	def wer_file_exist(self):
 		
-		"""current_date = datetime.datetime.now().strftime('%Y-%m-%d')
+		current_date = datetime.datetime.now().strftime('%Y-%m-%d')
 		comparator = 'cpu'+str(self.cpu_id)+'_'+current_date+'_'
 		for root, dirs, files in os.walk(self.saved_for_analysis_path + 'wer'):
 			for filename in files:
 				if comparator in filename:
-					return True"""
+					return True
 		return False
 
 	def save_file_for_analysis(self, file_path, file_name, duration):
-		pass
-		"""try:
-			midlle_confidence = 0.8697060696547252
+			
+		"""if duration == 0:
+			prefix = 'zero/'
+			copyfile(file_path + file_name, self.saved_for_analysis_path + prefix + file_name)"""
 
-			if duration == 0:
-				prefix = 'zero/'
-				copyfile(file_path + file_name, self.saved_for_analysis_path + prefix + file_name)
-
-			current_date = datetime.datetime.now().strftime('%Y-%m-%d')
-			#self.confidence_of_file > 0.9 and \
-			if	duration > 50 and duration < 60 and not self.wer_file_exist():
-				prefix = 'wer/cpu'+str(self.cpu_id)+'_'+current_date+'_'
-				copyfile(file_path + file_name, self.saved_for_analysis_path + prefix + file_name)
-
-		except Exception as e:
-			print("Error:", str(e))
-			self.send_to_telegram('save_file_for_analysis error:\n' + str(e))"""
+		current_date = datetime.datetime.now().strftime('%Y-%m-%d')
+		#self.confidence_of_file > 0.9 and \
+		#if	duration > 50 and duration < 60 and not self.wer_file_exist():
+		prefix = 'wer/cpu'+str(self.cpu_id)+'_'+current_date+'_'
+		copyfile(file_path + file_name, self.saved_for_analysis_path + prefix + file_name)
