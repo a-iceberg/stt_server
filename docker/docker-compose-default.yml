@@ -14,6 +14,7 @@ services:
     build: vosk_cpu_worker
     environment:
       - WORKERS_COUNT=3
+      - WER_FILES_COUNT_LIMIT=0
       - TZ=Europe/Moscow
       - MYSQL_SERVER=
       - MYSQL_LOGIN=

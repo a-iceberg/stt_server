@@ -16,6 +16,7 @@ import asyncio
 import websockets
 import socket
 import urllib
+import glob
 
 
 class stt_server:
@@ -779,29 +780,20 @@ class stt_server:
 				file_duration = frames / float(rate)
 		except Exception as e:
 			print('file length calculate error:', str(e))
-			# self.save_file_for_analysis(filepath, filename, file_duration)
-			# self.send_to_telegram('file length calculate error:\n'+fname+'\n'+str(e))
 		return file_duration
 
 	def wer_file_exist(self):
 		
-		current_date = datetime.datetime.now().strftime('%Y-%m-%d')
-		# comparator = 'cpu'+str(self.cpu_id)+'_'+current_date+'_'
-		comparator = '_'+current_date+'_'
-		for root, dirs, files in os.walk(self.saved_for_analysis_path):
-			for filename in files:
-				if comparator in filename:
-					return True
-		return False
+		wav_count = len(glob.glob(self.saved_for_analysis_path + '/*.wav'))
+		files_count_limit = int(os.environ.get('WER_FILES_COUNT_LIMIT', '0'))
+		
+		if files_count_limit == 0:
+			return True
+		else:
+			return wav_count>files_count_limit
 
 	def save_file_for_analysis(self, file_path, file_name, duration):
 			
-		"""if duration == 0:
-			prefix = 'zero/'
-			copyfile(file_path + file_name, self.saved_for_analysis_path + prefix + file_name)"""
-
 		current_date = datetime.datetime.now().strftime('%Y-%m-%d')
-		#self.confidence_of_file > 0.9 and \
-		#if	duration > 50 and duration < 60 and not self.wer_file_exist():
 		prefix = 'cpu'+str(self.cpu_id)+'_'+current_date+'_'
 		copyfile(file_path + file_name, self.saved_for_analysis_path + prefix + file_name)
