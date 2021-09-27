@@ -70,6 +70,24 @@ class stt_server:
 			2: self.connect_mysql(2),
 		}
 
+		self.numbers = [
+			'надцать',
+			'двадцать',
+			'тридцать',
+			'сорок',
+			'пятьдесят',
+			'шестьдесят',
+			'семьдесят',
+			'восемьдесят',
+			'девяносто',
+			'пятьсот',
+			'шестьсот',
+			'семьсот',
+			'восемьсот',
+			'девятьсот',
+			'тысяч'
+		]
+
 	def get_worker_id(self):
 
 		workers_count = int(os.environ.get('WORKERS_COUNT', '0'))
@@ -347,26 +365,9 @@ class stt_server:
 		return phrases_count, phrases, confidences
 
 
-	def phrases_have_numbers(phrases):
-		numbers = [
-			'надцать',
-			'двадцать',
-			'тридцать',
-			'сорок',
-			'пятьдесят',
-			'шестьдесят',
-			'семьдесят',
-			'восемьдесят',
-			'девяносто',
-			'пятьсот',
-			'шестьсот',
-			'семьсот',
-			'восемьсот',
-			'девятьсот',
-			'тысяч'
-		]
+	def phrases_have_numbers(self, phrases):		
 		for word in ' '.join(phrases).split(' '):
-			if word in numbers:
+			if word in self.numbers:
 				return True
 		return False
 		
@@ -420,7 +421,7 @@ class stt_server:
 			self.confidence_of_file>0.5 and \
 			duration > 50 and \
 			duration < 60 and \
-			not phrases_have_numbers(phrases) and \
+			not self.phrases_have_numbers(phrases) and \
 			not self.wer_file_exist():
 			self.save_file_for_analysis(self.temp_file_path, self.temp_file_name, duration)
 			#self.send_to_telegram(str(self.cpu_id)+': '+str(phrases_count)+' # '+self.temp_file_name)
