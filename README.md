@@ -19,4 +19,6 @@ Run:
 ```
 sh compose.sh
 ```
-Logs and performance monitoring available in [Portainer](https://www.portainer.io)
+Logs and performance monitoring available in [Portainer](https://www.portainer.io)   
+.
+
