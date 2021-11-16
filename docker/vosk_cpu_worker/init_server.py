@@ -36,7 +36,7 @@ class stt_server:
 		
 		message = str(datetime.datetime.now())+'\n'
 		message += 'New vosk worker: '+str(self.cpu_id)+' # '+self.gpu_uri
-		self.send_to_telegram(message)
+		# self.send_to_telegram(message)
 
 		# ms sql
 		self.sql_name = 'voice_ai'
@@ -416,7 +416,7 @@ class stt_server:
 		trans_end = time.time() # datetime.datetime.now()
 		self.perf_log(2, trans_start, trans_end, duration, linkedid)
 		
-		# quality control
+		# quality control		
 		if phrases_count>3 and \
 			self.confidence_of_file>0.5 and \
 			duration > 50 and \
