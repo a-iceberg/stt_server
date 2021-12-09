@@ -138,7 +138,7 @@ class stt_server:
 		return complete_files
 
 
-	def copy_file(src, dst):
+	def copy_file(self, src, dst):
 		if not os.path.exists(src):
 			print("copy_file error: source file not exist")
 			return
