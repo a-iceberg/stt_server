@@ -9,6 +9,7 @@ import re
 import pandas as pd
 #import sys
 import time
+import shutil
 #from shutil import copyfile
 #import asyncio
 #import websockets
@@ -45,7 +46,7 @@ class stt_server:
 			1: 'audio/stereo/', # call centre records path
 			2: 'audio/mono/' # masters records path
 		}
-		#self.saved_for_analysis_path = '/mnt/share/audio_call/saved_for_analysis/'
+		self.saved_for_analysis_path = 'audio/saved_for_analysis/'
 		self.confidence_of_file = 0
 		# settings --
 
@@ -136,6 +137,16 @@ class stt_server:
 
 		return complete_files
 
+
+	def copy_file(src, dst):
+		if not os.path.exists(src):
+			print("copy_file error: source file not exist")
+			return
+		if not os.path.exists(dst):
+			os.makedirs(dst)
+		shutil.copy(src, dst)
+
+
 	def get_fs_files_list(self, queue):
 
 		fd_list = []
@@ -144,7 +155,17 @@ class stt_server:
 			print('call path', self.original_storage_path[self.source_id])
 			for root, dirs, files in os.walk(self.original_storage_path[self.source_id]):
 				for filename in files:
-					if filename[-4:] == '.wav' and not filename in queue:
+					file_in_queue = filename in queue
+					# debug ++					
+					if not file_in_queue:
+						dst_file = self.saved_for_analysis_path+'/debug/call/'+filename
+						if not os.path.exists(dst_file):
+							self.copy_file(
+								self.original_storage_path[self.source_id]+filename,
+								self.saved_for_analysis_path+'/debug/call/'
+							)
+					# debug --
+					if not file_in_queue and filename[-4:] == '.wav':
 						rec_source_date = re.findall(r'\d{4}-\d{2}-\d{2}-\d{2}-\d{2}-\d{2}', filename)
 						if len(rec_source_date) and len(rec_source_date[0]):
 							rec_date = rec_source_date[0][:10] + ' ' + rec_source_date[0][11:].replace('-', ':')
@@ -187,6 +208,14 @@ class stt_server:
 			# get record date
 			for filename in files_list:
 				if not filename in queue:
+					# debug ++										
+					dst_file = self.saved_for_analysis_path+'/debug/master/'+filename
+					if not os.path.exists(dst_file):
+						self.copy_file(
+							self.original_storage_path[self.source_id]+filename,
+							self.saved_for_analysis_path+'/debug/master/'
+						)
+					# debug --
 					try:
 						file_stat = os.stat(self.original_storage_path[self.source_id] + filename)
 						# f_size = file_stat.st_size

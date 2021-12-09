@@ -32,6 +32,7 @@ services:
     volumes:
       - /mnt/share/audio_call/MSK_SRVCALL/RX_TX/:/queue/audio/stereo
       - /mnt/share/audio_master/MSK_MRM/REC_IN_OUT/:/queue/audio/mono
+      - /mnt/share/audio_call/saved_for_analysis/:/queue/audio/saved_for_analysis
       - /etc/localtime:/etc/localtime:ro
       - /etc/timezone:/etc/timezone:ro
     build: vosk_queue
