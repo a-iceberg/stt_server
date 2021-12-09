@@ -164,6 +164,8 @@ class stt_server:
 								self.original_storage_path[self.source_id]+filename,
 								self.saved_for_analysis_path+'debug/call/'
 							)
+						else:
+							print('copying canceled. file exists: ', dst_file)
 					# debug --
 					if not file_in_queue and filename[-4:] == '.wav':
 						rec_source_date = re.findall(r'\d{4}-\d{2}-\d{2}-\d{2}-\d{2}-\d{2}', filename)
