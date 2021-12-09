@@ -158,11 +158,11 @@ class stt_server:
 					file_in_queue = filename in queue
 					# debug ++					
 					if not file_in_queue:
-						dst_file = self.saved_for_analysis_path+'/debug/call/'+filename
+						dst_file = self.saved_for_analysis_path+'debug/call/'+filename
 						if not os.path.exists(dst_file):
 							self.copy_file(
 								self.original_storage_path[self.source_id]+filename,
-								self.saved_for_analysis_path+'/debug/call/'
+								self.saved_for_analysis_path+'debug/call/'
 							)
 					# debug --
 					if not file_in_queue and filename[-4:] == '.wav':
@@ -209,11 +209,11 @@ class stt_server:
 			for filename in files_list:
 				if not filename in queue:
 					# debug ++										
-					dst_file = self.saved_for_analysis_path+'/debug/master/'+filename
+					dst_file = self.saved_for_analysis_path+'debug/master/'+filename
 					if not os.path.exists(dst_file):
 						self.copy_file(
 							self.original_storage_path[self.source_id]+filename,
-							self.saved_for_analysis_path+'/debug/master/'
+							self.saved_for_analysis_path+'debug/master/'
 						)
 					# debug --
 					try:
