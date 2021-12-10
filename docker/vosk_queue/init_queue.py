@@ -148,8 +148,10 @@ class stt_server:
 
 
 	def log(self, text):
+		current_date = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+		text = str(current_date) + ' ' + text
 		print('log:', text)
-		with open('log.txt', 'a') as f:
+		with open(self.saved_for_analysis_path+'debug/log.txt', 'a') as f:
 			f.write(text + '\n')
 
 
@@ -162,7 +164,7 @@ class stt_server:
 				for filename in files:					
 					self.log('call check file '+filename)
 					file_in_queue = filename in queue
-					# debug ++					
+					# debug ++
 					if not file_in_queue:
 						dst_file = self.saved_for_analysis_path+'debug/call/'+filename
 						if not os.path.exists(dst_file):
@@ -171,7 +173,9 @@ class stt_server:
 								self.saved_for_analysis_path+'debug/call/'
 							)
 						else:
-							print('copying canceled. file exists: ', dst_file)
+							self.log('copying canceled. file exists: '+dst_file)
+					else: 
+						self.log(filename+' in queue')
 					# debug --
 					if not file_in_queue and filename[-4:] == '.wav':
 						rec_source_date = re.findall(r'\d{4}-\d{2}-\d{2}-\d{2}-\d{2}-\d{2}', filename)
