@@ -10,6 +10,7 @@ import pandas as pd
 #import sys
 import time
 import shutil
+import requests
 #from shutil import copyfile
 #import asyncio
 #import websockets
@@ -19,7 +20,6 @@ import shutil
 class stt_server:
 
 	def __init__(self):
-
 		# settings ++
 		#self.cpu_id = self.get_worker_id()
 		cores_count = int(os.environ.get('WORKERS_COUNT', '0'))
@@ -62,18 +62,18 @@ class stt_server:
 		"""if self.gpu_uri == '':
 			self.model = Model(self.model_path)"""
 
+
 	def send_to_telegram(self, message):
-		import requests
 		token = os.environ.get('TELEGRAM_BOT_TOKEN', '')
 		chat_id = os.environ.get('TELEGRAM_CHAT', '')
 		session = requests.Session()
-		get_request = 'https://api.telegram.org/bot' + token	
+		get_request = 'https://api.telegram.org/bot' + token
 		get_request += '/sendMessage?chat_id=' + chat_id
-		get_request += '&text=' + urllib.parse.quote_plus(message)
+		get_request += '&parse_mode=Markdown&text=' + message
 		session.get(get_request)
 			
-	def connect_sql(self):
 
+	def connect_sql(self):
 		return pymssql.connect(
 			server=os.environ.get('MSSQL_SERVER', ''),
 			user=os.environ.get('MSSQL_LOGIN', ''),
@@ -82,8 +82,8 @@ class stt_server:
 			#autocommit=True			
 		)		
 
-	def connect_mysql(self, source_id):
 
+	def connect_mysql(self, source_id):
 		return mysql.connect(
 			host=os.environ.get('MYSQL_SERVER', ''),
 			user=os.environ.get('MYSQL_LOGIN', ''),
@@ -93,8 +93,8 @@ class stt_server:
 			# cursorclass=mysql.cursors.DictCursor,
 		)
 	
-	def linkedid_by_filename(self, filename, date_y, date_m, date_d):
 
+	def linkedid_by_filename(self, filename, date_y, date_m, date_d):
 		filename = filename.replace('rxtx.wav', '')
 		
 		date_from = datetime.datetime(int(date_y), int(date_m), int(date_d))
@@ -124,8 +124,8 @@ class stt_server:
 				return linkedid, dstchannel, src
 		return '', '', ''
 
-	def get_sql_complete_files(self):
 
+	def get_sql_complete_files(self):
 		cursor = self.conn.cursor()
 		sql_query = "select distinct filename from queue where"
 		sql_query += " source_id='" + str(self.source_id) + "'"
@@ -147,14 +147,20 @@ class stt_server:
 		shutil.copy(src, dst)
 
 
-	def get_fs_files_list(self, queue):
+	def log(self, text):
+		print('log:', text)
+		with open('log.txt', 'a') as f:
+			f.write(text + '\n')
 
+
+	def get_fs_files_list(self, queue):
 		fd_list = []
 
 		if self.source_id == self.sources['call']:
 			print('call path', self.original_storage_path[self.source_id])
 			for root, dirs, files in os.walk(self.original_storage_path[self.source_id]):
-				for filename in files:
+				for filename in files:					
+					self.log('call check file '+filename)
 					file_in_queue = filename in queue
 					# debug ++					
 					if not file_in_queue:
@@ -297,9 +303,9 @@ class stt_server:
 		df.sort_values(['rec_date', 'filename'], ascending=True, inplace=True)
 
 		return df.values
+
 	
-	def set_shortest_queue_cpu(self):
-		
+	def set_shortest_queue_cpu(self):		
 		cursor = self.conn.cursor()
 		sql_query = '''
 		IF OBJECT_ID('tempdb..#tmp_cpu_queue_len') IS NOT NULL
@@ -331,11 +337,13 @@ class stt_server:
 			print('error: unable to get shortest_queue_cpu')
 			self.cpu_id = 0
 
+
 	def get_source_id(self, source_name):
 		for source in self.sources.items():
 			if source[0] == source_name:
 				return source[1]
 		return 0
+
 
 	def get_source_name(self, source_id):
 		for source in self.sources.items():
@@ -343,8 +351,8 @@ class stt_server:
 				return source[0]
 		return 0
 
-	def add_queue(self, filepath, filename, rec_date, src, dst, linkedid, naming_version):
 
+	def add_queue(self, filepath, filename, rec_date, src, dst, linkedid, naming_version):
 		try:
 			file_stat = os.stat(filepath + filename)
 			f_size = file_stat.st_size
@@ -404,6 +412,7 @@ class stt_server:
 			# self.save_file_for_analysis(filepath, filename, file_duration)
 			print(message)
 			# self.send_to_telegram(message)
+
 
 	def calculate_file_length(self, filepath, filename):
 		file_duration = 0
