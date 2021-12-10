@@ -164,7 +164,7 @@ class stt_server:
 			print('call path', self.original_storage_path[self.source_id])
 			for root, dirs, files in os.walk(self.original_storage_path[self.source_id]):
 				for filename in files:					
-					self.log('call check file '+filename)
+					#self.log('call check file '+filename)
 					try:
 						file_in_queue = filename in queue
 						# debug ++
@@ -177,8 +177,8 @@ class stt_server:
 								)
 							else:
 								self.log('copying canceled. file exists: '+dst_file)
-						else: 
-							self.log(filename+' in queue')
+						#else: 
+						#	self.log(filename+' in queue')
 					except Exception as e:
 						self.log('call debug error: '+str(e))
 					# debug --
