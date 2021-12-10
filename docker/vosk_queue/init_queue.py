@@ -141,9 +141,11 @@ class stt_server:
 	def copy_file(self, src, dst):
 		if not os.path.exists(src):
 			print("copy_file error: source file not exist")
+			self.log('copy_file error: source file not exist '+src)
 			return
-		if not os.path.exists(dst):
-			os.makedirs(dst)
+		#if not os.path.exists(dst):
+		#	os.makedirs(dst)
+		self.log('copying '+src+' to '+dst)
 		shutil.copy(src, dst)
 
 
@@ -163,19 +165,22 @@ class stt_server:
 			for root, dirs, files in os.walk(self.original_storage_path[self.source_id]):
 				for filename in files:					
 					self.log('call check file '+filename)
-					file_in_queue = filename in queue
-					# debug ++
-					if not file_in_queue:
-						dst_file = self.saved_for_analysis_path+'debug/call/'+filename
-						if not os.path.exists(dst_file):
-							self.copy_file(
-								self.original_storage_path[self.source_id]+filename,
-								self.saved_for_analysis_path+'debug/call/'
-							)
-						else:
-							self.log('copying canceled. file exists: '+dst_file)
-					else: 
-						self.log(filename+' in queue')
+					try:
+						file_in_queue = filename in queue
+						# debug ++
+						if not file_in_queue:
+							dst_file = self.saved_for_analysis_path+'debug/call/'+filename
+							if not os.path.exists(dst_file):
+								self.copy_file(
+									self.original_storage_path[self.source_id]+filename,
+									self.saved_for_analysis_path+'debug/call/'
+								)
+							else:
+								self.log('copying canceled. file exists: '+dst_file)
+						else: 
+							self.log(filename+' in queue')
+					except Exception as e:
+						self.log('call debug error: '+str(e))
 					# debug --
 					if not file_in_queue and filename[-4:] == '.wav':
 						rec_source_date = re.findall(r'\d{4}-\d{2}-\d{2}-\d{2}-\d{2}-\d{2}', filename)
