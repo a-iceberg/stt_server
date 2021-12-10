@@ -171,8 +171,8 @@ class stt_server:
 						if not file_in_queue:
 							dst_file = self.saved_for_analysis_path+'debug/call/'+filename
 							if not os.path.exists(dst_file):
-								self.copy_file(
-									self.original_storage_path[self.source_id]+filename,
+								self.copy_file(									
+									os.path.join(root, filename),
 									self.saved_for_analysis_path+'debug/call/'
 								)
 							else:
