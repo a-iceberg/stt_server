@@ -10,7 +10,6 @@ import pandas as pd
 #import sys
 import time
 import shutil
-import requests
 #from shutil import copyfile
 #import asyncio
 #import websockets
@@ -64,6 +63,7 @@ class stt_server:
 
 
 	def send_to_telegram(self, message):
+		import requests
 		token = os.environ.get('TELEGRAM_BOT_TOKEN', '')
 		chat_id = os.environ.get('TELEGRAM_CHAT', '')
 		session = requests.Session()
