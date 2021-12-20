@@ -393,20 +393,26 @@ class stt_server:
 
 		transcribation_date = datetime.datetime.now().strftime('%Y-%m-%dT%H:%M:%S')		
 		
-		phrases_count, phrases, confidences = asyncio.get_event_loop().run_until_complete(
-			self.transcribation_process(
-				duration, 
-				side, 
-				original_file_name, 
-				rec_date, 
-				src, 
-				dst, 
-				linkedid, 
-				file_size, 
-				queue_date,
-				transcribation_date
+		try:
+			phrases_count, phrases, confidences = asyncio.get_event_loop().run_until_complete(
+				self.transcribation_process(
+					duration, 
+					side, 
+					original_file_name, 
+					rec_date, 
+					src, 
+					dst, 
+					linkedid, 
+					file_size, 
+					queue_date,
+					transcribation_date
+					)
 				)
-			)
+		except Exception as e:
+			print('transcribation_process error:', e)
+			self.send_to_telegram(original_file_name+' transcribation_process error: '+str(e))
+			time.sleep(60)
+
 
 		if len(confidences):
 			self.confidence_of_file = sum(confidences)/len(confidences)
