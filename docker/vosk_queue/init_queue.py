@@ -70,17 +70,19 @@ class stt_server:
 			passwd = 'root'
 		)
 		cursor = connector.cursor()
+		cursor.execute("use ml")
 		cursor.execute("INSERT INTO deletions(date, filename) VALUES ('"+current_date+"', '"+filename+"');")
 
 
 	def send_to_telegram(self, message):
 		import requests
+		current_date = str(datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S'))
 		token = os.environ.get('TELEGRAM_BOT_TOKEN', '')
 		chat_id = os.environ.get('TELEGRAM_CHAT', '')
 		session = requests.Session()
 		get_request = 'https://api.telegram.org/bot' + token
 		get_request += '/sendMessage?chat_id=' + chat_id
-		get_request += '&parse_mode=Markdown&text=' + message
+		get_request += '&parse_mode=Markdown&text=' + current_date + ' vosk_queue: ' + message
 		session.get(get_request)
 			
 
