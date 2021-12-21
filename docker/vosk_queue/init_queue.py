@@ -62,6 +62,17 @@ class stt_server:
 			self.model = Model(self.model_path)"""
 
 
+	def log_deletion(self, filename):
+		current_date = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+		connector = mysql.connect(
+			host = '10.2.4.87',
+			user = 'root',
+			passwd = 'root'
+		)
+		cursor = connector.cursor()
+		cursor.execute("INSERT INTO deletions(date, filename) VALUES ('"+current_date+"', '"+filename+"');")
+
+
 	def send_to_telegram(self, message):
 		import requests
 		token = os.environ.get('TELEGRAM_BOT_TOKEN', '')
@@ -244,6 +255,7 @@ class stt_server:
 						try:
 							if file_age > 3600:
 								os.remove(self.original_storage_path[self.source_id] + filename)
+								self.log_deletion(self.original_storage_path[self.source_id] + filename)
 								# debug ++
 								# self.send_to_telegram('min. get_fs_files_list. removed: ' + str(filename))
 								# debug --

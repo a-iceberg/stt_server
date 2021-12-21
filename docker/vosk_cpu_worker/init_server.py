@@ -88,6 +88,16 @@ class stt_server:
 			'тысяч'
 		]
 
+	def log_deletion(self, filename):
+		current_date = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+		connector = mysql.connect(
+			host = '10.2.4.87',
+			user = 'root',
+			passwd = 'root'
+		)
+		cursor = connector.cursor()
+		cursor.execute("INSERT INTO deletions(date, filename) VALUES ('"+current_date+"', '"+filename+"');")
+
 	def get_worker_id(self):
 
 		workers_count = int(os.environ.get('WORKERS_COUNT', '0'))
@@ -240,8 +250,9 @@ class stt_server:
 
 		#if self.source_id == self.sources['call']:
 		myfile = original_file_path + original_file_name
-		try:
+		try:			
 			os.remove(myfile)
+			self.log_deletion(myfile)
 			print('succesfully removed', myfile)
 			# debug ++
 			# self.send_to_telegram('delete_source_file removed: ' + str(myfile))
@@ -547,6 +558,7 @@ class stt_server:
 			print('removing',self.temp_file_path + self.temp_file_name)
 			try:
 				os.remove(self.temp_file_path + self.temp_file_name)
+				self.log_deletion(self.temp_file_path + self.temp_file_name)
 				# debug ++
 				# self.send_to_telegram('remove_temporary_file removed: ' + str(self.temp_file_name))
 				# debug --
@@ -628,6 +640,7 @@ class stt_server:
 						try:
 							if file_age > 3600:
 								os.remove(self.original_storage_path[self.source_id] + filename)
+								self.log_deletion(self.original_storage_path[self.source_id] + filename)
 								# debug ++
 								# self.send_to_telegram('min. get_fs_files_list. removed: ' + str(filename))
 								# debug --
