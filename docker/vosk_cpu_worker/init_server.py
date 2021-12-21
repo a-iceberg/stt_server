@@ -95,6 +95,7 @@ class stt_server:
 			user = 'root',
 			passwd = 'root'
 		)
+		connector.autocommit(True)
 		cursor = connector.cursor()
 		cursor.execute("use ml")
 		cursor.execute("INSERT INTO deletions(date, filename) VALUES ('"+current_date+"', '"+filename+"');")
