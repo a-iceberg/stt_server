@@ -177,7 +177,12 @@ class stt_server:
 		if self.source_id == self.sources['call']:
 			print('call path', self.original_storage_path[self.source_id])
 			for root, dirs, files in os.walk(self.original_storage_path[self.source_id]):
-				for filename in files:					
+				for filename in files:
+					
+					# ToDo: remove this after upgrade audio records preparing method
+					if self.source_id == 1 and filename[-8:]!='rxtx.wav':
+						continue
+						
 					#self.log('call check file '+filename)
 					try:
 						file_in_queue = filename in queue
