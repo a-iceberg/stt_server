@@ -207,7 +207,7 @@ class stt_server:
 				return linkedid, dstchannel, src
 		return '', '', ''
 	
-	def make_file_splitted(self, side, original_file_path, original_file_name, linkedid, duration):
+	"""def make_file_splitted(self, side, original_file_path, original_file_name, linkedid, duration):
 
 		#split_start = datetime.datetime.now()
 		split_start = time.time()
@@ -237,7 +237,7 @@ class stt_server:
 		split_end = time.time()
 		self.perf_log(1, split_start, split_end, duration, linkedid)
 
-		return isfile
+		return isfile"""
 
 	def delete_current_queue(self, original_file_name, linkedid):
 
