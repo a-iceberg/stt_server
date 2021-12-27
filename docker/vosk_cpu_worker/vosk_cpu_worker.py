@@ -18,7 +18,8 @@ while True:
 	sql_query = "select filepath, filename, duration, source_id, "
 	sql_query += "record_date, src, dst, linkedid, file_size, date from queue "
 	sql_query += "where cpu_id='" + str(server_object.cpu_id) + "' "
-	sql_query += "and ( (source_id = '2' and record_date < '" + past_in_minutes + "') or not source_id = '2' ) "
+	#sql_query += "and ( (source_id = '2' and record_date < '" + past_in_minutes + "') or not source_id = '2' ) "
+	sql_query += "and record_date < '" + past_in_minutes + "' "
 	sql_query += "order by record_date, filename;"
 	processed = 0
 	cursor.execute(sql_query)
@@ -59,7 +60,8 @@ while True:
 				server_object.temp_file_path = original_file_path
 				server_object.temp_file_name = original_file_name
 				if os.path.isfile(server_object.temp_file_path + server_object.temp_file_name):
-					side = 0 if 'in' in original_file_name else 1
+					#side = 0 if 'in' in original_file_name else 1
+					side = 0 if original_file_name[-6:]=='in.wav' else 1
 					server_object.transcribe_to_sql(
 						original_file_duration,
 						side,

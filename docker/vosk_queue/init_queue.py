@@ -251,12 +251,12 @@ class stt_server:
 			for filename in files_list:
 				if not filename in queue:
 					# debug ++										
-					dst_file = self.saved_for_analysis_path+'debug/master/'+filename
+					"""dst_file = self.saved_for_analysis_path+'debug/master/'+filename
 					if not os.path.exists(dst_file):
 						self.copy_file(
 							self.original_storage_path[self.source_id]+filename,
 							self.saved_for_analysis_path+'debug/master/'
-						)
+						)"""
 					# debug --
 					try:
 						file_stat = os.stat(self.original_storage_path[self.source_id] + filename)
