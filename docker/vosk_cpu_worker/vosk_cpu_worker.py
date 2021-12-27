@@ -54,7 +54,8 @@ while True:
 
 		if original_file_duration>5:
 
-			if server_object.source_id == server_object.sources['master']:
+			#if server_object.source_id == server_object.sources['master']:
+			if True:
 				server_object.temp_file_path = original_file_path
 				server_object.temp_file_name = original_file_name
 				if os.path.isfile(server_object.temp_file_path + server_object.temp_file_name):
@@ -72,12 +73,15 @@ while True:
 					)
 					files_converted += 1				
 				else:
-					print('mrm file not found', server_object.temp_file_path + server_object.temp_file_name)
+					print(
+						'id: '+str(server_object.source_id)+' file not found', 
+						server_object.temp_file_path + server_object.temp_file_name
+						)
 				
 				server_object.delete_current_queue(original_file_name, linkedid)
 
 
-			elif server_object.source_id == server_object.sources['call']:
+			"""elif server_object.source_id == server_object.sources['call']:
 
 				if server_object.make_file_splitted(
 						0,
@@ -123,7 +127,7 @@ while True:
 
 				if files_converted == 0:
 					print('file not found:', linkedid, 'removing from queue..')
-					server_object.delete_current_queue(original_file_name, linkedid)
+					server_object.delete_current_queue(original_file_name, linkedid)"""
 
 			print('files_converted', files_converted)		
 			

@@ -109,8 +109,12 @@ class stt_server:
 	
 
 	def linkedid_by_filename(self, filename, date_y, date_m, date_d):
-		filename = filename.replace('rxtx.wav', '')
-		
+		# filename = filename.replace('rxtx.wav', '')
+		filename = filename.replace('rxtx-in.wav', '.wav')
+		filename = filename.replace('rxtx-out.wav', '.wav')
+		filename = filename.replace('in_', '')
+		filename = filename.replace('out_', '')
+
 		date_from = datetime.datetime(int(date_y), int(date_m), int(date_d))
 		date_toto = date_from+datetime.timedelta(days=1)
 		date_from = datetime.datetime.strptime(str(date_from), '%Y-%m-%d %H:%M:%S').strftime('%Y-%m-%dT%H:%M:%S')
@@ -180,12 +184,14 @@ class stt_server:
 				for filename in files:
 					
 					# ToDo: remove this after upgrade audio records preparing method
-					if self.source_id == 1 and filename[-8:]!='rxtx.wav':
+					#if self.source_id == 1 and filename[-8:]!='rxtx.wav':
+					if filename[-8:]!='rxtx-in.wav' and filename[-8:]!='rxtx-out.wav':
 						continue
-						
+
+					file_in_queue = filename in queue						
 					#self.log('call check file '+filename)
-					try:
-						file_in_queue = filename in queue
+					"""try:
+						
 						# debug ++
 						if not file_in_queue:
 							dst_file = self.saved_for_analysis_path+'debug/call/'+filename
@@ -199,7 +205,7 @@ class stt_server:
 						#else: 
 						#	self.log(filename+' in queue')
 					except Exception as e:
-						self.log('call debug error: '+str(e))
+						self.log('call debug error: '+str(e))"""
 					# debug --
 					if not file_in_queue and filename[-4:] == '.wav':
 						rec_source_date = re.findall(r'\d{4}-\d{2}-\d{2}-\d{2}-\d{2}-\d{2}', filename)
