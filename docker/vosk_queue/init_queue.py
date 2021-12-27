@@ -185,7 +185,7 @@ class stt_server:
 					
 					# ToDo: remove this after upgrade audio records preparing method
 					#if self.source_id == 1 and filename[-8:]!='rxtx.wav':
-					if filename[-8:]!='rxtx-in.wav' and filename[-8:]!='rxtx-out.wav':
+					if filename[-12:]!='rxtx-in.wav' and filename[-12:]!='rxtx-out.wav':
 						continue
 
 					file_in_queue = filename in queue						
