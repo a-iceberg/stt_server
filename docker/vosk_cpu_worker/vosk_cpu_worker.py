@@ -53,6 +53,8 @@ while True:
 			server_object.perf_log(0, queue_start, queue_end, original_file_duration, linkedid)
 			continue
 
+		side = 0 if original_file_name[-6:]=='in.wav' else 1
+
 		if original_file_duration>5:
 
 			#if server_object.source_id == server_object.sources['master']:
@@ -61,7 +63,7 @@ while True:
 				server_object.temp_file_name = original_file_name
 				if os.path.isfile(server_object.temp_file_path + server_object.temp_file_name):
 					#side = 0 if 'in' in original_file_name else 1
-					side = 0 if original_file_name[-6:]=='in.wav' else 1
+					#side = 0 if original_file_name[-6:]=='in.wav' else 1
 					server_object.transcribe_to_sql(
 						original_file_duration,
 						side,
@@ -138,9 +140,10 @@ while True:
 		else:
 			print(original_file_name, 'duration', original_file_duration)
 			trans_date = datetime.datetime.now().strftime('%Y-%m-%dT%H:%M:%S')
-			if server_object.source_id == server_object.sources['master']:
+			#if server_object.source_id == server_object.sources['master']:
+			if True:
 				#side = 0 if 'in' in original_file_name else 1
-				side = 0 if original_file_name[-6:]=='in.wav' else 1
+				#side = 0 if original_file_name[-6:]=='in.wav' else 1
 				server_object.save_result(
 					original_file_duration,
 					'',
@@ -157,13 +160,13 @@ while True:
 					file_size,
 					queue_date
 				)
-			elif server_object.source_id == server_object.sources['call']:
+			"""elif server_object.source_id == server_object.sources['call']:
 				server_object.save_result(
 					original_file_duration,
 					'',
 					'0',
 					'0',
-					0,
+					side,
 					trans_date,
 					0,
 					original_file_name,
@@ -189,7 +192,7 @@ while True:
 					linkedid,
 					file_size,
 					queue_date
-				)
+				)"""
 
 			server_object.delete_current_queue(original_file_name, linkedid)
 			server_object.delete_source_file(original_file_path, original_file_name, linkedid)
