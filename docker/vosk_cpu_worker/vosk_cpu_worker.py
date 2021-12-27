@@ -139,7 +139,8 @@ while True:
 			print(original_file_name, 'duration', original_file_duration)
 			trans_date = datetime.datetime.now().strftime('%Y-%m-%dT%H:%M:%S')
 			if server_object.source_id == server_object.sources['master']:
-				side = 0 if 'in' in original_file_name else 1
+				#side = 0 if 'in' in original_file_name else 1
+				side = 0 if original_file_name[-6:]=='in.wav' else 1
 				server_object.save_result(
 					original_file_duration,
 					'',
