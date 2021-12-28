@@ -13,7 +13,7 @@ cursor = server_object.conn.cursor()
 while True:
 
 	past_in_minutes = pendulum.now().add(minutes=-6).strftime('%Y-%m-%d %H:%M:%S')
-	sql_query = "select filepath, filename, duration, source_id, "
+	sql_query = "select top 3 filepath, filename, duration, source_id, "
 	sql_query += "record_date, src, dst, linkedid, file_size, date from queue "
 	sql_query += "where cpu_id='" + str(server_object.cpu_id) + "' "
 	sql_query += "and record_date < '" + past_in_minutes + "' "
@@ -108,4 +108,4 @@ while True:
 
 	print(server_object.cpu_id,datetime.datetime.now().strftime('%Y-%m-%dT%H:%M:%S'), 'queue reached..')
 	if processed == 0:
-		time.sleep(3)
+		time.sleep(10)
