@@ -405,7 +405,7 @@ class stt_server:
 		# if self.source_id == self.sources['master']:
 		# 	original_file_name = linkedid + ('-in.wav' if side == 0 else '-out.wav')
 
-		transcribation_date = datetime.datetime.now().strftime('%Y-%m-%dT%H:%M:%S')		
+		transcribation_date = datetime.datetime.now().strftime('%Y-%m-%dT%H:%M:%S')
 		
 		try:
 			phrases_count, phrases, confidences = asyncio.get_event_loop().run_until_complete(
@@ -509,6 +509,10 @@ class stt_server:
 
 
 		cursor = self.conn.cursor()
+		
+		# Fix: transcribation_date should be After transcribation
+		transcribation_date = datetime.datetime.now().strftime('%Y-%m-%dT%H:%M:%S')
+		
 		sql_query = "insert into transcribations("
 		sql_query += " cpu_id,"
 		sql_query += " duration,"
