@@ -15,6 +15,7 @@ services:
     environment:
       - WORKERS_COUNT=3
       - WER_FILES_COUNT_LIMIT=0
+      - TE_DOCKER_ADDRESS=http://10.2.5.212:2801/te
       - TZ=Europe/Moscow
       - MYSQL_SERVER=
       - MYSQL_LOGIN=

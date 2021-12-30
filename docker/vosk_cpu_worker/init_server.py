@@ -507,10 +507,20 @@ class stt_server:
 			print(str(linkedid), 'save_result - wrong rec_date:', str(rec_date), 'converting to Null..')
 			rec_date = 'Null'
 
+		if len(accept_text):
+			docker_server_address = os.environ.get('TE_DOCKER_ADDRESS', '')
+			try:
+				request = {'in_text':accept_text, 'lan':'ru'}
+				request_str = json.dumps(request)
+				r = requests.post(docker_server_address, json=request_str)
+				if len(r.text):
+					accept_text = r.text
+			except Exception as e:
+				print('text enhancement error:', e)
 
 		cursor = self.conn.cursor()
 		
-		# Fix: transcribation_date should be After transcribation
+		# Transcribation_date should be After transcribation
 		transcribation_date = datetime.datetime.now().strftime('%Y-%m-%dT%H:%M:%S')
 		
 		sql_query = "insert into transcribations("
