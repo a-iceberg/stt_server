@@ -444,8 +444,8 @@ class stt_server:
 
 		except Exception as e:
 			print('transcribation_process error:', e)
-			self.send_to_telegram(original_file_name+' transcribation_process error: '+str(e))			
-			time.sleep(60)
+			#self.send_to_telegram(original_file_name+' transcribation_process error: '+str(e))			
+			time.sleep(1)
 
 		if phrases_count == 0:
 			self.save_result(
