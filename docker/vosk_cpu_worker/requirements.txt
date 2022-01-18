@@ -5,3 +5,4 @@ requests
 websockets
 pendulum
 urllib3
+cryptography
