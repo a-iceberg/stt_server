@@ -12,6 +12,10 @@ services:
       - /etc/localtime:/etc/localtime:ro
       - /etc/timezone:/etc/timezone:ro
     build: vosk_cpu_worker
+    logging:
+      options:
+        max-size: "10m"
+        max-file: "3"
     environment:
       - WORKERS_COUNT=3
       - WER_FILES_COUNT_LIMIT=0
@@ -37,6 +41,10 @@ services:
       - /etc/localtime:/etc/localtime:ro
       - /etc/timezone:/etc/timezone:ro
     build: vosk_queue
+    logging:
+      options:
+        max-size: "10m"
+        max-file: "3"
     environment:
       - WORKERS_COUNT=3
       - TZ=Europe/Moscow
