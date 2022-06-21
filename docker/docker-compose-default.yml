@@ -56,3 +56,4 @@ services:
       - MSSQL_PASSWORD=
       - TELEGRAM_CHAT=
       - TELEGRAM_BOT_TOKEN=
+      - SAVE_FOR_ANALYSIS=0
