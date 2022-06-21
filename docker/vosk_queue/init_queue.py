@@ -189,7 +189,7 @@ class stt_server:
 						continue
 
 					file_in_queue = filename in queue
-					if os.environ('SAVE_FOR_ANALYSIS')=='1':
+					if os.environ.get('SAVE_FOR_ANALYSIS', '0')=='1':
 						self.log('call check file '+filename)
 						try:
 							
@@ -251,7 +251,7 @@ class stt_server:
 			# get record date
 			for filename in files_list:
 				if not filename in queue:
-					if os.environ('SAVE_FOR_ANALYSIS')=='1':
+					if os.environ.get('SAVE_FOR_ANALYSIS','0')=='1':
 						# debug ++										
 						dst_file = self.saved_for_analysis_path+'debug/master/'+filename
 						if not os.path.exists(dst_file):
