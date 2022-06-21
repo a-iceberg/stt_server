@@ -189,8 +189,8 @@ class stt_server:
 						continue
 
 					file_in_queue = filename in queue						
-					#self.log('call check file '+filename)
-					"""try:
+					self.log('call check file '+filename)
+					try:
 						
 						# debug ++
 						if not file_in_queue:
@@ -205,7 +205,7 @@ class stt_server:
 						#else: 
 						#	self.log(filename+' in queue')
 					except Exception as e:
-						self.log('call debug error: '+str(e))"""
+						self.log('call debug error: '+str(e))
 					# debug --
 					if not file_in_queue and filename[-4:] == '.wav':
 						rec_source_date = re.findall(r'\d{4}-\d{2}-\d{2}-\d{2}-\d{2}-\d{2}', filename)
@@ -251,12 +251,12 @@ class stt_server:
 			for filename in files_list:
 				if not filename in queue:
 					# debug ++										
-					"""dst_file = self.saved_for_analysis_path+'debug/master/'+filename
+					dst_file = self.saved_for_analysis_path+'debug/master/'+filename
 					if not os.path.exists(dst_file):
 						self.copy_file(
 							self.original_storage_path[self.source_id]+filename,
 							self.saved_for_analysis_path+'debug/master/'
-						)"""
+						)
 					# debug --
 					try:
 						file_stat = os.stat(self.original_storage_path[self.source_id] + filename)
