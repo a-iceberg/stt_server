@@ -188,25 +188,26 @@ class stt_server:
 					if filename[-11:]!='rxtx-in.wav' and filename[-12:]!='rxtx-out.wav':
 						continue
 
-					file_in_queue = filename in queue						
-					self.log('call check file '+filename)
-					try:
-						
-						# debug ++
-						if not file_in_queue:
-							dst_file = self.saved_for_analysis_path+'debug/call/'+filename
-							if not os.path.exists(dst_file):
-								self.copy_file(									
-									os.path.join(root, filename),
-									self.saved_for_analysis_path+'debug/call/'
-								)
-							else:
-								self.log('copying canceled. file exists: '+dst_file)
-						#else: 
-						#	self.log(filename+' in queue')
-					except Exception as e:
-						self.log('call debug error: '+str(e))
-					# debug --
+					file_in_queue = filename in queue
+					if os.environ('SAVE_FOR_ANALYSIS')=='1':
+						self.log('call check file '+filename)
+						try:
+							
+							# debug ++
+							if not file_in_queue:
+								dst_file = self.saved_for_analysis_path+'debug/call/'+filename
+								if not os.path.exists(dst_file):
+									self.copy_file(									
+										os.path.join(root, filename),
+										self.saved_for_analysis_path+'debug/call/'
+									)
+								else:
+									self.log('copying canceled. file exists: '+dst_file)
+							#else: 
+							#	self.log(filename+' in queue')
+						except Exception as e:
+							self.log('call debug error: '+str(e))
+						# debug --
 					if not file_in_queue and filename[-4:] == '.wav':
 						rec_source_date = re.findall(r'\d{4}-\d{2}-\d{2}-\d{2}-\d{2}-\d{2}', filename)
 						if len(rec_source_date) and len(rec_source_date[0]):
@@ -250,14 +251,15 @@ class stt_server:
 			# get record date
 			for filename in files_list:
 				if not filename in queue:
-					# debug ++										
-					dst_file = self.saved_for_analysis_path+'debug/master/'+filename
-					if not os.path.exists(dst_file):
-						self.copy_file(
-							self.original_storage_path[self.source_id]+filename,
-							self.saved_for_analysis_path+'debug/master/'
-						)
-					# debug --
+					if os.environ('SAVE_FOR_ANALYSIS')=='1':
+						# debug ++										
+						dst_file = self.saved_for_analysis_path+'debug/master/'+filename
+						if not os.path.exists(dst_file):
+							self.copy_file(
+								self.original_storage_path[self.source_id]+filename,
+								self.saved_for_analysis_path+'debug/master/'
+							)
+						# debug --
 					try:
 						file_stat = os.stat(self.original_storage_path[self.source_id] + filename)
 						# f_size = file_stat.st_size
