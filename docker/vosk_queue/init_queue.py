@@ -184,8 +184,12 @@ class stt_server:
 				for filename in files:
 					
 					# ToDo: remove this after upgrade audio records preparing method
-					#if self.source_id == 1 and filename[-8:]!='rxtx.wav':
 					if filename[-11:]!='rxtx-in.wav' and filename[-12:]!='rxtx-out.wav':
+						# log information about removed file and his path
+						with open(self.saved_for_analysis_path+'debug/removed.csv', 'a') as f:
+							f.write(root + ';' + filename + '\n')
+						# remove file
+						os.remove(os.path.join(root, filename))						
 						continue
 
 					file_in_queue = filename in queue
