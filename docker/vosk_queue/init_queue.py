@@ -249,7 +249,8 @@ class stt_server:
 			files_list = []
 			print('master path', self.original_storage_path[self.source_id])
 			for (dirpath, dirnames, filenames) in os.walk(self.original_storage_path[self.source_id]):
-				files_list.extend(filenames)
+				if '.wav' in filenames or '.WAV' in filenames:
+					files_list.extend(filenames)
 
 			files_extracted = 0
 			files_withoud_cdr_data = 0
