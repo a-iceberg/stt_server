@@ -185,11 +185,13 @@ class stt_server:
 					
 					# ToDo: remove this after upgrade audio records preparing method
 					if filename[-11:]!='rxtx-in.wav' and filename[-12:]!='rxtx-out.wav':
-						# log information about removed file and his path
-						with open(self.saved_for_analysis_path+'debug/removed.csv', 'a') as f:
-							f.write(root + ';' + filename + '\n')
-						# remove file
-						os.remove(os.path.join(root, filename))						
+						if 'wav' in filename or 'WAV' in filename:
+							# log information about removed file and his path
+							with open(self.saved_for_analysis_path+'debug/removed.csv', 'a') as f:
+								f.write(root + ';' + filename + '\n')
+							print('removed', root + '/' + filename)
+							# remove file
+							os.remove(os.path.join(root, filename))
 						continue
 
 					file_in_queue = filename in queue
