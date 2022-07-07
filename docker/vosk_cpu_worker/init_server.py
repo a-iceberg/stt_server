@@ -411,47 +411,47 @@ class stt_server:
 
 		transcribation_date = datetime.datetime.now().strftime('%Y-%m-%dT%H:%M:%S')
 		
-		try:
-			phrases_count = 0
-			phrases_count, phrases, confidences = asyncio.get_event_loop().run_until_complete(
-				self.transcribation_process(
-					duration, 
-					side, 
-					original_file_name, 
-					rec_date, 
-					src, 
-					dst, 
-					linkedid, 
-					file_size, 
-					queue_date,
-					transcribation_date
-					)
-				)			
+		#try:
+		phrases_count = 0
+		phrases_count, phrases, confidences = asyncio.get_event_loop().run_until_complete(
+			self.transcribation_process(
+				duration, 
+				side, 
+				original_file_name, 
+				rec_date, 
+				src, 
+				dst, 
+				linkedid, 
+				file_size, 
+				queue_date,
+				transcribation_date
+				)
+			)			
 
-			if len(confidences):
-				self.confidence_of_file = sum(confidences)/len(confidences)
-			else:
-				self.confidence_of_file = 0
-			
-			trans_end = time.time() # datetime.datetime.now()
-			self.perf_log(2, trans_start, trans_end, duration, linkedid)
-			
-			# quality control		
-			"""if phrases_count>3 and \
-				self.confidence_of_file>0.5 and \
-				duration > 50 and \
-				duration < 60 and \
-				not self.phrases_have_numbers(phrases) and \
-				not self.wer_file_exist():
-				self.save_file_for_analysis(self.temp_file_path, self.temp_file_name, duration)
-				#self.send_to_telegram(str(self.cpu_id)+': '+str(phrases_count)+' # '+self.temp_file_name)"""
+		if len(confidences):
+			self.confidence_of_file = sum(confidences)/len(confidences)
+		else:
+			self.confidence_of_file = 0
+		
+		trans_end = time.time() # datetime.datetime.now()
+		self.perf_log(2, trans_start, trans_end, duration, linkedid)
+		
+		# quality control		
+		"""if phrases_count>3 and \
+			self.confidence_of_file>0.5 and \
+			duration > 50 and \
+			duration < 60 and \
+			not self.phrases_have_numbers(phrases) and \
+			not self.wer_file_exist():
+			self.save_file_for_analysis(self.temp_file_path, self.temp_file_name, duration)
+			#self.send_to_telegram(str(self.cpu_id)+': '+str(phrases_count)+' # '+self.temp_file_name)"""
 
-		except Exception as e:
+		"""except Exception as e:
 			print('transcribation_process error:', e)
 			self.save_file_for_analysis(self.temp_file_path, self.temp_file_name, duration)
 			file_saved_for_analysis = True
 			self.send_to_telegram(original_file_name+' transcribation_process error: '+str(e))			
-			time.sleep(1)
+			time.sleep(1)"""
 
 		# save for analysis if phrases count < 3 and duration > 300
 		if phrases_count < 3 and duration > 300 and not file_saved_for_analysis:
