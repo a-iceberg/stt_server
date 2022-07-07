@@ -286,6 +286,54 @@ class stt_server:
 		cursor = self.conn.cursor()
 		cursor.execute(query)
 
+
+	def accept_feature_extractor(
+		self, 
+		phrases, 
+		confidences, 
+		accept,
+		duration,
+		side,
+		transcribation_date,
+		original_file_name,
+		rec_date,
+		src,
+		dst,
+		linkedid,
+		file_size,
+		queue_date
+		):
+		if len(accept) > 1 and accept['text'] != '':
+			accept_text = str(accept['text'])
+			conf_score = []
+			i = 0
+			for result_rec in accept['result']:
+				if i==0:
+					accept_start = result_rec['start']					
+				conf_score.append(float(result_rec['conf']))			
+				i+=1
+			if i>0:
+				accept_end = result_rec['end']
+			conf_mid = str(sum(conf_score)/len(conf_score))
+			confidences.append(sum(conf_score)/len(conf_score))
+			phrases.append(accept_text)
+			self.save_result(
+							duration,
+							accept_text,
+							accept_start,
+							accept_end,
+							side,
+							transcribation_date,
+							conf_mid,
+							original_file_name,
+							rec_date,
+							src,
+							dst,
+							linkedid,
+							file_size,
+							queue_date
+						)
+
 	async def transcribation_process(
 		self,
 		duration, 
@@ -309,74 +357,57 @@ class stt_server:
 
 		print('== Worker:', self.gpu_uri, '===')
 		async with websockets.connect(self.gpu_uri) as websocket:
-			# read file
-			wf = open(self.temp_file_path + self.temp_file_name, "rb")
+
+			phrases = []
+
+			wf = wave.open(file_name, "rb")
+			await websocket.send(
+				'{ "config" : { "sample_rate" : %d } }' % (wf.getframerate())
+				)
+			buffer_size = int(wf.getframerate() * 0.2)  # 0.2 seconds of audio
 			while True:
-				conf_score = []
-				data = wf.read(8000)
+				data = wf.readframes(buffer_size)
+
 				if len(data) == 0:
 					break
-				await websocket.send(data)
-				accept = json.loads(await websocket.recv())					
-				if len(accept)>1 and accept['text'] != '':
-					accept_start = str(accept['result'][0]['start'])
-					accept_end = accept['result'][-1:][0]['end']
-					accept_text = str(accept['text'])
 
-					for result_rec in accept['result']:
-						conf_score.append(float(result_rec['conf']))
-					conf_mid = str(sum(conf_score)/len(conf_score))
-					confidences.append(sum(conf_score)/len(conf_score))
-					self.save_result(
-							duration,
-							accept_text,
-							accept_start,
-							accept_end,
-							side,
-							transcribation_date,
-							conf_mid,
-							original_file_name,
-							rec_date,
-							src,
-							dst,
-							linkedid,
-							file_size,
-							queue_date
-						)						
-					phrases.append(accept_text)						
-					phrases_count += 1
+				await websocket.send(data)
+				accept = json.loads(await websocket.recv())
+				self.accept_feature_extractor(
+					phrases,
+					confidences,
+					accept,
+					duration,
+					side,
+					transcribation_date,
+					original_file_name,
+					rec_date,
+					src,
+					dst,
+					linkedid,
+					file_size,
+					queue_date
+					)
+				phrases_count += 1
 
 			await websocket.send('{"eof" : 1}')
 			accept = json.loads(await websocket.recv())
-			#print(await websocket.recv())
-			# TODO: merge this cloned section:
-			if len(accept)>1 and accept['text'] != '':
-				accept_start = str(accept['result'][0]['start'])
-				accept_end = accept['result'][-1:][0]['end']
-				accept_text = str(accept['text'])
-
-				for result_rec in accept['result']:
-					conf_score.append(float(result_rec['conf']))
-				conf_mid = str(sum(conf_score)/len(conf_score))
-				confidences.append(sum(conf_score)/len(conf_score))
-				self.save_result(
-						duration,
-						accept_text,
-						accept_start,
-						accept_end,
-						side,
-						transcribation_date,
-						conf_mid,
-						original_file_name,
-						rec_date,
-						src,
-						dst,
-						linkedid,
-						file_size,
-						queue_date
-					)						
-				phrases.append(accept_text)						
-				phrases_count += 1
+			self.accept_feature_extractor(
+					phrases,
+					confidences,
+					accept,
+					duration,
+					side,
+					transcribation_date,
+					original_file_name,
+					rec_date,
+					src,
+					dst,
+					linkedid,
+					file_size,
+					queue_date
+					)
+			phrases_count += 1
 
 		return phrases_count, phrases, confidences
 
