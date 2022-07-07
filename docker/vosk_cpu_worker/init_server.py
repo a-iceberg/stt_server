@@ -307,6 +307,8 @@ class stt_server:
 			accept_text = str(accept['text'])
 			conf_score = []
 			i = 0
+			accept_start = 0
+			accept_end = 0
 			for result_rec in accept['result']:
 				if i==0:
 					accept_start = result_rec['start']					
@@ -360,54 +362,60 @@ class stt_server:
 
 			phrases = []
 
-			wf = open(self.temp_file_path + self.temp_file_name, "rb")
-			await websocket.send(
-				'{ "config" : { "sample_rate" : %d } }' % (wf.getframerate())
-				)
-			buffer_size = int(wf.getframerate() * 0.2)  # 0.2 seconds of audio
-			while True:
-				data = wf.readframes(buffer_size)
+			#wf = open(self.temp_file_path + self.temp_file_name, "rb")
+			#await websocket.send(
+			#	'{ "config" : { "sample_rate" : %d } }' % (wf.getframerate())
+			#	)
+			# Open file safely
+			with open(self.temp_file_path + self.temp_file_name, 'rb') as wf:
+				await websocket.send(
+					'{ "config" : { "sample_rate" : %d } }' % (wf.getframerate())
+					)
 
-				if len(data) == 0:
-					break
+				buffer_size = int(wf.getframerate() * 0.2)  # 0.2 seconds of audio
+				while True:
+					data = wf.readframes(buffer_size)
 
-				await websocket.send(data)
+					if len(data) == 0:
+						break
+
+					await websocket.send(data)
+					accept = json.loads(await websocket.recv())
+					self.accept_feature_extractor(
+						phrases,
+						confidences,
+						accept,
+						duration,
+						side,
+						transcribation_date,
+						original_file_name,
+						rec_date,
+						src,
+						dst,
+						linkedid,
+						file_size,
+						queue_date
+						)
+					phrases_count += 1
+
+				await websocket.send('{"eof" : 1}')
 				accept = json.loads(await websocket.recv())
 				self.accept_feature_extractor(
-					phrases,
-					confidences,
-					accept,
-					duration,
-					side,
-					transcribation_date,
-					original_file_name,
-					rec_date,
-					src,
-					dst,
-					linkedid,
-					file_size,
-					queue_date
-					)
+						phrases,
+						confidences,
+						accept,
+						duration,
+						side,
+						transcribation_date,
+						original_file_name,
+						rec_date,
+						src,
+						dst,
+						linkedid,
+						file_size,
+						queue_date
+						)
 				phrases_count += 1
-
-			await websocket.send('{"eof" : 1}')
-			accept = json.loads(await websocket.recv())
-			self.accept_feature_extractor(
-					phrases,
-					confidences,
-					accept,
-					duration,
-					side,
-					transcribation_date,
-					original_file_name,
-					rec_date,
-					src,
-					dst,
-					linkedid,
-					file_size,
-					queue_date
-					)
-			phrases_count += 1
 
 		return phrases_count, phrases, confidences
 
