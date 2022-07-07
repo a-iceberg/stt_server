@@ -404,6 +404,8 @@ class stt_server:
 
 		trans_start = time.time() # datetime.datetime.now()
 
+		file_saved_for_analysis = False
+
 		# if self.source_id == self.sources['master']:
 		# 	original_file_name = linkedid + ('-in.wav' if side == 0 else '-out.wav')
 
@@ -447,11 +449,12 @@ class stt_server:
 		except Exception as e:
 			print('transcribation_process error:', e)
 			self.save_file_for_analysis(self.temp_file_path, self.temp_file_name, duration)
-			#self.send_to_telegram(original_file_name+' transcribation_process error: '+str(e))			
+			file_saved_for_analysis = True
+			self.send_to_telegram(original_file_name+' transcribation_process error: '+str(e))			
 			time.sleep(1)
 
 		# save for analysis if phrases count < 3 and duration > 300
-		if phrases_count < 3 and duration > 300:
+		if phrases_count < 3 and duration > 300 and not file_saved_for_analysis:
 			self.save_file_for_analysis(self.temp_file_path, self.temp_file_name, duration)
 
 		if phrases_count == 0:
@@ -864,7 +867,7 @@ class stt_server:
 			return wav_count>files_count_limit
 
 	def save_file_for_analysis(self, file_path, file_name, duration):
-		if int(os.environ.get('WORKERS_COUNT', '0'))==1:	
+		if int(os.environ.get('SAVE_FOR_ANALYSIS', '0'))==1:	
 			current_date = datetime.datetime.now().strftime('%Y-%m-%d')
 			prefix = 'cpu'+str(self.cpu_id)+'_duration'+str(duration)+'_'+current_date+'_'
 			copyfile(file_path + file_name, self.saved_for_analysis_path + prefix + file_name)
