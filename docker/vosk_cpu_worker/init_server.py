@@ -433,17 +433,18 @@ class stt_server:
 			self.perf_log(2, trans_start, trans_end, duration, linkedid)
 			
 			# quality control		
-			if phrases_count>3 and \
+			"""if phrases_count>3 and \
 				self.confidence_of_file>0.5 and \
 				duration > 50 and \
 				duration < 60 and \
 				not self.phrases_have_numbers(phrases) and \
 				not self.wer_file_exist():
 				self.save_file_for_analysis(self.temp_file_path, self.temp_file_name, duration)
-				#self.send_to_telegram(str(self.cpu_id)+': '+str(phrases_count)+' # '+self.temp_file_name)
+				#self.send_to_telegram(str(self.cpu_id)+': '+str(phrases_count)+' # '+self.temp_file_name)"""
 
 		except Exception as e:
 			print('transcribation_process error:', e)
+			self.save_file_for_analysis(self.temp_file_path, self.temp_file_name, duration)
 			#self.send_to_telegram(original_file_name+' transcribation_process error: '+str(e))			
 			time.sleep(1)
 
@@ -860,5 +861,5 @@ class stt_server:
 	def save_file_for_analysis(self, file_path, file_name, duration):
 			
 		current_date = datetime.datetime.now().strftime('%Y-%m-%d')
-		prefix = 'cpu'+str(self.cpu_id)+'_'+current_date+'_'
+		prefix = 'cpu'+str(self.cpu_id)+'_duration'+str(duration)+'_'+current_date+'_'
 		copyfile(file_path + file_name, self.saved_for_analysis_path + prefix + file_name)
