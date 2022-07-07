@@ -649,7 +649,7 @@ class stt_server:
 
 		return complete_files
 
-	def get_fs_files_list(self, queue):
+"""	def get_fs_files_list(self, queue):
 
 		fd_list = []
 
@@ -777,7 +777,7 @@ class stt_server:
 		df = pd.DataFrame(fd_list, columns=['filepath', 'filename', 'rec_date', 'src', 'dst', 'linkedid', 'version'])
 		df.sort_values(['rec_date', 'filename'], ascending=True, inplace=True)
 
-		return df.values
+		return df.values"""
 	
 	def set_shortest_queue_cpu(self):
 		
