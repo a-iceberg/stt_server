@@ -88,6 +88,8 @@ class stt_server:
 			'тысяч'
 		]
 
+		self.send_to_telegram('cpu '+str(self.cpu_id)+' started')
+
 	def log_deletion(self, filename):
 		current_date = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
 		connector = mysql.connect(
@@ -448,6 +450,10 @@ class stt_server:
 			#self.send_to_telegram(original_file_name+' transcribation_process error: '+str(e))			
 			time.sleep(1)
 
+		# save for analysis if phrases count < 3 and duration > 300
+		if phrases_count < 3 and duration > 300:
+			self.save_file_for_analysis(self.temp_file_path, self.temp_file_name, duration)
+
 		if phrases_count == 0:
 			self.save_result(
 				duration,
@@ -483,10 +489,6 @@ class stt_server:
 					self.source_id
 					)
 				version += 1
-		
-		# save for analysis if phrases count < 3 and duration > 300
-		if phrases_count < 3 and duration > 300:
-			self.save_file_for_analysis(self.temp_file_path, self.temp_file_name, duration)
 				
 
 	def save_result(
@@ -866,3 +868,6 @@ class stt_server:
 		current_date = datetime.datetime.now().strftime('%Y-%m-%d')
 		prefix = 'cpu'+str(self.cpu_id)+'_duration'+str(duration)+'_'+current_date+'_'
 		copyfile(file_path + file_name, self.saved_for_analysis_path + prefix + file_name)
+		# send to telegram
+		self.send_to_telegram('cpu '+str(self.cpu_id)+' saved for analysis: '+file_name)
+
