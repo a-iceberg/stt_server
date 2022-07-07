@@ -864,10 +864,10 @@ class stt_server:
 			return wav_count>files_count_limit
 
 	def save_file_for_analysis(self, file_path, file_name, duration):
-			
-		current_date = datetime.datetime.now().strftime('%Y-%m-%d')
-		prefix = 'cpu'+str(self.cpu_id)+'_duration'+str(duration)+'_'+current_date+'_'
-		copyfile(file_path + file_name, self.saved_for_analysis_path + prefix + file_name)
-		# send to telegram
-		self.send_to_telegram('cpu '+str(self.cpu_id)+' saved for analysis: '+file_name)
+		if int(os.environ.get('WORKERS_COUNT', '0'))==1:	
+			current_date = datetime.datetime.now().strftime('%Y-%m-%d')
+			prefix = 'cpu'+str(self.cpu_id)+'_duration'+str(duration)+'_'+current_date+'_'
+			copyfile(file_path + file_name, self.saved_for_analysis_path + prefix + file_name)
+			# send to telegram
+			# self.send_to_telegram('cpu '+str(self.cpu_id)+' saved for analysis: '+file_name)
 
