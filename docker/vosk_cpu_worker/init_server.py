@@ -483,8 +483,11 @@ class stt_server:
 					self.source_id
 					)
 				version += 1
+		
+		# save for analysis if phrases count < 3 and duration > 300
+		if phrases_count < 3 and duration > 300:
+			self.save_file_for_analysis(self.temp_file_path, self.temp_file_name, duration)
 				
-			
 
 	def save_result(
 			self,
