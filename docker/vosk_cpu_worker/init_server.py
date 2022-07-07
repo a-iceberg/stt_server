@@ -360,7 +360,7 @@ class stt_server:
 
 			phrases = []
 
-			wf = wave.open(file_name, "rb")
+			wf = open(self.temp_file_path + self.temp_file_name, "rb")
 			await websocket.send(
 				'{ "config" : { "sample_rate" : %d } }' % (wf.getframerate())
 				)
@@ -416,8 +416,7 @@ class stt_server:
 		for word in ' '.join(phrases).split(' '):
 			if word in self.numbers:
 				return True
-		return False
-		
+		return False	
 
 
 	def transcribe_to_sql(
