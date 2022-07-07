@@ -182,6 +182,9 @@ class stt_server:
 			print('call path', self.original_storage_path[self.source_id])
 			for root, dirs, files in os.walk(self.original_storage_path[self.source_id]):
 				for filename in files:
+					# continue if filename is not .wav and not .WAV
+					if not filename.endswith('.wav') and not filename.endswith('.WAV'):
+						continue
 					
 					# ToDo: remove this after upgrade audio records preparing method
 					if filename[-11:]!='rxtx-in.wav' and filename[-12:]!='rxtx-out.wav':
