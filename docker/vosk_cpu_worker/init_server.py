@@ -359,7 +359,16 @@ class stt_server:
 		phrases_count = 0
 		confidences = []
 		phrases = []
-
+		
+		print('wait, until current second be equal to cpu_id*2')
+		# wait, until current second be equal to cpu_id*2
+		while True:
+			current_second = int(time.time())
+			if current_second % 2 == self.cpu_id:
+				break
+			time.sleep(0.1)
+			#print('waiting for cpu_id:', self.cpu_id)
+			#print('waiting for cpu_id:', self.cpu_id, 'current_second:', current_second)
 		print('== Worker:', self.gpu_uri, '===')
 		async with websockets.connect(self.gpu_uri) as websocket:
 
