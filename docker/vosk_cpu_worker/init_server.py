@@ -17,6 +17,7 @@ import websockets
 import socket
 import urllib
 import glob
+import uuid
 
 
 class stt_server:
@@ -105,9 +106,11 @@ class stt_server:
 	def get_worker_id(self):
 
 		workers_count = int(os.environ.get('WORKERS_COUNT', '0'))
-		hostname = str(socket.gethostname())
+		# hostname = str(socket.gethostname())
+		# generate unique id
+		unique_id = str(uuid.uuid4())
 
-		with open('id_garden/'+hostname, "w") as f:
+		with open('id_garden/'+unique_id, "w") as f:
 			f.write('')
 
 		files = []
@@ -117,7 +120,7 @@ class stt_server:
 				break
 
 		for i in range(0, len(filenames)):
-			if filenames[i] == hostname:
+			if filenames[i] == unique_id:
 				break
 
 		return i
