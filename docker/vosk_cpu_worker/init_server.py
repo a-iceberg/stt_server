@@ -328,14 +328,14 @@ class stt_server:
 		confidences = []
 		phrases = []
 		
-		print('wait, until current second be equal to cpu_id*2')
+		#print('wait, until current second be equal to cpu_id*2')
 		# wait, until current second be equal to cpu_id*2
-		workers_count = int(os.environ.get('WORKERS_COUNT', '0'))
+		"""workers_count = int(os.environ.get('WORKERS_COUNT', '0'))
 		while True:
 			current_second = int(time.time())
 			if current_second % (workers_count+1) == self.cpu_id:
 				break
-			time.sleep(0.1)
+			time.sleep(0.1)"""
 			#print('waiting for cpu_id:', self.cpu_id)
 			#print('waiting for cpu_id:', self.cpu_id, 'current_second:', current_second)
 		print('== Worker:', self.gpu_uri, '===')
