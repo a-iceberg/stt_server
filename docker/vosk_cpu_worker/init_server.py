@@ -349,6 +349,7 @@ class stt_server:
 						file_size,
 						queue_date
 						)
+				break
 			except Exception as e:
 				logging.error('### error: ' + str(e))
 				
