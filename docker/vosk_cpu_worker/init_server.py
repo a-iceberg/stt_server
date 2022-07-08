@@ -303,7 +303,8 @@ class stt_server:
 			logger_text += ' size: ' + str(file_size)
 			logger_text += ' file: ' + self.temp_file_path + self.temp_file_name			
 			# log worker id with logging
-			logging.info(logger_text)
+			#logging.info(logger_text)
+			print(logger_text)
 			try:
 				print('== Worker:', self.gpu_uri, '===')
 				async with websockets.connect(self.gpu_uri) as websocket:
@@ -332,7 +333,7 @@ class stt_server:
 
 				# save to sql
 				for i in range(0, len(sentences)):
-					self.save_to_sql(
+					self.save_result(
 						duration,
 						sentences[i]['text'],
 						sentences[i]['start'],
