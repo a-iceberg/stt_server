@@ -353,7 +353,11 @@ class stt_server:
 			except Exception as e:
 				logging.error('### error: ' + str(e))
 				
-		return phrases_count, phrases, confidences
+		# phrases for summarization
+		phrases = [sentences[i]['text'] for i in range(len(sentences))]
+		# confidences for analysis
+		confidences = [sentences[i]['conf'] for i in range(len(sentences))]
+		return len(sentences), phrases, confidences
 
 
 	def phrases_have_numbers(self, phrases):		
