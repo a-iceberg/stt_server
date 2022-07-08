@@ -211,38 +211,6 @@ class stt_server:
 				linkedid, dstchannel, src = row[0], row[1], row[2]
 				return linkedid, dstchannel, src
 		return '', '', ''
-	
-	"""def make_file_splitted(self, side, original_file_path, original_file_name, linkedid, duration):
-
-		#split_start = datetime.datetime.now()
-		split_start = time.time()
-
-		#elif self.source_id == self.sources['call']:
-		# crop '.wav' & append postfix
-		self.temp_file_path = 'files/'
-		self.temp_file_name = original_file_name[:-4]+('_R' if side else '_L')+'.wav'
-
-		os_cmd 	= 'ffmpeg -y -i '
-		os_cmd += original_file_path
-		os_cmd += original_file_name
-		os_cmd += ' -ar 8000 -af "pan=mono|c0=F'
-		os_cmd += 'R' if side else 'L'
-		os_cmd += '" '
-		os_cmd += self.temp_file_path
-		os_cmd += self.temp_file_name
-
-		try:
-			os.system(os_cmd)
-		except Exception as e:
-			print('make_file_splitted error:',str(e))
-
-		isfile = os.path.isfile(self.temp_file_path + self.temp_file_name)
-
-		#split_end = datetime.datetime.now()
-		split_end = time.time()
-		self.perf_log(1, split_start, split_end, duration, linkedid)
-
-		return isfile"""
 
 	def delete_current_queue(self, original_file_name, linkedid):
 
@@ -362,9 +330,10 @@ class stt_server:
 		
 		print('wait, until current second be equal to cpu_id*2')
 		# wait, until current second be equal to cpu_id*2
+		workers_count = int(os.environ.get('WORKERS_COUNT', '0'))
 		while True:
 			current_second = int(time.time())
-			if current_second % 2 == self.cpu_id:
+			if current_second % (workers_count+1) == self.cpu_id:
 				break
 			time.sleep(0.1)
 			#print('waiting for cpu_id:', self.cpu_id)
@@ -374,16 +343,10 @@ class stt_server:
 
 			phrases = []
 
-			#wf = open(self.temp_file_path + self.temp_file_name, "rb")
 			wf = wave.open(self.temp_file_path + self.temp_file_name, "rb")
 			await websocket.send(
 				'{ "config" : { "sample_rate" : %d } }' % (wf.getframerate())
 				)
-			# Open file safely
-			"""with open(self.temp_file_path + self.temp_file_name, 'rb') as wf:
-				await websocket.send(
-					'{ "config" : { "sample_rate" : %d } }' % (wf.getframerate())
-					)"""
 
 			buffer_size = int(wf.getframerate() * 0.2)  # 0.2 seconds of audio
 			while True:
@@ -657,137 +620,6 @@ class stt_server:
 			complete_files.append(row[0])
 
 		return complete_files
-
-	"""	def get_fs_files_list(self, queue):
-
-		fd_list = []
-
-		if self.source_id == self.sources['call']:
-			for root, dirs, files in os.walk(self.original_storage_path[self.source_id]):
-				for filename in files:
-					if filename[-4:] == '.wav' and not filename in queue:
-						rec_source_date = re.findall(r'\d{4}-\d{2}-\d{2}-\d{2}-\d{2}-\d{2}', filename)
-						if len(rec_source_date) and len(rec_source_date[0]):
-							rec_date = rec_source_date[0][:10] + ' ' + rec_source_date[0][11:].replace('-', ':')
-
-							if len(re.findall(r'\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}', rec_date)) == 0:
-								rec_date = 'Null'
-								print('0 Unable to extract date:', root, filename)
-
-							date_string = re.findall(r'\d{4}-\d{2}-\d{2}', filename)
-							if len(date_string):
-								date_y = date_string[0][:4]
-								date_m = date_string[0][5:-3]
-								date_d = date_string[0][-2:]
-								linkedid, dst, src = self.linkedid_by_filename(filename, date_y, date_m, date_d)  # cycled query
-
-								fd_list.append({
-									'filepath': root+'/',
-									'filename': filename,
-									'rec_date': rec_date,
-									'src': src,
-									'dst': dst,
-									'linkedid': linkedid,
-									'version': 0,
-								})
-						else:
-							print('1 Unable to extract date:', root, filename)
-							self.send_to_telegram('1 Unable to extract date: ' + str(root) + ' ' + str(filename))
-							#self.save_file_for_analysis(root, filename, 0)
-				# break # ToDo: remove
-
-		elif self.source_id == self.sources['master']:
-			files_list = []
-			for (dirpath, dirnames, filenames) in os.walk(self.original_storage_path[self.source_id]):
-				files_list.extend(filenames)
-
-			files_extracted = 0
-			files_withoud_cdr_data = 0
-
-			# get record date
-			for filename in files_list:
-				if not filename in queue:
-					try:
-						file_stat = os.stat(self.original_storage_path[self.source_id] + filename)
-						# f_size = file_stat.st_size
-						file_age = time.time() - file_stat.st_mtime
-					except Exception as e:
-						print("get_fs_files_list / file_stat Error:", str(e))
-						file_age = 0
-					if "h.wav" in filename:
-						try:
-							if file_age > 3600:
-								os.remove(self.original_storage_path[self.source_id] + filename)
-								self.log_deletion(self.original_storage_path[self.source_id] + filename)
-								# debug ++
-								# self.send_to_telegram('min. get_fs_files_list. removed: ' + str(filename))
-								# debug --
-								print(str(round(file_age/60)), 'min. get_fs_files_list. Removed:', filename)
-							else:
-								print(str(round(file_age/60)), 'min. get_fs_files_list. Skipped: ', filename)
-							continue
-						except OSError as e:  ## if failed, report it back to the user ##
-							print("Error: %s - %s." % (e.filename, e.strerror))
-							self.send_to_telegram('get_fs_files_list file delete error:\n' + str(e))
-
-					rec_date = 'Null'
-					version = 0
-					r_d = re.findall(r'a.*b', filename)
-					if len(r_d) and len(r_d[0]) == 21:
-						try:
-							rec_date = r_d[0][1:][:-1].replace('t', ' ')
-							#print('v.1 date', rec_date)
-							src = re.findall(r'c.*d', filename)[0][1:][:-1]
-							dst = re.findall(r'e.*f', filename)[0][1:][:-1]
-							linkedid = re.findall(r'g.*h', filename)[0][1:][:-1]
-							version = 1
-						except Exception as e:
-							print("Error:", str(e))
-							#self.send_to_telegram('v1 filename parse error: '+ filename +'\n' + str(e))
-
-					if version == 0:
-
-
-						rec_date = 'Null'
-						uniqueid = re.findall(r'\d*\.\d*', filename)[0]
-						cursor = self.mysql_conn[self.source_id].cursor()
-						query = "select calldate, src, dst from cdr where uniqueid = '" + uniqueid + "' limit 1;"
-						cursor.execute(query)  # cycled query
-						src = ''
-						dst = ''
-						linkedid = uniqueid
-
-						for row in cursor.fetchall():
-							rec_date = str(row[0])
-							print('v.0 date', rec_date)
-							src = str(row[1])
-							dst = str(row[2])
-
-						if len(re.findall(r'\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}', rec_date)) == 0:
-							print('u:', uniqueid, 'r:', rec_date, 'Unable to extract date from filename:', filename)
-							rec_date = 'Null'
-							files_withoud_cdr_data += 1
-
-					if not rec_date == 'Null':
-
-						fd_list.append({
-							'filepath': self.original_storage_path[self.source_id],
-							'filename': filename,
-							'rec_date': rec_date,
-							'src': src,
-							'dst': dst,
-							'linkedid': linkedid,
-							'version': version,
-						})
-						files_extracted += 1
-
-			print('master extracted:', files_extracted, 'without cdr data:', files_withoud_cdr_data)
-
-		df = pd.DataFrame(fd_list, columns=['filepath', 'filename', 'rec_date', 'src', 'dst', 'linkedid', 'version'])
-		df.sort_values(['rec_date', 'filename'], ascending=True, inplace=True)
-
-		return df.values
-	"""
 
 	def set_shortest_queue_cpu(self):
 		
