@@ -18,6 +18,7 @@ import socket
 import urllib
 import glob
 import uuid
+import logging
 
 
 class stt_server:
@@ -258,22 +259,7 @@ class stt_server:
 		cursor.execute(query)
 
 
-	def accept_feature_extractor(
-		self, 
-		phrases, 
-		confidences, 
-		accept,
-		duration,
-		side,
-		transcribation_date,
-		original_file_name,
-		rec_date,
-		src,
-		dst,
-		linkedid,
-		file_size,
-		queue_date
-		):
+	def accept_feature_extractor(self, sentences, accept):
 		if len(accept) > 1 and accept['text'] != '':
 			accept_text = str(accept['text'])
 			conf_score = []
@@ -287,25 +273,14 @@ class stt_server:
 				i+=1
 			if i>0:
 				accept_end = result_rec['end']
-			conf_mid = str(sum(conf_score)/len(conf_score))
-			confidences.append(sum(conf_score)/len(conf_score))
-			phrases.append(accept_text)
-			self.save_result(
-							duration,
-							accept_text,
-							accept_start,
-							accept_end,
-							side,
-							transcribation_date,
-							conf_mid,
-							original_file_name,
-							rec_date,
-							src,
-							dst,
-							linkedid,
-							file_size,
-							queue_date
-						)
+			sentences.append(
+				{
+					'text': accept_text,
+					'start': accept_start,
+					'end': accept_end,
+					'conf': sum(conf_score)/len(conf_score)
+				}
+			)
 
 	async def transcribation_process(
 		self,
@@ -320,79 +295,62 @@ class stt_server:
 		queue_date,
 		transcribation_date
 		):
-
-		print('side:', side, 'file_size:', file_size, '### transcribing:', self.temp_file_path + self.temp_file_name)
 		
-		# recognizing
-		phrases_count = 0
-		confidences = []
-		phrases = []
-		
-		#print('wait, until current second be equal to cpu_id*2')
-		# wait, until current second be equal to cpu_id*2
-		"""workers_count = int(os.environ.get('WORKERS_COUNT', '0'))
-		while True:
-			current_second = int(time.time())
-			if current_second % (workers_count+1) == self.cpu_id:
-				break
-			time.sleep(0.1)"""
-			#print('waiting for cpu_id:', self.cpu_id)
-			#print('waiting for cpu_id:', self.cpu_id, 'current_second:', current_second)
-		print('== Worker:', self.gpu_uri, '===')
-		async with websockets.connect(self.gpu_uri) as websocket:
+		try_number = -1
+		while try_number < int(os.environ.get('TRANSCRIBE_MAX_TRY_COUNT', '100')):			
+			try_number += 1
+			logger_text = '### try: '+ str(try_number)
+			logger_text += ' size: ' + str(file_size)
+			logger_text += ' file: ' + self.temp_file_path + self.temp_file_name			
+			# log worker id with logging
+			logging.info(logger_text)
+			try:
+				print('== Worker:', self.gpu_uri, '===')
+				async with websockets.connect(self.gpu_uri) as websocket:
 
-			phrases = []
+					sentences = []
 
-			wf = wave.open(self.temp_file_path + self.temp_file_name, "rb")
-			await websocket.send(
-				'{ "config" : { "sample_rate" : %d } }' % (wf.getframerate())
-				)
+					wf = wave.open(self.temp_file_path + self.temp_file_name, "rb")
+					await websocket.send(
+						'{ "config" : { "sample_rate" : %d } }' % (wf.getframerate())
+						)
 
-			buffer_size = int(wf.getframerate() * 0.2)  # 0.2 seconds of audio
-			while True:
-				data = wf.readframes(buffer_size)
+					buffer_size = int(wf.getframerate() * 0.2)  # 0.2 seconds of audio
+					while True:
+						data = wf.readframes(buffer_size)
 
-				if len(data) == 0:
-					break
+						if len(data) == 0:
+							break
 
-				await websocket.send(data)
-				accept = json.loads(await websocket.recv())
-				self.accept_feature_extractor(
-					phrases,
-					confidences,
-					accept,
-					duration,
-					side,
-					transcribation_date,
-					original_file_name,
-					rec_date,
-					src,
-					dst,
-					linkedid,
-					file_size,
-					queue_date
-					)
-				phrases_count += 1
+						await websocket.send(data)
+						accept = json.loads(await websocket.recv())
+						self.accept_feature_extractor(sentences, accept)
 
-			await websocket.send('{"eof" : 1}')
-			accept = json.loads(await websocket.recv())
-			self.accept_feature_extractor(
-					phrases,
-					confidences,
-					accept,
-					duration,
-					side,
-					transcribation_date,
-					original_file_name,
-					rec_date,
-					src,
-					dst,
-					linkedid,
-					file_size,
-					queue_date
-					)
-			phrases_count += 1
+					await websocket.send('{"eof" : 1}')
+					accept = json.loads(await websocket.recv())
+					self.accept_feature_extractor(sentences, accept)
 
+				# save to sql
+				for i in range(0, len(sentences)):
+					self.save_to_sql(
+						duration,
+						sentences[i]['text'],
+						sentences[i]['start'],
+						sentences[i]['end'],
+						side,
+						transcribation_date,
+						str(sentences[i]['conf']),
+						original_file_name,
+						rec_date,
+						src,
+						dst,
+						linkedid,
+						file_size,
+						queue_date
+						)
+			except Exception as e:
+				logging.error('### error: ' + str(e))
+				
 		return phrases_count, phrases, confidences
 
 
