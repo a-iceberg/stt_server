@@ -178,77 +178,7 @@ class stt_server:
 	def get_fs_files_list(self, queue):
 		fd_list = []
 
-		if self.source_id == self.sources['call']:
-			print('call path', self.original_storage_path[self.source_id])
-			for root, dirs, files in os.walk(self.original_storage_path[self.source_id]):
-				for filename in files:
-					# continue if filename is not .wav and not .WAV
-					if not filename.endswith('.wav') and not filename.endswith('.WAV'):
-						continue
-					
-					# ToDo: remove this after upgrade audio records preparing method
-					if filename[-11:]!='rxtx-in.wav' and filename[-12:]!='rxtx-out.wav':
-						if 'wav' in filename or 'WAV' in filename:
-							# log information about removed file and his path
-							with open(self.saved_for_analysis_path+'debug/removed.csv', 'a') as f:
-								f.write(root + ';' + filename + '\n')
-							print('removed', root + '/' + filename)
-							# remove file
-							os.remove(os.path.join(root, filename))
-						continue
-
-					file_in_queue = filename in queue
-					if os.environ.get('SAVE_FOR_ANALYSIS', '0')=='1':
-						self.log('call check file '+filename)
-						try:
-							
-							# debug ++
-							if not file_in_queue:
-								dst_file = self.saved_for_analysis_path+'debug/call/'+filename
-								if not os.path.exists(dst_file):
-									self.copy_file(									
-										os.path.join(root, filename),
-										self.saved_for_analysis_path+'debug/call/'
-									)
-								else:
-									self.log('copying canceled. file exists: '+dst_file)
-							#else: 
-							#	self.log(filename+' in queue')
-						except Exception as e:
-							self.log('call debug error: '+str(e))
-						# debug --
-					if not file_in_queue and filename[-4:] == '.wav':
-						rec_source_date = re.findall(r'\d{4}-\d{2}-\d{2}-\d{2}-\d{2}-\d{2}', filename)
-						if len(rec_source_date) and len(rec_source_date[0]):
-							rec_date = rec_source_date[0][:10] + ' ' + rec_source_date[0][11:].replace('-', ':')
-
-							if len(re.findall(r'\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}', rec_date)) == 0:
-								rec_date = 'Null'
-								print('0 Unable to extract date:', root, filename)
-
-							date_string = re.findall(r'\d{4}-\d{2}-\d{2}', filename)
-							if len(date_string):
-								date_y = date_string[0][:4]
-								date_m = date_string[0][5:-3]
-								date_d = date_string[0][-2:]
-								linkedid, dst, src = self.linkedid_by_filename(filename, date_y, date_m, date_d)  # cycled query
-
-								fd_list.append({
-									'filepath': root+'/',
-									'filename': filename,
-									'rec_date': rec_date,
-									'src': src,
-									'dst': dst,
-									'linkedid': linkedid,
-									'version': 0,
-								})
-						else:
-							print('1 Unable to extract date:', root, filename)
-							self.send_to_telegram('1 Unable to extract date: ' + str(root) + ' ' + str(filename))
-							#self.save_file_for_analysis(root, filename, 0)
-				# break # ToDo: remove
-
-		elif self.source_id == self.sources['master']:
+		if self.source_id == self.sources['master']:
 			files_list = []
 			print('master path', self.original_storage_path[self.source_id])
 			for (dirpath, dirnames, filenames) in os.walk(self.original_storage_path[self.source_id]):
@@ -345,6 +275,74 @@ class stt_server:
 						files_extracted += 1
 
 			print('master extracted:', files_extracted, 'without cdr data:', files_withoud_cdr_data)
+
+		elif self.source_id == self.sources['call']:
+			print('call path', self.original_storage_path[self.source_id])
+			for root, dirs, files in os.walk(self.original_storage_path[self.source_id]):
+				for filename in files:
+					# continue if filename is not .wav and not .WAV
+					if not filename.endswith('.wav') and not filename.endswith('.WAV'):
+						continue
+					
+					# ToDo: remove this after upgrade audio records preparing method
+					if filename[-11:]!='rxtx-in.wav' and filename[-12:]!='rxtx-out.wav':
+						if 'wav' in filename or 'WAV' in filename:
+							# log information about removed file and his path
+							with open(self.saved_for_analysis_path+'debug/removed.csv', 'a') as f:
+								f.write(root + ';' + filename + '\n')
+							print('removed', root + '/' + filename)
+							# remove file
+							os.remove(os.path.join(root, filename))
+						continue
+
+					file_in_queue = filename in queue
+					if os.environ.get('SAVE_FOR_ANALYSIS', '0')=='1':
+						self.log('call check file '+filename)
+						try:
+							
+							# debug ++
+							if not file_in_queue:
+								dst_file = self.saved_for_analysis_path+'debug/call/'+filename
+								if not os.path.exists(dst_file):
+									self.copy_file(									
+										os.path.join(root, filename),
+										self.saved_for_analysis_path+'debug/call/'
+									)
+								else:
+									self.log('copying canceled. file exists: '+dst_file)
+							#else: 
+							#	self.log(filename+' in queue')
+						except Exception as e:
+							self.log('call debug error: '+str(e))
+						# debug --
+					if not file_in_queue and filename[-4:] == '.wav':
+						rec_source_date = re.findall(r'\d{4}-\d{2}-\d{2}-\d{2}-\d{2}-\d{2}', filename)
+						if len(rec_source_date) and len(rec_source_date[0]):
+							rec_date = rec_source_date[0][:10] + ' ' + rec_source_date[0][11:].replace('-', ':')
+
+							if len(re.findall(r'\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}', rec_date)) == 0:
+								rec_date = 'Null'
+								print('0 Unable to extract date:', root, filename)
+
+							date_string = re.findall(r'\d{4}-\d{2}-\d{2}', filename)
+							if len(date_string):
+								date_y = date_string[0][:4]
+								date_m = date_string[0][5:-3]
+								date_d = date_string[0][-2:]
+								linkedid, dst, src = self.linkedid_by_filename(filename, date_y, date_m, date_d)  # cycled query
+
+								fd_list.append({
+									'filepath': root+'/',
+									'filename': filename,
+									'rec_date': rec_date,
+									'src': src,
+									'dst': dst,
+									'linkedid': linkedid,
+									'version': 0,
+								})
+						else:
+							print('1 Unable to extract date:', root, filename)
+							self.send_to_telegram('1 Unable to extract date: ' + str(root) + ' ' + str(filename))		
 
 		df = pd.DataFrame(fd_list, columns=['filepath', 'filename', 'rec_date', 'src', 'dst', 'linkedid', 'version'])
 		df.sort_values(['rec_date', 'filename'], ascending=True, inplace=True)
@@ -457,7 +455,7 @@ class stt_server:
 			# message += 'd[' + str(file_duration) + ']  '
 			message += str(filename)
 			# self.save_file_for_analysis(filepath, filename, file_duration)
-			print(message)
+			# print(message)
 			# self.send_to_telegram(message)
 
 
