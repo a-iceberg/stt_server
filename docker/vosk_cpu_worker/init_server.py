@@ -30,6 +30,8 @@ class stt_server:
 		cores_count = int(os.environ.get('WORKERS_COUNT', '0'))
 		self.cpu_cores = [i for i in range(0, cores_count)]
 
+		# enable logging
+		logging.basicConfig(level=logging.INFO)
 		
 		self.gpu_uri = os.environ.get(
 			'VOSK_SERVER_WORKER_'+str(self.cpu_id), 
@@ -303,9 +305,9 @@ class stt_server:
 		logger_text = ' size: ' + str(file_size)
 		logger_text += ' file: ' + self.temp_file_path + self.temp_file_name			
 		# log worker id with logging
-		logging.debug(logger_text)
+		#logging.debug(logger_text)
 
-		#logging.info(logger_text)
+		logging.info(logger_text)
 
 		#print(logger_text)
 		#try:
