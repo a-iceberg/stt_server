@@ -31,7 +31,7 @@ class stt_server:
 		self.cpu_cores = [i for i in range(0, cores_count)]
 
 		# enable logging
-		logging.basicConfig(level=logging.INFO)
+		logging.basicConfig(level=logging.INFO)		
 		
 		self.gpu_uri = os.environ.get(
 			'VOSK_SERVER_WORKER_'+str(self.cpu_id), 
@@ -494,10 +494,12 @@ class stt_server:
 			file_size,
 			queue_date
 		):
+		logging.info('save result start')
 		# print('=== save_result', accept_text)
 		if not str(rec_date) == 'Null' and \
 				len(re.findall(r'\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}', str(rec_date))) == 0:
-			print(str(linkedid), 'save_result - wrong rec_date:', str(rec_date), 'converting to Null..')
+			# print(str(linkedid), 'save_result - wrong rec_date:', str(rec_date), 'converting to Null..')
+			logging.error(str(linkedid)+' save_result - wrong rec_date: '+str(rec_date)+' converting to Null..')
 			rec_date = 'Null'
 
 		if len(accept_text):
@@ -509,7 +511,8 @@ class stt_server:
 				if len(r.text):
 					accept_text = r.text
 			except Exception as e:
-				print('text enhancement error:', e)
+				#print('text enhancement error:', e)
+				logging.error(str(linkedid)+' text enhancement error: '+str(e))
 
 		cursor = self.conn.cursor()
 		
@@ -556,12 +559,14 @@ class stt_server:
 			self.conn.commit() # autocommit
 			# print('sent query', sql_query)
 		except Exception as e:
-			print('query error:',sql_query) # DEBUG
-			print(str(e))
+			#print('query error:',sql_query) # DEBUG
+			#print(str(e))
+			logging.error(str(linkedid)+' query error: '+sql_query+' '+str(e))
 			sys.exit('save_result')
 
 		#save_end = time.time() # datetime.datetime.now()
 		#self.perf_log(3, save_start, save_end, duration, linkedid)
+		logging.info('save result end')
 
 	def remove_temporary_file(self):
 		if self.source_id == self.sources['call']:
