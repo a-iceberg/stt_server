@@ -296,62 +296,65 @@ class stt_server:
 		transcribation_date
 		):
 		
-		try_number = -1
-		while try_number < int(os.environ.get('TRANSCRIBE_MAX_TRY_COUNT', '100')):			
-			try_number += 1
-			logger_text = '### try: '+ str(try_number)
-			logger_text += ' size: ' + str(file_size)
-			logger_text += ' file: ' + self.temp_file_path + self.temp_file_name			
-			# log worker id with logging
-			#logging.info(logger_text)
-			print(logger_text)
-			try:
-				print('== Worker:', self.gpu_uri, '===')
-				async with websockets.connect(self.gpu_uri) as websocket:
+		#try_number = -1
+		#while try_number < int(os.environ.get('TRANSCRIBE_MAX_TRY_COUNT', '100')):			
+		#try_number += 1
+		#logger_text = '### try: '+ str(try_number)
+		logger_text += ' size: ' + str(file_size)
+		logger_text += ' file: ' + self.temp_file_path + self.temp_file_name			
+		# log worker id with logging
+		logging.debug(logger_text)
 
-					sentences = []
+		#logging.info(logger_text)
 
-					wf = wave.open(self.temp_file_path + self.temp_file_name, "rb")
-					await websocket.send(
-						'{ "config" : { "sample_rate" : %d } }' % (wf.getframerate())
-						)
+		#print(logger_text)
+		#try:
+		#print('== Worker:', self.gpu_uri, '===')
+		async with websockets.connect(self.gpu_uri) as websocket:
 
-					buffer_size = int(wf.getframerate() * 0.2)  # 0.2 seconds of audio
-					while True:
-						data = wf.readframes(buffer_size)
+			sentences = []
 
-						if len(data) == 0:
-							break
+			wf = wave.open(self.temp_file_path + self.temp_file_name, "rb")
+			await websocket.send(
+				'{ "config" : { "sample_rate" : %d } }' % (wf.getframerate())
+				)
 
-						await websocket.send(data)
-						accept = json.loads(await websocket.recv())
-						self.accept_feature_extractor(sentences, accept)
+			buffer_size = int(wf.getframerate() * 0.2)  # 0.2 seconds of audio
+			while True:
+				data = wf.readframes(buffer_size)
 
-					await websocket.send('{"eof" : 1}')
-					accept = json.loads(await websocket.recv())
-					self.accept_feature_extractor(sentences, accept)
+				if len(data) == 0:
+					break
 
-				# save to sql
-				for i in range(0, len(sentences)):
-					self.save_result(
-						duration,
-						sentences[i]['text'],
-						sentences[i]['start'],
-						sentences[i]['end'],
-						side,
-						transcribation_date,
-						str(sentences[i]['conf']),
-						original_file_name,
-						rec_date,
-						src,
-						dst,
-						linkedid,
-						file_size,
-						queue_date
-						)
-				break
-			except Exception as e:
-				logging.error('### error: ' + str(e))
+				await websocket.send(data)
+				accept = json.loads(await websocket.recv())
+				self.accept_feature_extractor(sentences, accept)
+
+			await websocket.send('{"eof" : 1}')
+			accept = json.loads(await websocket.recv())
+			self.accept_feature_extractor(sentences, accept)
+
+		# save to sql
+		for i in range(0, len(sentences)):
+			self.save_result(
+				duration,
+				sentences[i]['text'],
+				sentences[i]['start'],
+				sentences[i]['end'],
+				side,
+				transcribation_date,
+				str(sentences[i]['conf']),
+				original_file_name,
+				rec_date,
+				src,
+				dst,
+				linkedid,
+				file_size,
+				queue_date
+				)
+		#break
+		#except Exception as e:
+		#	logging.error('### error: ' + str(e))
 				
 		# phrases for summarization
 		phrases = [sentences[i]['text'] for i in range(len(sentences))]
