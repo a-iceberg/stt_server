@@ -297,21 +297,12 @@ class stt_server:
 		queue_date,
 		transcribation_date
 		):
-		
-		#try_number = -1
-		#while try_number < int(os.environ.get('TRANSCRIBE_MAX_TRY_COUNT', '100')):			
-		#try_number += 1
-		#logger_text = '### try: '+ str(try_number)
+		trans_start = time.time()		
 		logger_text = ' size: ' + str(file_size)
 		logger_text += ' file: ' + self.temp_file_path + self.temp_file_name			
-		# log worker id with logging
-		#logging.debug(logger_text)
 
 		logging.info(logger_text)
 
-		#print(logger_text)
-		#try:
-		#print('== Worker:', self.gpu_uri, '===')
 		async with websockets.connect(self.gpu_uri) as websocket:
 
 			sentences = []
@@ -335,6 +326,9 @@ class stt_server:
 			await websocket.send('{"eof" : 1}')
 			accept = json.loads(await websocket.recv())
 			self.accept_feature_extractor(sentences, accept)
+		
+		trans_end = time.time() # datetime.datetime.now()
+		self.perf_log(2, trans_start, trans_end, duration, linkedid)
 
 		# save to sql
 		for i in range(0, len(sentences)):
@@ -354,9 +348,6 @@ class stt_server:
 				file_size,
 				queue_date
 				)
-		#break
-		#except Exception as e:
-		#	logging.error('### error: ' + str(e))
 				
 		# phrases for summarization
 		phrases = [sentences[i]['text'] for i in range(len(sentences))]
@@ -384,8 +375,6 @@ class stt_server:
 		file_size, 
 		queue_date
 		):
-
-		trans_start = time.time() # datetime.datetime.now()
 
 		file_saved_for_analysis = False
 
@@ -416,8 +405,7 @@ class stt_server:
 		else:
 			self.confidence_of_file = 0
 		
-		trans_end = time.time() # datetime.datetime.now()
-		self.perf_log(2, trans_start, trans_end, duration, linkedid)
+		
 		
 		# quality control		
 		"""if phrases_count>3 and \
@@ -502,7 +490,7 @@ class stt_server:
 			logging.error(str(linkedid)+' save_result - wrong rec_date: '+str(rec_date)+' converting to Null..')
 			rec_date = 'Null'
 
-		if len(accept_text):
+		"""if len(accept_text):
 			docker_server_address = os.environ.get('TE_DOCKER_ADDRESS', '')
 			try:
 				request = {'in_text':accept_text, 'lan':'ru'}
@@ -512,7 +500,7 @@ class stt_server:
 					accept_text = r.text
 			except Exception as e:
 				#print('text enhancement error:', e)
-				logging.error(str(linkedid)+' text enhancement error: '+str(e))
+				logging.error(str(linkedid)+' text enhancement error: '+str(e))"""
 
 		cursor = self.conn.cursor()
 		
