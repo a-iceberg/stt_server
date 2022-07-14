@@ -482,7 +482,7 @@ class stt_server:
 			file_size,
 			queue_date
 		):
-		logging.info('save result start')
+		# logging.info('save result start')
 		# print('=== save_result', accept_text)
 		if not str(rec_date) == 'Null' and \
 				len(re.findall(r'\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}', str(rec_date))) == 0:
@@ -554,7 +554,7 @@ class stt_server:
 
 		#save_end = time.time() # datetime.datetime.now()
 		#self.perf_log(3, save_start, save_end, duration, linkedid)
-		logging.info('save result end')
+		# logging.info('save result end')
 
 	def remove_temporary_file(self):
 		if self.source_id == self.sources['call']:
