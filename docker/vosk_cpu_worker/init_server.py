@@ -67,10 +67,10 @@ class stt_server:
 		self.temp_file_name = ''		
 			
 		self.conn = self.connect_sql()
-		self.mysql_conn = {
+		"""self.mysql_conn = {
 			1: self.connect_mysql(1),
 			2: self.connect_mysql(2),
-		}
+		}"""
 
 		self.numbers = [
 			'надцать',
@@ -146,7 +146,7 @@ class stt_server:
 			#autocommit=True			
 		)		
 
-	def connect_mysql(self, source_id):
+	"""def connect_mysql(self, source_id):
 
 		return mysql.connect(
 			host=os.environ.get('MYSQL_SERVER', ''),
@@ -155,7 +155,7 @@ class stt_server:
 			db=self.mysql_name[source_id],
 			# autocommit = True
 			# cursorclass=mysql.cursors.DictCursor,
-		)
+		)"""
 
 	def perf_log(self, step, time_start, time_end, duration, linkedid):
 		print('perf_log', step)
@@ -182,7 +182,7 @@ class stt_server:
 		except Exception as e:
 			print('perf_log query error:', str(e), '\n', sql_query)
 	
-	def linkedid_by_filename(self, filename, date_y, date_m, date_d):
+		"""def linkedid_by_filename(self, filename, date_y, date_m, date_d):
 
 		filename = filename.replace('rxtx.wav', '')
 		
@@ -192,26 +192,26 @@ class stt_server:
 		date_toto = datetime.datetime.strptime(str(date_toto), '%Y-%m-%d %H:%M:%S').strftime('%Y-%m-%dT%H:%M:%S')
 
 		mysql_conn = self.connect_mysql(self.source_id)
+		"""
+		#with mysql_conn:
+		#	query = """
+		#	select				
+		#		linkedid,
+		#		SUBSTRING(dstchannel, 5, 4),
+		#		src
+		#		from PT1C_cdr_MICO as PT1C_cdr_MICO
+		#		where 
+		#			calldate>'"""+date_from+"""' and 
+		#			calldate<'"""+date_toto+"""' and 
+		#			PT1C_cdr_MICO.recordingfile LIKE '%"""+filename+"""%' 
+		#			limit 1;"""
 
-		with mysql_conn:
-			query = """
-			select				
-				linkedid,
-				SUBSTRING(dstchannel, 5, 4),
-				src
-				from PT1C_cdr_MICO as PT1C_cdr_MICO
-				where 
-					calldate>'"""+date_from+"""' and 
-					calldate<'"""+date_toto+"""' and 
-					PT1C_cdr_MICO.recordingfile LIKE '%"""+filename+"""%' 
-					limit 1;"""
-
-			cursor = mysql_conn.cursor()
-			cursor.execute(query)
-			for row in cursor.fetchall():
-				linkedid, dstchannel, src = row[0], row[1], row[2]
-				return linkedid, dstchannel, src
-		return '', '', ''
+		"""cursor = mysql_conn.cursor()
+		cursor.execute(query)
+		for row in cursor.fetchall():
+			linkedid, dstchannel, src = row[0], row[1], row[2]
+			return linkedid, dstchannel, src
+		return '', '', ''"""
 
 	def delete_current_queue(self, original_file_name, linkedid):
 
