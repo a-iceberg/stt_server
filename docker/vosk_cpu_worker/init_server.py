@@ -300,7 +300,7 @@ class stt_server:
 		#while try_number < int(os.environ.get('TRANSCRIBE_MAX_TRY_COUNT', '100')):			
 		#try_number += 1
 		#logger_text = '### try: '+ str(try_number)
-		logger_text += ' size: ' + str(file_size)
+		logger_text = ' size: ' + str(file_size)
 		logger_text += ' file: ' + self.temp_file_path + self.temp_file_name			
 		# log worker id with logging
 		logging.debug(logger_text)
