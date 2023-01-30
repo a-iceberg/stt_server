@@ -8,7 +8,7 @@ Additional mysql and mssql databases and tables configure required.
 ### Installation
 ```
 git clone https://github.com/format37/call_centre_stt_server.git
-cd call_centre_stt_server
+cd call_centre_stt_server/docker
 ```
 Configure your server:
 ```
