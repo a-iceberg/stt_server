@@ -240,7 +240,7 @@ class stt_server:
 			print("Error: %s - %s." % (e.filename, e.strerror))
 			self.send_to_telegram('delete_source_file error:\n' + str(e))
 
-	def summarization_add_queue(self, linkedid, record_date, side, phrases_count, text, version, source_id):
+	def summarization_add_queue_deprecated(self, linkedid, record_date, side, phrases_count, text, version, source_id):
 		current_date = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
 		text_length = len(text)
 		query = "insert into summarization_queue"
@@ -445,7 +445,7 @@ class stt_server:
 				file_size,
 				queue_date
 			)
-		else:				
+		"""else:				
 
 			version = 0
 			for replacer in [' ', ' - ', '. ']:
@@ -462,7 +462,7 @@ class stt_server:
 					version, 
 					self.source_id
 					)
-				version += 1
+				version += 1"""
 				
 
 	def save_result(
