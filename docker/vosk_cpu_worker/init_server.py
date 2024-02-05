@@ -271,9 +271,11 @@ class stt_server:
 		logging.info(logger_text)
 
 		whisper_transcriber = 0
+		logging.info(f'self.gpu_uri: {self.gpu_uri}')
 
 		# VOSK
 		if self.gpu_uri[:3] == 'ws:':
+			logging.info('vosk transcriber')
 			async with websockets.connect(self.gpu_uri) as websocket:
 
 				sentences = []
