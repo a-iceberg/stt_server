@@ -325,6 +325,7 @@ class stt_server:
 
 		# save to sql
 		for i in range(0, len(sentences)):
+			conf = sentences[i]['confidence'] if whisper_transcriber else sentences[i]['conf']
 			self.save_result(
 				duration,
 				sentences[i]['text'],
@@ -332,7 +333,7 @@ class stt_server:
 				sentences[i]['end'],
 				side,
 				transcribation_date,
-				str(sentences[i]['conf']),
+				str(conf),
 				original_file_name,
 				rec_date,
 				src,
