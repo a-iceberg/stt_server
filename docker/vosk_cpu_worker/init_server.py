@@ -303,6 +303,7 @@ class stt_server:
 		
 		# WHISPER
 		else:
+			logging.info('whisper transcriber')
 			whisper_transcriber = 1
 			sentences = []
 			file_path = self.temp_file_path + self.temp_file_name
@@ -366,24 +367,21 @@ class stt_server:
 		
 		phrases_count = 0
 		# If server address starting from "ws://" then use vosk
-		if self.gpu_uri[:3] == 'ws:':
-			phrases_count, phrases, confidences = asyncio.get_event_loop().run_until_complete(
-				self.transcribation_process(
-					duration, 
-					side, 
-					original_file_name, 
-					rec_date, 
-					src, 
-					dst, 
-					linkedid, 
-					file_size, 
-					queue_date,
-					transcribation_date
-					)
+		# if self.gpu_uri[:3] == 'ws:':
+		phrases_count, phrases, confidences = asyncio.get_event_loop().run_until_complete(
+			self.transcribation_process(
+				duration, 
+				side, 
+				original_file_name, 
+				rec_date, 
+				src, 
+				dst, 
+				linkedid, 
+				file_size, 
+				queue_date,
+				transcribation_date
 				)
-		else: # whisper
-			return # TODO: Remove
-
+			)
 
 		if len(confidences):
 			self.confidence_of_file = sum(confidences)/len(confidences)
@@ -409,7 +407,8 @@ class stt_server:
 				dst,
 				linkedid,
 				file_size,
-				queue_date
+				queue_date,
+				0
 			)
 
 	def save_result(
