@@ -74,24 +74,6 @@ class stt_server:
 			2: self.connect_mysql(2),
 		}"""
 
-		self.numbers = [
-			'надцать',
-			'двадцать',
-			'тридцать',
-			'сорок',
-			'пятьдесят',
-			'шестьдесят',
-			'семьдесят',
-			'восемьдесят',
-			'девяносто',
-			'пятьсот',
-			'шестьсот',
-			'семьсот',
-			'восемьсот',
-			'девятьсот',
-			'тысяч'
-		]
-
 		self.send_to_telegram('cpu '+str(self.cpu_id)+' started')
 
 	def log_deletion(self, filename):
@@ -183,37 +165,6 @@ class stt_server:
 			self.conn.commit()
 		except Exception as e:
 			print('perf_log query error:', str(e), '\n', sql_query)
-	
-		"""def linkedid_by_filename(self, filename, date_y, date_m, date_d):
-
-		filename = filename.replace('rxtx.wav', '')
-		
-		date_from = datetime.datetime(int(date_y), int(date_m), int(date_d))
-		date_toto = date_from+datetime.timedelta(days=1)
-		date_from = datetime.datetime.strptime(str(date_from), '%Y-%m-%d %H:%M:%S').strftime('%Y-%m-%dT%H:%M:%S')
-		date_toto = datetime.datetime.strptime(str(date_toto), '%Y-%m-%d %H:%M:%S').strftime('%Y-%m-%dT%H:%M:%S')
-
-		mysql_conn = self.connect_mysql(self.source_id)
-		"""
-		#with mysql_conn:
-		#	query = """
-		#	select				
-		#		linkedid,
-		#		SUBSTRING(dstchannel, 5, 4),
-		#		src
-		#		from PT1C_cdr_MICO as PT1C_cdr_MICO
-		#		where 
-		#			calldate>'"""+date_from+"""' and 
-		#			calldate<'"""+date_toto+"""' and 
-		#			PT1C_cdr_MICO.recordingfile LIKE '%"""+filename+"""%' 
-		#			limit 1;"""
-
-		"""cursor = mysql_conn.cursor()
-		cursor.execute(query)
-		for row in cursor.fetchall():
-			linkedid, dstchannel, src = row[0], row[1], row[2]
-			return linkedid, dstchannel, src
-		return '', '', ''"""
 
 	def delete_current_queue(self, original_file_name, linkedid):
 
@@ -284,6 +235,22 @@ class stt_server:
 				}
 			)
 
+	def accept_feature_extractor_whisper(self, sentences, accept):
+		if len(accept) > 1 and accept["text"] != "":
+			for segments_rec in accept["segments"]:
+				segment_text = str(segments_rec["text"])
+				segment_start = segments_rec["start"]
+				segment_end = segments_rec["end"]
+				conf_score = float(segments_rec["confidence"])
+				sentences.append(
+					{
+						"text": segment_text,
+						"start": segment_start,
+						"end": segment_end,
+						"confidence": conf_score,
+					}
+				)
+
 	async def transcribation_process(
 		self,
 		duration, 
@@ -303,32 +270,55 @@ class stt_server:
 
 		logging.info(logger_text)
 
-		async with websockets.connect(self.gpu_uri) as websocket:
+		whisper_transcriber = 0
 
-			sentences = []
+		# VOSK
+		if self.gpu_uri[:3] == 'ws:':
+			async with websockets.connect(self.gpu_uri) as websocket:
 
-			wf = wave.open(self.temp_file_path + self.temp_file_name, "rb")
-			await websocket.send(
-				'{ "config" : { "sample_rate" : %d } }' % (wf.getframerate())
-				)
+				sentences = []
 
-			buffer_size = int(wf.getframerate() * 0.2)  # 0.2 seconds of audio
-			while True:
-				data = wf.readframes(buffer_size)
+				wf = wave.open(self.temp_file_path + self.temp_file_name, "rb")
+				await websocket.send(
+					'{ "config" : { "sample_rate" : %d } }' % (wf.getframerate())
+					)
 
-				if len(data) == 0:
-					break
+				buffer_size = int(wf.getframerate() * 0.2)  # 0.2 seconds of audio
+				while True:
+					data = wf.readframes(buffer_size)
 
-				await websocket.send(data)
+					if len(data) == 0:
+						break
+
+					await websocket.send(data)
+					accept = json.loads(await websocket.recv())
+					self.accept_feature_extractor(sentences, accept)
+
+				await websocket.send('{"eof" : 1}')
 				accept = json.loads(await websocket.recv())
 				self.accept_feature_extractor(sentences, accept)
-
-			await websocket.send('{"eof" : 1}')
-			accept = json.loads(await websocket.recv())
-			self.accept_feature_extractor(sentences, accept)
+			
+			trans_end = time.time() # datetime.datetime.now()
+			self.perf_log(2, trans_start, trans_end, duration, linkedid)
 		
-		trans_end = time.time() # datetime.datetime.now()
-		self.perf_log(2, trans_start, trans_end, duration, linkedid)
+		# WHISPER
+		else:
+			whisper_transcriber = 1
+			sentences = []
+			file_path = self.temp_file_path + self.temp_file_name
+
+			with open(file_path, "rb") as audio_file:
+				response = requests.post(
+					self.gpu_uri,
+					files={"file": (os.path.basename(file_path), audio_file, "audio/wav")},
+				)
+
+			if response.status_code == 200:
+				accept = response.json()
+				self.accept_feature_extractor_whisper(sentences, accept)
+			else:
+				logging.error(f"Error in file processing: {response.text}")
+				return 0, [], []
 
 		# save to sql
 		for i in range(0, len(sentences)):
@@ -346,7 +336,8 @@ class stt_server:
 				dst,
 				linkedid,
 				file_size,
-				queue_date
+				queue_date,
+				whisper_transcriber
 				)
 				
 		# phrases for summarization
@@ -354,13 +345,6 @@ class stt_server:
 		# confidences for analysis
 		confidences = [sentences[i]['conf'] for i in range(len(sentences))]
 		return len(sentences), phrases, confidences
-
-
-	def phrases_have_numbers(self, phrases):		
-		for word in ' '.join(phrases).split(' '):
-			if word in self.numbers:
-				return True
-		return False	
 
 
 	def transcribe_to_sql(
@@ -378,52 +362,34 @@ class stt_server:
 
 		file_saved_for_analysis = False
 
-		# if self.source_id == self.sources['master']:
-		# 	original_file_name = linkedid + ('-in.wav' if side == 0 else '-out.wav')
-
 		transcribation_date = datetime.datetime.now().strftime('%Y-%m-%dT%H:%M:%S')
 		
-		#try:
 		phrases_count = 0
-		phrases_count, phrases, confidences = asyncio.get_event_loop().run_until_complete(
-			self.transcribation_process(
-				duration, 
-				side, 
-				original_file_name, 
-				rec_date, 
-				src, 
-				dst, 
-				linkedid, 
-				file_size, 
-				queue_date,
-				transcribation_date
+		# If server address starting from "ws://" then use vosk
+		if self.gpu_uri[:3] == 'ws:':
+			phrases_count, phrases, confidences = asyncio.get_event_loop().run_until_complete(
+				self.transcribation_process(
+					duration, 
+					side, 
+					original_file_name, 
+					rec_date, 
+					src, 
+					dst, 
+					linkedid, 
+					file_size, 
+					queue_date,
+					transcribation_date
+					)
 				)
-			)			
+		else: # whisper
+			return # TODO: Remove
+
 
 		if len(confidences):
 			self.confidence_of_file = sum(confidences)/len(confidences)
 		else:
 			self.confidence_of_file = 0
 		
-		
-		
-		# quality control		
-		"""if phrases_count>3 and \
-			self.confidence_of_file>0.5 and \
-			duration > 50 and \
-			duration < 60 and \
-			not self.phrases_have_numbers(phrases) and \
-			not self.wer_file_exist():
-			self.save_file_for_analysis(self.temp_file_path, self.temp_file_name, duration)
-			#self.send_to_telegram(str(self.cpu_id)+': '+str(phrases_count)+' # '+self.temp_file_name)"""
-
-		"""except Exception as e:
-			print('transcribation_process error:', e)
-			self.save_file_for_analysis(self.temp_file_path, self.temp_file_name, duration)
-			file_saved_for_analysis = True
-			self.send_to_telegram(original_file_name+' transcribation_process error: '+str(e))			
-			time.sleep(1)"""
-
 		# save for analysis if phrases count < 3 and duration > 300
 		if phrases_count < 3 and duration > 300 and not file_saved_for_analysis:
 			self.save_file_for_analysis(self.temp_file_path, self.temp_file_name, duration)
@@ -445,25 +411,6 @@ class stt_server:
 				file_size,
 				queue_date
 			)
-		"""else:				
-
-			version = 0
-			for replacer in [' ', ' - ', '. ']:
-				text_for_queue = replacer.join(phrases)
-				while '  ' in text_for_queue:
-					text_for_queue = text_for_queue.replace('  ',' ')
-				#print('self.summarization_add_queue', version, text_for_queue)
-				self.summarization_add_queue(
-					linkedid, 
-					rec_date, 
-					side, 
-					phrases_count, 
-					text_for_queue, 
-					version, 
-					self.source_id
-					)
-				version += 1"""
-				
 
 	def save_result(
 			self,
@@ -480,27 +427,13 @@ class stt_server:
 			dst,
 			linkedid,
 			file_size,
-			queue_date
+			queue_date,
+			whisper_transcriber
 		):
-		# logging.info('save result start')
-		# print('=== save_result', accept_text)
 		if not str(rec_date) == 'Null' and \
 				len(re.findall(r'\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}', str(rec_date))) == 0:
-			# print(str(linkedid), 'save_result - wrong rec_date:', str(rec_date), 'converting to Null..')
 			logging.error(str(linkedid)+' save_result - wrong rec_date: '+str(rec_date)+' converting to Null..')
 			rec_date = 'Null'
-
-		"""if len(accept_text):
-			docker_server_address = os.environ.get('TE_DOCKER_ADDRESS', '')
-			try:
-				request = {'in_text':accept_text, 'lan':'ru'}
-				request_str = json.dumps(request)
-				r = requests.post(docker_server_address, json=request_str)
-				if len(r.text):
-					accept_text = r.text
-			except Exception as e:
-				#print('text enhancement error:', e)
-				logging.error(str(linkedid)+' text enhancement error: '+str(e))"""
 
 		cursor = self.conn.cursor()
 		
@@ -523,7 +456,8 @@ class stt_server:
 		sql_query += " record_date,"
 		sql_query += " source_id,"
 		sql_query += " file_size,"
-		sql_query += " queue_date)"
+		sql_query += " queue_date,"
+		sql_query += " whisper)"
 		sql_query += " values ("
 		sql_query += " " + str(self.cpu_id) + ","
 		sql_query += " " + str(duration) + ","
@@ -540,21 +474,15 @@ class stt_server:
 		sql_query += " " + str(rec_date) if str(rec_date) == 'Null' else "'" + str(rec_date) + "'"
 		sql_query += " ,'" + str(self.source_id)+"'"
 		sql_query += " ,'" + str(0 if file_size is None else file_size) + "',"
-		sql_query += " '" + str(queue_date) + "');"
+		sql_query += " '" + str(queue_date) + "',"
+		sql_query += " '" + str(whisper_transcriber) + "');"
 
 		try:
 			cursor.execute(sql_query)
 			self.conn.commit() # autocommit
-			# print('sent query', sql_query)
 		except Exception as e:
-			#print('query error:',sql_query) # DEBUG
-			#print(str(e))
 			logging.error(str(linkedid)+' query error: '+sql_query+' '+str(e))
 			sys.exit('save_result')
-
-		#save_end = time.time() # datetime.datetime.now()
-		#self.perf_log(3, save_start, save_end, duration, linkedid)
-		# logging.info('save result end')
 
 	def remove_temporary_file(self):
 		if self.source_id == self.sources['call']:
@@ -562,9 +490,6 @@ class stt_server:
 			try:
 				os.remove(self.temp_file_path + self.temp_file_name)
 				self.log_deletion(self.temp_file_path + self.temp_file_name)
-				# debug ++
-				# self.send_to_telegram('remove_temporary_file removed: ' + str(self.temp_file_name))
-				# debug --
 			except Exception as e:
 				msg = 'remove_temporary_file error:\n' + str(e)
 				print(msg)
@@ -717,6 +642,3 @@ class stt_server:
 			current_date = datetime.datetime.now().strftime('%Y-%m-%d')
 			prefix = 'cpu'+str(self.cpu_id)+'_duration'+str(duration)+'_'+current_date+'_'
 			copyfile(file_path + file_name, self.saved_for_analysis_path + prefix + file_name)
-			# send to telegram
-			# self.send_to_telegram('cpu '+str(self.cpu_id)+' saved for analysis: '+file_name)
-
