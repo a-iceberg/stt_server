@@ -94,7 +94,8 @@ while True:
 				dst,
 				linkedid,
 				file_size,
-				queue_date
+				queue_date,
+				0
 			)
 
 			server_object.delete_current_queue(original_file_name, linkedid)
