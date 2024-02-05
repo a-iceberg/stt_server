@@ -242,7 +242,7 @@ class stt_server:
 	def accept_feature_extractor_whisper(self, sentences, accept):
 		if len(accept) > 1 and accept["text"] != "":
 			for segments_rec in accept["segments"]:
-				segment_text = str(segments_rec["text"])
+				segment_text = str(segments_rec["text"]).replace("'", "")
 				segment_start = segments_rec["start"]
 				segment_end = segments_rec["end"]
 				conf_score = float(segments_rec["confidence"])
@@ -326,7 +326,7 @@ class stt_server:
 			else:
 				logging.error(f"Error in file processing: {response.text}")
 				# return 0, [], []
-				
+
 		trans_end = time.time() # datetime.datetime.now()
 		self.perf_log(2, trans_start, trans_end, duration, linkedid)
 
