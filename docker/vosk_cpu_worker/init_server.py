@@ -351,7 +351,10 @@ class stt_server:
 		# phrases for summarization
 		phrases = [sentences[i]['text'] for i in range(len(sentences))]
 		# confidences for analysis
-		confidences = [sentences[i]['conf'] for i in range(len(sentences))]
+		if whisper_transcriber:
+			confidences = [sentences[i]['confidence'] for i in range(len(sentences))]
+		else:			
+			confidences = [sentences[i]['conf'] for i in range(len(sentences))]
 		return len(sentences), phrases, confidences
 
 
