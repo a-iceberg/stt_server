@@ -304,8 +304,8 @@ class stt_server:
 				accept = json.loads(await websocket.recv())
 				self.accept_feature_extractor(sentences, accept)
 			
-			trans_end = time.time() # datetime.datetime.now()
-			self.perf_log(2, trans_start, trans_end, duration, linkedid)
+			# trans_end = time.time() # datetime.datetime.now()
+			# self.perf_log(2, trans_start, trans_end, duration, linkedid)
 		
 		# WHISPER
 		else:
@@ -325,7 +325,10 @@ class stt_server:
 				self.accept_feature_extractor_whisper(sentences, accept)
 			else:
 				logging.error(f"Error in file processing: {response.text}")
-				return 0, [], []
+				# return 0, [], []
+				
+		trans_end = time.time() # datetime.datetime.now()
+		self.perf_log(2, trans_start, trans_end, duration, linkedid)
 
 		# save to sql
 		for i in range(0, len(sentences)):
