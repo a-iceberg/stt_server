@@ -111,14 +111,18 @@ class stt_server:
 		return i
 
 	def send_to_telegram(self, message):
-		current_date = str(datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S'))
-		token = os.environ.get('TELEGRAM_BOT_TOKEN', '')
-		chat_id = os.environ.get('TELEGRAM_CHAT', '')
-		session = requests.Session()
-		get_request = 'https://api.telegram.org/bot' + token	
-		get_request += '/sendMessage?chat_id=' + chat_id
-		get_request += '&text=' + urllib.parse.quote_plus(current_date + ' vosk_worker: ' + message)
-		session.get(get_request)
+		try:
+			current_date = str(datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S'))
+			token = os.environ.get('TELEGRAM_BOT_TOKEN', '')
+			chat_id = os.environ.get('TELEGRAM_CHAT', '')
+			session = requests.Session()
+			get_request = 'https://api.telegram.org/bot' + token	
+			get_request += '/sendMessage?chat_id=' + chat_id
+			get_request += '&text=' + urllib.parse.quote_plus(current_date + ' vosk_worker: ' + message)
+			session.get(get_request)
+		except Exception as e:
+			logging.info('send_to_telegram error: '+str(e))
+			logging.info('message: '+message)
 			
 	def connect_sql(self):
 
