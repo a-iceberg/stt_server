@@ -6,3 +6,5 @@ websockets
 pendulum
 urllib3
 cryptography
+httpx
+aiohttp

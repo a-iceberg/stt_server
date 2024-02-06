@@ -19,6 +19,7 @@ import urllib
 import glob
 import uuid
 import logging
+import httpx
 
 
 class stt_server:
@@ -314,18 +315,18 @@ class stt_server:
 			sentences = []
 			file_path = self.temp_file_path + self.temp_file_name
 
-			with open(file_path, "rb") as audio_file:
-				response = requests.post(
-					self.gpu_uri,
-					files={"file": (os.path.basename(file_path), audio_file, "audio/wav")},
-				)
+			async with httpx.AsyncClient(timeout=None) as client:
+                                files = {
+                                        "file": (os.path.basename(file_path), open(file_path, "rb"), "audio/wav")
+                                }
+                                response = await client.post(self.gpu_uri, files=files)
 
-			if response.status_code == 200:
-				accept = response.json()
-				self.accept_feature_extractor_whisper(sentences, accept)
-			else:
-				logging.error(f"Error in file processing: {response.text}")
-				# return 0, [], []
+                                if response.status_code == 200:
+                                        accept = response.json()
+                                        self.accept_feature_extractor_whisper(sentences, accept)
+                                else:
+                                        logging.error(f"Error in file processing: {response.text}")
+                                        # return 0, [], []
 
 		trans_end = time.time() # datetime.datetime.now()
 		self.perf_log(2, trans_start, trans_end, duration, linkedid)
