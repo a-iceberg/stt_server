@@ -3,7 +3,7 @@ WORKDIR /worker
 COPY requirements.txt /worker
 RUN pip3 install -r requirements.txt --no-cache-dir
 RUN mkdir /worker/files
-RUN bash -c 'apt-get install -y software-properties-common;add-apt-repository ppa:mc3man/trusty-media -y;apt-get update -y;apt-get install ffmpeg -y'
+RUN bash -c 'apt-get install software-properties-common;add-apt-repository ppa:mc3man/trusty-media -y;apt-get update;apt-get install ffmpeg -y'
 #RUN bash -c 'apt-get install software-properties-common;'
 #RUN add-apt-repository ppa:mc3man/trusty-media -y
 #RUN apt-get update
