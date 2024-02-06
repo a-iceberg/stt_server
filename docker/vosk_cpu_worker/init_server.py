@@ -32,7 +32,8 @@ class stt_server:
 		self.cpu_cores = [i for i in range(0, cores_count)]
 
 		# enable logging
-		logging.basicConfig(level=logging.INFO)		
+		logging.basicConfig(level=logging.INFO)
+		self.logger = logging.getLogger(__name__)
 		
 		self.gpu_uri = os.environ.get(
 			'VOSK_SERVER_WORKER_'+str(self.cpu_id), 
@@ -122,8 +123,8 @@ class stt_server:
 			get_request += '&text=' + urllib.parse.quote_plus(current_date + ' vosk_worker: ' + message)
 			session.get(get_request)
 		except Exception as e:
-			logging.info('send_to_telegram error: '+str(e))
-			logging.info('message: '+message)
+			self.logger.info('send_to_telegram error: '+str(e))
+			self.logger.info('message: '+message)
 			
 	def connect_sql(self):
 
@@ -132,8 +133,8 @@ class stt_server:
 			user=os.environ.get('MSSQL_LOGIN', ''),
 			password=os.environ.get('MSSQL_PASSWORD', ''),
 			database=self.sql_name,
-                        tds_version=r'7.0'
-			#autocommit=True			
+			tds_version=r'7.0'
+			#autocommit=True
 		)		
 
 	"""def connect_mysql(self, source_id):
@@ -274,14 +275,14 @@ class stt_server:
 		logger_text = ' size: ' + str(file_size)
 		logger_text += ' file: ' + self.temp_file_path + self.temp_file_name			
 
-		logging.info(logger_text)
+		self.logger.info(logger_text)
 
 		whisper_transcriber = 0
-		logging.info(f'self.gpu_uri: {self.gpu_uri}')
+		self.logger.info(f'self.gpu_uri: {self.gpu_uri}')
 
 		# VOSK
 		if self.gpu_uri[:3] == 'ws:':
-			logging.info('vosk transcriber')
+			self.logger.info('vosk transcriber')
 			async with websockets.connect(self.gpu_uri) as websocket:
 
 				sentences = []
@@ -311,7 +312,7 @@ class stt_server:
 		
 		# WHISPER
 		else:
-			logging.info('whisper transcriber')
+			self.logger.info('whisper transcriber')
 			whisper_transcriber = 1
 			sentences = []
 			file_path = self.temp_file_path + self.temp_file_name
@@ -326,7 +327,7 @@ class stt_server:
                                         accept = response.json()
                                         self.accept_feature_extractor_whisper(sentences, accept)
                                 else:
-                                        logging.error(f"Error in file processing: {response.text}")
+                                        self.logger.error(f"Error in file processing: {response.text}")
                                         # return 0, [], []
 
 		trans_end = time.time() # datetime.datetime.now()
@@ -446,7 +447,7 @@ class stt_server:
 		):
 		if not str(rec_date) == 'Null' and \
 				len(re.findall(r'\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}', str(rec_date))) == 0:
-			logging.error(str(linkedid)+' save_result - wrong rec_date: '+str(rec_date)+' converting to Null..')
+			self.logger.error(str(linkedid)+' save_result - wrong rec_date: '+str(rec_date)+' converting to Null..')
 			rec_date = 'Null'
 
 		cursor = self.conn.cursor()
@@ -495,7 +496,7 @@ class stt_server:
 			cursor.execute(sql_query)
 			self.conn.commit() # autocommit
 		except Exception as e:
-			logging.error(str(linkedid)+' query error: '+sql_query+' '+str(e))
+			self.logger.error(str(linkedid)+' query error: '+sql_query+' '+str(e))
 			sys.exit('save_result')
 
 	def remove_temporary_file(self):
