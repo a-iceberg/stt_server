@@ -1,16 +1,32 @@
+# Use an official Python runtime as a parent image
 FROM python:3.11
+
+# Set the working directory in the container
 WORKDIR /worker
-RUN bash -c 'apt-get install software-properties-common;add-apt-repository ppa:mc3man/trusty-media -y;apt-get update;apt-get install ffmpeg -y'
-# Update pip
-RUN pip3 install --upgrade pip
-COPY requirements.txt /worker
-RUN pip3 install -r requirements.txt --no-cache-dir
+
+# Install FFmpeg
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends software-properties-common && \
+    add-apt-repository ppa:mc3man/trusty-media -y && \
+    apt-get update && \
+    apt-get install -y --no-install-recommends ffmpeg && \
+    apt-get clean && \
+    apt-get autoclean && \
+    apt-get autoremove --yes && \
+    rm -rf /var/lib/apt/lists/*
+
+# Update pip and install Python dependencies
+COPY requirements.txt /worker/
+RUN pip3 install --upgrade pip && \
+    pip3 install -r requirements.txt --no-cache-dir
+
+# Create a directory for files
 RUN mkdir /worker/files
-#RUN bash -c 'apt-get install software-properties-common;'
-#RUN add-apt-repository ppa:mc3man/trusty-media -y
-#RUN apt-get update
-#RUN apt-get install ffmpeg -y
-COPY vosk_cpu_worker.py /worker
-COPY init_server.py /worker
+
+# Copy the current directory contents into the container at /worker
+COPY vosk_cpu_worker.py /worker/
+COPY init_server.py /worker/
+
+# Define the entrypoint and default command
 ENTRYPOINT ["python3"]
 CMD ["vosk_cpu_worker.py"]
