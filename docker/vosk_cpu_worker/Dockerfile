@@ -13,7 +13,7 @@ RUN apt-get update && \
     apt-get clean && \
     apt-get autoclean && \
     apt-get autoremove --yes && \
-    rm -rf /var/lib/apt/lists/*
+    rm -rf /var/cache/apt/archives/*.deb /var/cache/apt/archives/partial/*.deb /var/cache/apt/*.bin /var/lib/apt/lists/*
 
 # Update pip and install Python dependencies
 COPY requirements.txt /worker/
