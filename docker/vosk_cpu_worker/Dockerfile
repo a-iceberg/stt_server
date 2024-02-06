@@ -26,7 +26,8 @@ RUN mkdir /worker/files
 # Copy the current directory contents into the container at /worker
 COPY vosk_cpu_worker.py /worker/
 COPY init_server.py /worker/
+COPY test.py /worker/
 
 # Define the entrypoint and default command
 ENTRYPOINT ["python3"]
-CMD ["vosk_cpu_worker.py"]
+CMD ["test.py"]
