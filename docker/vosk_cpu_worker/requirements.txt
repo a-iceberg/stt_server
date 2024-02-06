@@ -1,10 +1,10 @@
-PyMySQL==1.0.2
-pymssql
+PyMySQL==1.1.0
+pymssql==2.2.11
 pandas
 requests
 websockets
 pendulum
 urllib3
 cryptography
-httpx
-aiohttp
+httpx==0.26.0
+aiohttp==3.9.3

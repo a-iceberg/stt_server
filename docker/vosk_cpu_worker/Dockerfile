@@ -1,6 +1,4 @@
-# FROM python:latest
-# From python 3.8
-FROM python:3.8
+FROM python:3.11
 WORKDIR /worker
 COPY requirements.txt /worker
 RUN pip3 install -r requirements.txt --no-cache-dir
