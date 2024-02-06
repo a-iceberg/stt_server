@@ -1,9 +1,11 @@
 FROM python:3.11
 WORKDIR /worker
+RUN bash -c 'apt-get install software-properties-common;add-apt-repository ppa:mc3man/trusty-media -y;apt-get update;apt-get install ffmpeg -y'
+# Update pip
+RUN pip3 install --upgrade pip
 COPY requirements.txt /worker
 RUN pip3 install -r requirements.txt --no-cache-dir
 RUN mkdir /worker/files
-RUN bash -c 'apt-get install software-properties-common;add-apt-repository ppa:mc3man/trusty-media -y;apt-get update;apt-get install ffmpeg -y'
 #RUN bash -c 'apt-get install software-properties-common;'
 #RUN add-apt-repository ppa:mc3man/trusty-media -y
 #RUN apt-get update
