@@ -133,7 +133,7 @@ class stt_server:
 			user=os.environ.get('MSSQL_LOGIN', ''),
 			password=os.environ.get('MSSQL_PASSWORD', ''),
 			database=self.sql_name,
-			tds_version=r'7.0'
+			# tds_version=r'7.0'
 			#autocommit=True
 		)		
 
