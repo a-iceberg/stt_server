@@ -1,4 +1,4 @@
-PyMySQL
+PyMySQL==1.0.2
 pymssql
 pandas
 requests
