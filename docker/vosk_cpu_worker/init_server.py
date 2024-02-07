@@ -277,7 +277,7 @@ class stt_server:
 
 		self.logger.info(logger_text)
 
-		whisper_transcriber = 0
+		transcriber = 0
 		self.logger.info(f'self.gpu_uri: {self.gpu_uri}')
 
 		# VOSK
@@ -313,7 +313,7 @@ class stt_server:
 		# WHISPER
 		else:
 			self.logger.info('whisper transcriber')
-			whisper_transcriber = 1
+			transcriber = 1
 			sentences = []
 			file_path = self.temp_file_path + self.temp_file_name
 
@@ -335,7 +335,7 @@ class stt_server:
 
 		# save to sql
 		for i in range(0, len(sentences)):
-			conf = sentences[i]['confidence'] if whisper_transcriber else sentences[i]['conf']
+			conf = sentences[i]['confidence'] if transcriber else sentences[i]['conf']
 			self.save_result(
 				duration,
 				sentences[i]['text'],
@@ -351,13 +351,13 @@ class stt_server:
 				linkedid,
 				file_size,
 				queue_date,
-				whisper_transcriber
+				transcriber
 				)
 				
 		# phrases for summarization
 		phrases = [sentences[i]['text'] for i in range(len(sentences))]
 		# confidences for analysis
-		if whisper_transcriber:
+		if transcriber:
 			confidences = [sentences[i]['confidence'] for i in range(len(sentences))]
 		else:			
 			confidences = [sentences[i]['conf'] for i in range(len(sentences))]
@@ -443,7 +443,7 @@ class stt_server:
 			linkedid,
 			file_size,
 			queue_date,
-			whisper_transcriber
+			transcriber
 		):
 		if not str(rec_date) == 'Null' and \
 				len(re.findall(r'\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}', str(rec_date))) == 0:
@@ -472,7 +472,7 @@ class stt_server:
 		sql_query += " source_id,"
 		sql_query += " file_size,"
 		sql_query += " queue_date,"
-		sql_query += " whisper)"
+		sql_query += " model)"
 		sql_query += " values ("
 		sql_query += " " + str(self.cpu_id) + ","
 		sql_query += " " + str(duration) + ","
@@ -490,7 +490,7 @@ class stt_server:
 		sql_query += " ,'" + str(self.source_id)+"'"
 		sql_query += " ,'" + str(0 if file_size is None else file_size) + "',"
 		sql_query += " '" + str(queue_date) + "',"
-		sql_query += " '" + str(whisper_transcriber) + "');"
+		sql_query += " '" + str(transcriber) + "');"
 
 		try:
 			cursor.execute(sql_query)
