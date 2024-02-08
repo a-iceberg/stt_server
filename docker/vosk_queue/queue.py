@@ -1,8 +1,13 @@
 import datetime
 import time
 from init_queue import stt_server
+import logging
+
+logging.basicConfig(level=logging.INFO)
+
 
 def main():
+	logging.info('Starting')
 	batch_size = 1000
 
 	server_object = stt_server()
