@@ -1,4 +1,3 @@
-#from requests import Session as requests_session
 import pymssql
 import pymysql as mysql
 import datetime
@@ -7,18 +6,18 @@ import wave
 import contextlib
 import re
 import pandas as pd
-#import sys
 import time
 import shutil
-#from shutil import copyfile
-#import asyncio
-#import websockets
-#import socket
+import logging
 
 
 class stt_server:
 
 	def __init__(self):
+		# Init self.logger with info level
+		self.logger = logging.getLogger(__name__)
+		self.logger.setLevel(logging.INFO)
+		
 		# settings ++
 		#self.cpu_id = self.get_worker_id()
 		cores_count = int(os.environ.get('WORKERS_COUNT', '0'))
@@ -158,7 +157,8 @@ class stt_server:
 
 	def copy_file(self, src, dst):
 		if not os.path.exists(src):
-			print("copy_file error: source file not exist")
+			# print("copy_file error: source file not exist")
+			self.logger.info('copy_file error: source file not exist '+src)
 			self.log('copy_file error: source file not exist '+src)
 			return
 		#if not os.path.exists(dst):
@@ -170,7 +170,8 @@ class stt_server:
 	def log(self, text):
 		current_date = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
 		text = str(current_date) + ' ' + text
-		print('log:', text)
+		# print('log:', text)
+		self.logger.info(text)
 		with open(self.saved_for_analysis_path+'debug/log.txt', 'a') as f:
 			f.write(text + '\n')
 
@@ -180,7 +181,8 @@ class stt_server:
 
 		if self.source_id == self.sources['master']:
 			files_list = []
-			print('master path', self.original_storage_path[self.source_id])
+			# print('master path', self.original_storage_path[self.source_id])
+			self.logger.info('master path '+self.original_storage_path[self.source_id])
 			for (dirpath, dirnames, filenames) in os.walk(self.original_storage_path[self.source_id]):
 				# append if '.wav' in filename or '.WAV' in filename
 				for filename in filenames:
@@ -208,7 +210,8 @@ class stt_server:
 						# f_size = file_stat.st_size
 						file_age = time.time() - file_stat.st_mtime
 					except Exception as e:
-						print("get_fs_files_list / file_stat Error:", str(e))
+						# print("get_fs_files_list / file_stat Error:", str(e))
+						self.logger.info('get_fs_files_list / file_stat Error: '+str(e))
 						file_age = 0
 					if "h.wav" in filename:
 						try:
@@ -218,12 +221,15 @@ class stt_server:
 								# debug ++
 								# self.send_to_telegram('min. get_fs_files_list. removed: ' + str(filename))
 								# debug --
-								print(str(round(file_age/60)), 'min. get_fs_files_list. Removed:', filename)
+								# print(str(round(file_age/60)), 'min. get_fs_files_list. Removed:', filename)
+								self.logger.info(str(round(file_age/60))+' min. get_fs_files_list. Removed: '+filename)
 							else:
-								print(str(round(file_age/60)), 'min. get_fs_files_list. Skipped: ', filename)
+								# print(str(round(file_age/60)), 'min. get_fs_files_list. Skipped: ', filename)
+								self.logger.info(str(round(file_age/60))+' min. get_fs_files_list. Skipped: '+filename)
 							continue
 						except OSError as e:  ## if failed, report it back to the user ##
-							print("Error: %s - %s." % (e.filename, e.strerror))
+							# print("Error: %s - %s." % (e.filename, e.strerror))
+							self.logger.info("Error: %s - %s." % (e.filename, e.strerror))
 							self.send_to_telegram('get_fs_files_list file delete error:\n' + str(e))
 
 					rec_date = 'Null'
@@ -238,7 +244,8 @@ class stt_server:
 							linkedid = re.findall(r'g.*h', filename)[0][1:][:-1]
 							version = 1
 						except Exception as e:
-							print("Error:", str(e))
+							# print("Error:", str(e))
+							self.logger.info('Error: '+str(e))
 							#self.send_to_telegram('v1 filename parse error: '+ filename +'\n' + str(e))
 
 					if version == 0:
@@ -255,12 +262,14 @@ class stt_server:
 
 						for row in cursor.fetchall():
 							rec_date = str(row[0])
-							print('v.0 date', rec_date)
+							# print('v.0 date', rec_date)
+							self.logger.info('v.0 date '+rec_date)
 							src = str(row[1])
 							dst = str(row[2])
 
 						if len(re.findall(r'\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}', rec_date)) == 0:
-							print('u:', uniqueid, 'r:', rec_date, 'Unable to extract date from filename:', filename)
+							# print('u:', uniqueid, 'r:', rec_date, 'Unable to extract date from filename:', filename)
+							self.logger.info('u: '+uniqueid+' r: '+rec_date+' Unable to extract date from filename: '+filename)
 							rec_date = 'Null'
 							files_withoud_cdr_data += 1
 
@@ -277,10 +286,12 @@ class stt_server:
 						})
 						files_extracted += 1
 
-			print('master extracted:', files_extracted, 'without cdr data:', files_withoud_cdr_data)
+			# print('master extracted:', files_extracted, 'without cdr data:', files_withoud_cdr_data)
+			self.logger.info('master extracted: '+str(files_extracted)+' without cdr data: '+str(files_withoud_cdr_data))
 
 		elif self.source_id == self.sources['call']:
-			print('call path', self.original_storage_path[self.source_id])
+			# print('call path', self.original_storage_path[self.source_id])
+			self.logger.info('call path '+self.original_storage_path[self.source_id])
 			for root, dirs, files in os.walk(self.original_storage_path[self.source_id]):
 				for filename in files:
 					# continue if filename is not .wav and not .WAV
@@ -293,7 +304,8 @@ class stt_server:
 							# log information about removed file and his path
 							with open(self.saved_for_analysis_path+'debug/removed.csv', 'a') as f:
 								f.write(root + ';' + filename + '\n')
-							print('removed', root + '/' + filename)
+							# print('removed', root + '/' + filename)
+							self.logger.info('removed '+root+'/'+filename)
 							# remove file
 							os.remove(os.path.join(root, filename))
 						continue
@@ -325,7 +337,8 @@ class stt_server:
 
 							if len(re.findall(r'\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}', rec_date)) == 0:
 								rec_date = 'Null'
-								print('0 Unable to extract date:', root, filename)
+								# print('0 Unable to extract date:', root, filename)
+								self.logger.info('0 Unable to extract date: '+root+' '+filename)
 
 							date_string = re.findall(r'\d{4}-\d{2}-\d{2}', filename)
 							if len(date_string):
@@ -344,7 +357,8 @@ class stt_server:
 									'version': 0,
 								})
 						else:
-							print('1 Unable to extract date:', root, filename)
+							# print('1 Unable to extract date:', root, filename)
+							self.logger.info('1 Unable to extract date: '+root+' '+filename)
 							self.send_to_telegram('1 Unable to extract date: ' + str(root) + ' ' + str(filename))		
 
 		df = pd.DataFrame(fd_list, columns=['filepath', 'filename', 'rec_date', 'src', 'dst', 'linkedid', 'version'])
@@ -382,7 +396,8 @@ class stt_server:
 			self.cpu_id = int(row[0])
 			# print('selected', self.cpu_id, 'cpu')
 		if result == 0:
-			print('error: unable to get shortest_queue_cpu')
+			# print('error: unable to get shortest_queue_cpu')
+			self.logger.info('error: unable to get shortest_queue_cpu')
 			self.cpu_id = 0
 
 
@@ -408,7 +423,8 @@ class stt_server:
 		except Exception as e:
 			f_size = -1
 			st_mtime = 0
-			print('file stat error:', str(e))
+			# print('file stat error:', str(e))
+			self.logger.info('file stat error: '+str(e))
 			self.send_to_telegram(str(e))
 
 		if time.time() - st_mtime > 600:
@@ -420,7 +436,8 @@ class stt_server:
 				message += 'd[' + str(file_duration) + ']  '
 				message += str(filename)
 				# self.save_file_for_analysis(filepath, filename, file_duration)
-				print(message)
+				# print(message)
+				self.logger.info(message)
 				# self.send_to_telegram(message)
 				#else:
 				#self.save_file_for_analysis(filepath, filename, file_duration)
@@ -450,8 +467,10 @@ class stt_server:
 				cursor.execute(sql_query)
 				self.conn.commit() # autocommit
 			except Exception as e:
-				print('add queue error. query: '+sql_query)
-				print(str(e))
+				# print('add queue error. query: '+sql_query)
+				self.logger.info('add queue error. query: '+sql_query)
+				# print(str(e))
+				self.logger.info(str(e))
 		else:
 			message = 'queue skipped: t[' + str(time.time() - file_stat.st_mtime) + ']  '
 			message += 's[' + str(file_stat.st_size) + ']  '
@@ -471,7 +490,15 @@ class stt_server:
 				rate = f.getframerate()
 				file_duration = frames / float(rate)
 		except Exception as e:
-			print('file length calculate error:', str(e))
+			# print('file length calculate error:', str(e))
+			self.logger.info('file length calculate error: '+fname+' '+str(e))
 			# self.save_file_for_analysis(filepath, filename, file_duration)
 			# self.send_to_telegram('file length calculate error:\n'+fname+'\n'+str(e))
 		return file_duration
+	
+	def clean_queue(self):
+		cursor = self.conn.cursor()
+		sql_query = "delete from queue;"
+		cursor.execute(sql_query)
+		self.conn.commit()
+		self.logger.info('queue cleaned')
