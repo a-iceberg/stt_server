@@ -41,10 +41,10 @@ class stt_server:
 		}
 
 		self.original_storage_path = {
-			1: 'audio/stereo/', # call centre records path
-			2: 'audio/mono/' # masters records path
+			1: '/queue/audio/stereo/', # call centre records path
+			2: '/queue/audio/mono/' # masters records path
 		}
-		self.saved_for_analysis_path = 'audio/saved_for_analysis/'
+		self.saved_for_analysis_path = '/queue/audio/saved_for_analysis/'
 		self.confidence_of_file = 0
 		# settings --
 
