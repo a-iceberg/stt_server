@@ -188,8 +188,9 @@ class stt_server:
 		if self.source_id == self.sources['master']:
 			files_list = []
 			# print('master path', self.original_storage_path[self.source_id])
-			self.logger.info('master path '+self.original_storage_path[self.source_id])
-			for (dirpath, dirnames, filenames) in os.walk(self.original_storage_path[self.source_id]):
+			os_walk = os.walk(self.original_storage_path[self.source_id])
+			self.logger.info(f'master folder {self.original_storage_path[self.source_id]} Files in folder: {len(queue)}'
+			for (dirpath, dirnames, filenames) in os_walk:
 				# append if '.wav' in filename or '.WAV' in filename
 				for filename in filenames:
 					#files_list.extend(filenames)
@@ -297,8 +298,9 @@ class stt_server:
 
 		elif self.source_id == self.sources['call']:
 			# print('call path', self.original_storage_path[self.source_id])
-			self.logger.info('call path '+self.original_storage_path[self.source_id])
-			for root, dirs, files in os.walk(self.original_storage_path[self.source_id]):
+			os_walk = os.walk(self.original_storage_path[self.source_id])
+			self.logger.info(f'call path {self.original_storage_path[self.source_id]} Files in folder: {len(queue)}')
+			for root, dirs, files in os_walk:
 				for filename in files:
 					# continue if filename is not .wav and not .WAV
 					if not filename.endswith('.wav') and not filename.endswith('.WAV'):
