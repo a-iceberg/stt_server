@@ -96,6 +96,7 @@ class stt_server:
 			user=os.environ.get('MSSQL_LOGIN', ''),
 			password=os.environ.get('MSSQL_PASSWORD', ''),
 			database=self.sql_name,
+			tds_version=r'7.0'
 			#autocommit=True			
 		)		
 
@@ -106,6 +107,7 @@ class stt_server:
 			user=os.environ.get('MYSQL_LOGIN', ''),
 			passwd=os.environ.get('MYSQL_PASSWORD', ''),
 			db=self.mysql_name[source_id],
+			tds_version=r'7.0'
 			# autocommit = True
 			# cursorclass=mysql.cursors.DictCursor,
 		)
