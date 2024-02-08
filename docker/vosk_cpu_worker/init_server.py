@@ -318,17 +318,17 @@ class stt_server:
 			file_path = self.temp_file_path + self.temp_file_name
 
 			async with httpx.AsyncClient(timeout=None) as client:
-                                files = {
-                                        "file": (os.path.basename(file_path), open(file_path, "rb"), "audio/wav")
-                                }
-                                response = await client.post(self.gpu_uri, files=files)
+								files = {
+										"file": (os.path.basename(file_path), open(file_path, "rb"), "audio/wav")
+								}
+								response = await client.post(self.gpu_uri, files=files)
 
-                                if response.status_code == 200:
-                                        accept = response.json()
-                                        self.accept_feature_extractor_whisper(sentences, accept)
-                                else:
-                                        self.logger.error(f"Error in file processing: {response.text}")
-                                        # return 0, [], []
+								if response.status_code == 200:
+										accept = response.json()
+										self.accept_feature_extractor_whisper(sentences, accept)
+								else:
+										self.logger.error(f"Error in file processing: {response.text}")
+										# return 0, [], []
 
 		trans_end = time.time() # datetime.datetime.now()
 		self.perf_log(2, trans_start, trans_end, duration, linkedid)
