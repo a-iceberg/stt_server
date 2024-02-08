@@ -9,7 +9,6 @@ import pandas as pd
 import time
 import shutil
 import logging
-import requests
 
 
 class stt_server:
@@ -76,6 +75,7 @@ class stt_server:
 
 
 	def send_to_telegram(self, message):
+		import requests
 		try:
 			current_date = str(datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S'))
 			token = os.environ.get('TELEGRAM_BOT_TOKEN', '')
