@@ -490,7 +490,7 @@ class stt_server:
 		sql_query += " ,'" + str(self.source_id)+"'"
 		sql_query += " ,'" + str(0 if file_size is None else file_size) + "',"
 		sql_query += " '" + str(queue_date) + "',"
-		sql_query += " '" + str(transcriber) + "');"
+		sql_query += " " + str(transcriber) + ");"
 
 		try:
 			cursor.execute(sql_query)
