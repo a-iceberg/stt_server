@@ -248,7 +248,11 @@ class stt_server:
 				segment_text = str(segments_rec["text"]).replace("'", "")
 				segment_start = segments_rec["start"]
 				segment_end = segments_rec["end"]
-				conf_score = float(segments_rec["confidence"])
+				try:
+					conf_score = float(segments_rec["confidence"])
+				except:
+					conf_score = 0
+					print("conf_score didn't calculated", str(e))
 				sentences.append(
 					{
 						"text": segment_text,
