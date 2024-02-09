@@ -16,6 +16,7 @@ def connect_sql():
 		user=os.environ.get('MSSQL_LOGIN', ''),
 		password=os.environ.get('MSSQL_PASSWORD', ''),
 		database='voice_ai',
+		tds_version=r'7.0',
 		#autocommit=True			
 	)
 	logging.info('Connected to MSSQL')
