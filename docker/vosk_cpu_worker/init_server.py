@@ -252,7 +252,7 @@ class stt_server:
 					conf_score = float(segments_rec["confidence"])
 				except:
 					conf_score = 0
-					print("conf_score didn't calculated", str(e))
+					print('conf_score did not calculated')
 				sentences.append(
 					{
 						"text": segment_text,

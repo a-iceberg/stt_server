@@ -1,6 +1,6 @@
 PyMySQL==1.1.0
 pymssql==2.2.11
-pandas
-requests
-websockets
-pendulum
+pandas==2.2.0
+requests==2.31.0
+websockets==12.0
+pendulum==3.0.0
