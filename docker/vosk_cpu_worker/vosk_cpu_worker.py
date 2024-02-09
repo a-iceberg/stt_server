@@ -15,6 +15,7 @@ def main():
 	while True:
 
 		past_in_minutes = pendulum.now().add(minutes=-6).strftime('%Y-%m-%d %H:%M:%S')
+		server_object.logger.info(f'past_in_minutes: {past_in_minutes}')
 		sql_query = "select top 3 filepath, filename, duration, source_id, "
 		sql_query += "record_date, src, dst, linkedid, file_size, date from queue "
 		sql_query += "where cpu_id='" + str(server_object.cpu_id) + "' "
