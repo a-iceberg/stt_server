@@ -322,11 +322,11 @@ class stt_server:
 			file_path = self.temp_file_path + self.temp_file_name
 
 			async with httpx.AsyncClient(timeout=None) as client:
-				files = {
-					"file": (os.path.basename(file_path), open(file_path, "rb"), "audio/wav")
-				}
-				try:
-					response = await client.post(self.gpu_uri, files=files)
+				file = {"file": (os.path.basename(file_path), open(file_path, "rb"), "audio/wav")}
+                                source = {"source_id": self.source_id}
+
+                                try:
+                                        response = await client.post(self.gpu_uri, files=file, data=source)
 
 					if response.status_code == 200:
 						accept = response.json()
