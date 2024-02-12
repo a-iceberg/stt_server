@@ -335,7 +335,7 @@ class stt_server:
 						self.logger.error(f"Error in file processing: {response.text}")
 						# return 0, [], []
 				except:
-                                        print('Whisper connection error')
+					print('Whisper connection error')
 					self.logger.warning('Whisper connection error')
 
 		trans_end = time.time() # datetime.datetime.now()
