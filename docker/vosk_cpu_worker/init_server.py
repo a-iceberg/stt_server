@@ -252,7 +252,7 @@ class stt_server:
 					conf_score = float(segments_rec["confidence"])
 				except:
 					conf_score = 0
-					print('conf_score did not calculated')
+					print('Conf_score did not calculated')
 				sentences.append(
 					{
 						"text": segment_text,
@@ -322,17 +322,21 @@ class stt_server:
 			file_path = self.temp_file_path + self.temp_file_name
 
 			async with httpx.AsyncClient(timeout=None) as client:
-								files = {
-										"file": (os.path.basename(file_path), open(file_path, "rb"), "audio/wav")
-								}
-								response = await client.post(self.gpu_uri, files=files)
+				files = {
+					"file": (os.path.basename(file_path), open(file_path, "rb"), "audio/wav")
+				}
+				try:
+					response = await client.post(self.gpu_uri, files=files)
 
-								if response.status_code == 200:
-										accept = response.json()
-										self.accept_feature_extractor_whisper(sentences, accept)
-								else:
-										self.logger.error(f"Error in file processing: {response.text}")
-										# return 0, [], []
+					if response.status_code == 200:
+						accept = response.json()
+						self.accept_feature_extractor_whisper(sentences, accept)
+					else:
+						self.logger.error(f"Error in file processing: {response.text}")
+						# return 0, [], []
+				except:
+                                        print('Whisper connection error')
+					self.logger.warning('Whisper connection error')
 
 		trans_end = time.time() # datetime.datetime.now()
 		self.perf_log(2, trans_start, trans_end, duration, linkedid)
