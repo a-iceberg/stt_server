@@ -55,6 +55,43 @@ def main():
 				server_object.perf_log(0, queue_start, queue_end, original_file_duration, linkedid)
 				continue
 
+			if dst == 'main':
+				duplicate_threshold = (rec_date - datetime.timedelta(minutes=5)).strftime('%Y-%m-%d %H:%M:%S')
+
+				sql_query_queue = f"""
+				SELECT COUNT(*) FROM queue 
+				WHERE linkedid='{linkedid}' 
+				AND record_date BETWEEN '{duplicate_threshold}' AND '{rec_date}' 
+				AND RIGHT(filename, 5) != '{original_file_name[-5:]}' 
+				AND dst LIKE '[0-9][0-9][0-9][0-9]';
+				"""
+
+				sql_query_transcriptions = f"""
+				SELECT COUNT(*) FROM transcribations 
+				WHERE linkedid='{linkedid}' 
+				AND record_date BETWEEN '{duplicate_threshold}' AND '{rec_date}' 
+				AND RIGHT(audio_file_name, 5) != '{original_file_name[-5:]}' 
+				AND dst LIKE '[0-9][0-9][0-9][0-9]';
+				"""
+
+				cursor.execute(sql_query_queue)
+				count_queue = cursor.fetchone()[0]
+
+				cursor.execute(sql_query_transcriptions)
+				count_transcriptions = cursor.fetchone()[0]
+
+				if count_queue > 0 or count_transcriptions > 0:
+					msg = f'File {original_file_path}{original_file_name} contains already recognized conversation'
+					msg += '\nRemoving from queue..'
+
+					server_object.logger.info(msg)
+					server_object.delete_current_queue(original_file_name, linkedid)
+					server_object.delete_source_file(original_file_path, original_file_name, linkedid)
+
+					queue_end = time.time()
+					server_object.perf_log(0, queue_start, queue_end, original_file_duration, linkedid)
+					continue
+
 			side = 0 if original_file_name[-6:]=='in.wav' else 1
 
 			if original_file_duration>5:			

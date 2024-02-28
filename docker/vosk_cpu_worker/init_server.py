@@ -242,10 +242,10 @@ class stt_server:
 				}
 			)
 
-	def accept_feature_extractor_whisper(self, sentences, accept):
+	def accept_feature_extractor_whisper(self, sentences, accept, max_length=900):
 		if len(accept) > 1 and accept["text"] != "":
 			for segments_rec in accept["segments"]:
-				segment_text = str(segments_rec["text"]).replace("'", "")
+				segment_text = str(segments_rec["text"]).replace("'", "")[:max_length]
 				segment_start = segments_rec["start"]
 				segment_end = segments_rec["end"]
 				try:
@@ -323,10 +323,10 @@ class stt_server:
 
 			async with httpx.AsyncClient(timeout=None) as client:
 				file = {"file": (os.path.basename(file_path), open(file_path, "rb"), "audio/wav")}
-                                source = {"source_id": self.source_id}
+				source = {"source_id": self.source_id}
 
-                                try:
-                                        response = await client.post(self.gpu_uri, files=file, data=source)
+				try:
+					response = await client.post(self.gpu_uri, files=file, data=source)
 
 					if response.status_code == 200:
 						accept = response.json()
@@ -334,9 +334,9 @@ class stt_server:
 					else:
 						self.logger.error(f"Error in file processing: {response.text}")
 						# return 0, [], []
-				except:
-					print('Whisper connection error')
-					self.logger.warning('Whisper connection error')
+				except Exception as e:
+					print('Whisper connection error:', str(e))
+					self.logger.warning('Whisper connection error: ' + str(e))
 
 		trans_end = time.time() # datetime.datetime.now()
 		self.perf_log(2, trans_start, trans_end, duration, linkedid)
