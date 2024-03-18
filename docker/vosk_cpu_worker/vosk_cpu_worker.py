@@ -56,7 +56,7 @@ def main():
 				continue
 
 			if dst == 'main':
-				duplicate_threshold = (rec_date - datetime.timedelta(minutes=5)).strftime('%Y-%m-%d %H:%M:%S')
+				duplicate_threshold = (rec_date - datetime.timedelta(minutes=10)).strftime('%Y-%m-%d %H:%M:%S')
 
 				sql_query_queue = f"""
 				SELECT COUNT(*) FROM queue 
