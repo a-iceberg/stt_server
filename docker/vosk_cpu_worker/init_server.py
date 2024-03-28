@@ -359,10 +359,10 @@ class stt_server:
 #						self.logger.error(f"Error in file processing: {response.text}")
 
 					while attempt < max_attempts:
-						seed = 654321 if attempt == 0 else 123456
+						vad = "silero" if attempt == 0 else "auditok"
 						data = {
 							"source_id": self.source_id,
-							"seed": seed
+							"vad": vad
 						}
 
 						response = await client.post(
