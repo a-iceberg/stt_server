@@ -20,7 +20,6 @@ import glob
 import uuid
 import logging
 import httpx
-
 import difflib
 from ruts import DiversityStats
 
@@ -245,44 +244,39 @@ class stt_server:
 				}
 			)
 
-	def accept_feature_extractor_whisper(self, sentences, accept, duration, max_length=900, check_repetitions=False):
-		if len(accept) > 1 and accept["text"] != "":
-			for segments_rec in accept["segments"]:
-				segment_text = str(segments_rec["text"]).replace("'", "")[:max_length]
+	def accept_feature_extractor_whisper(self, sentences, accept, max_length=900, check_repetitions=False):
+		for segments_rec in accept["segments"]:
+			segment_text = str(segments_rec["text"]).replace("'", "")[:max_length]
 
-				if check_repetitions:
-					phrases = [phrase.strip() for phrase in re.split(r'[.!?]\s*', segment_text) if " " in phrase and len(phrase) >= 10]
-					s = difflib.SequenceMatcher(None)
-					repetitions = []
-					for i, phrase_i in enumerate(phrases[:-1]):
-						for j, phrase_j in enumerate(phrases[i+1:], start=i+1):
-							s.set_seqs(phrase_i, phrase_j)
-							if s.ratio() >= 0.9:
-								repetitions.append((i, j))
-					if repetitions:
-						end_indices = [segment_text.find(phrases[j]) + len(phrases[j]) for _, j in repetitions]
-						last_repetition_end_index = max(end_indices)
-						segment_text = segment_text[:last_repetition_end_index+1]
-						try:
-							self.save_file_for_analysis(self.temp_file_path, self.temp_file_name, duration)
-						except Exception as e:
-							self.logger.warning('File saving error: ' + str(e))
+			if check_repetitions:
+				phrases = [phrase.strip() for phrase in re.split(r"[.!?]\s*", segment_text) if " " in phrase and len(phrase) >= 10]
+				s = difflib.SequenceMatcher(None)
+				repetitions = []
+				for i, phrase_i in enumerate(phrases[:-1]):
+					for j, phrase_j in enumerate(phrases[i+1:], start=i+1):
+						s.set_seqs(phrase_i, phrase_j)
+						if s.ratio() >= 0.9:
+							repetitions.append((i, j))
+				if repetitions:
+					end_indices = [segment_text.find(phrases[j]) + len(phrases[j]) for _, j in repetitions]
+					last_repetition_end_index = max(end_indices)
+					segment_text = segment_text[:last_repetition_end_index+1]
 
-				segment_start = segments_rec["start"]
-				segment_end = segments_rec["end"]
-				try:
-					conf_score = float(segments_rec["confidence"])
-				except:
-					conf_score = 0
-					print('Conf_score did not calculated')
-				sentences.append(
-					{
-						"text": segment_text,
-						"start": segment_start,
-						"end": segment_end,
-						"confidence": conf_score,
-					}
-				)
+			segment_start = segments_rec["start"]
+			segment_end = segments_rec["end"]
+			try:
+				conf_score = float(segments_rec["confidence"])
+			except:
+				conf_score = 0
+				print("Conf_score did not calculated")
+			sentences.append(
+				{
+					"text": segment_text,
+					"start": segment_start,
+					"end": segment_end,
+					"confidence": conf_score,
+				}
+			)
 
 	async def transcribation_process(
 		self,
@@ -314,7 +308,7 @@ class stt_server:
 
 				sentences = []
 
-				wf = wave.open(self.temp_file_path + self.temp_file_name, "rb")
+				wf = wave.open(self.temp_file_path + self.temp_file_name, 'rb')
 				await websocket.send(
 					'{ "config" : { "sample_rate" : %d } }' % (wf.getframerate())
 					)
@@ -339,7 +333,7 @@ class stt_server:
 		
 		# WHISPER
 		else:
-			self.logger.info('whisper transcriber')
+			self.logger.info("whisper transcriber")
 			transcriber = 1
 			sentences = []
 			file_path = self.temp_file_path + self.temp_file_name
@@ -350,14 +344,6 @@ class stt_server:
 				max_attempts = 2
 
 				try:
-#					response = await client.post(self.gpu_uri, files=file, data=source)
-#
-#					if response.status_code == 200:
-#						accept = response.json()
-#						self.accept_feature_extractor_whisper(sentences, accept)
-#					else:
-#						self.logger.error(f"Error in file processing: {response.text}")
-
 					while attempt < max_attempts:
 						vad = "silero" if attempt == 0 else "auditok"
 						data = {
@@ -372,31 +358,32 @@ class stt_server:
 							accept = response.json()
 							check_repetitions = False
 
-							for segments_rec in accept["segments"]:
-								segment_text = str(segments_rec["text"]).replace("'", "")[:max_length]
+							if len(accept) > 1 and accept["text"] != "":
+								for segments_rec in accept["segments"]:
+									segment_text = str(segments_rec["text"]).replace("'", "")[:max_length]
 
-								ds = DiversityStats(segment_text).get_stats()
-								if (len(segment_text) > 99 and ds["mttr"] > 0.1395 and ds["dttr"] < 7.2 and ds["simpson_index"] < 18.3):
-									check_repetitions = True
-									self.logger.warning(f"Found artifacts: {segment_text}")
+									ds = DiversityStats(segment_text).get_stats()
+									if (len(segment_text) > 99 and ds["mttr"] > 0.1395 and ds["dttr"] < 7.2 and ds["simpson_index"] < 18.3):
+										check_repetitions = True
+										self.logger.warning(f"Found artifacts: {segment_text}")
+#										self.save_file_for_analysis(self.temp_file_path, self.temp_file_name, duration)
+										break
+
+								if check_repetitions and attempt < max_attempts - 1:
+									attempt += 1
+									continue
+								else:
+									self.accept_feature_extractor_whisper(
+										sentences,
+										accept,
+										check_repetitions=check_repetitions,
+									)
 									break
-
-							if check_repetitions and attempt < max_attempts - 1:
-								attempt += 1
-								continue
-							else:
-								self.accept_feature_extractor_whisper(
-									sentences,
-									accept,
-									duration,
-									check_repetitions=check_repetitions,
-								)
-								break
 
 						else:
 							self.logger.error(f"Error in file processing: {response.text}")
 				except Exception as e:
-					self.logger.warning('Whisper connection error: ' + str(e))
+					self.logger.warning("Whisper connection error: " + str(e))
 
 		trans_end = time.time() # datetime.datetime.now()
 		self.perf_log(2, trans_start, trans_end, duration, linkedid)
@@ -473,8 +460,8 @@ class stt_server:
 			self.confidence_of_file = 0
 		
 		# save for analysis if phrases count < 3 and duration > 300
-		#if phrases_count < 3 and duration > 300 and not file_saved_for_analysis:
-		#	self.save_file_for_analysis(self.temp_file_path, self.temp_file_name, duration)
+#		if phrases_count < 3 and duration > 300 and not file_saved_for_analysis:
+#			self.save_file_for_analysis(self.temp_file_path, self.temp_file_name, duration)
 
 		if phrases_count == 0:
 			self.save_result(
@@ -724,6 +711,4 @@ class stt_server:
 		if int(os.environ.get('SAVE_FOR_ANALYSIS', '0'))==1:	
 			current_date = datetime.datetime.now().strftime('%Y-%m-%d')
 			prefix = 'cpu'+str(self.cpu_id)+'_duration'+str(duration)+'_'+current_date+'_'
-			self.logger.info(f"Start copying file {file_path + file_name} to {self.saved_for_analysis_path}")
 			copyfile(file_path + file_name, self.saved_for_analysis_path + prefix + file_name)
-			self.logger.info("File copied successfully")

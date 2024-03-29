@@ -331,8 +331,8 @@ class stt_server:
 										os.path.join(root, filename),
 										self.saved_for_analysis_path+'debug/call/'
 									)
-#								else:
-#									self.log('copying canceled. file exists: '+dst_file)
+								else:
+									self.log('copying canceled. file exists: '+dst_file)
 							#else:
 							#	self.log(filename+' in queue')
 						except Exception as e:
