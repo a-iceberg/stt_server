@@ -361,7 +361,6 @@ class stt_server:
 							if len(accept) > 1 and accept["text"] != "":
 								for segments_rec in accept["segments"]:
 									segment_text = str(segments_rec["text"]).replace("'", "")[:max_length]
-
 									ds = DiversityStats(segment_text).get_stats()
 									if (len(segment_text) > 99 and ds["mttr"] > 0.1395 and ds["dttr"] < 7.2 and ds["simpson_index"] < 18.3):
 										check_repetitions = True
@@ -379,7 +378,8 @@ class stt_server:
 										check_repetitions=check_repetitions,
 									)
 									break
-
+							else:
+								break
 						else:
 							self.logger.error(f"Error in file processing: {response.text}")
 				except Exception as e:
