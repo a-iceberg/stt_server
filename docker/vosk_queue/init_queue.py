@@ -541,20 +541,20 @@ class stt_server:
 		WHERE cpu_id <> 0 AND NOT EXISTS (SELECT 1 FROM queue q WHERE q.linkedid = queue.linkedid AND q.cpu_id = 0);
 
 		INSERT INTO #tmp_cpu_queue_len (cpu_id, files_count, linkedid)
-		SELECT cpu_id, COUNT(filename), linkedid FROM queue GROUP BY cpu_id, linkedid;
+		SELECT cpu_id, COUNT(filename), linkedid FROM queue
+		GROUP BY cpu_id, linkedid;
 
-		SELECT TOP 1 cpu_id FROM #tmp_cpu_queue_len
-		GROUP BY cpu_id, linkedid
-		ORDER BY MAX(files_count), cpu_id;
+		DECLARE @selected_cpu_id INT;
+		SELECT TOP 1 @selected_cpu_id = cpu_id FROM #tmp_cpu_queue_len
+		ORDER BY SUM(files_count), cpu_id;
+
+		SET @selected_cpu_id = ISNULL(@selected_cpu_id, 0);
 		"""
 
         cursor.execute(sql_query)
-        result = 0
-        for row in cursor.fetchall():
-            result += 1
-            self.cpu_id = int(row[0])
+        self.cpu_id = cursor.fetchval()
 
-        if result == 0:
+        if self.cpu_id is None:
             self.logger.info("error: unable to get shortest_queue_cpu")
             self.cpu_id = 0
 
