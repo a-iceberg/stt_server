@@ -529,34 +529,34 @@ class stt_server:
 		(
 		cpu_id INT,
 		files_count INT,
-		linkedid VARCHAR(255)
+		linkedid VARCHAR(20)
 		);
 
 		INSERT INTO #tmp_cpu_queue_len (cpu_id, files_count, linkedid)
 		SELECT DISTINCT cpu_id, 0, linkedid FROM queue
-		WHERE cpu_id <> 0 AND NOT EXISTS (
-			SELECT 1 FROM queue q WHERE q.linkedid = queue.linkedid AND q.cpu_id = 0
-		)
 		UNION ALL
-		SELECT 0, 0, linkedid FROM queue WHERE NOT EXISTS (
-			SELECT 1 FROM queue q WHERE q.linkedid = queue.linkedid AND q.cpu_id <> 0
-		);
+		SELECT 0, 0, linkedid FROM queue WHERE NOT EXISTS (SELECT 1 FROM queue q WHERE q.linkedid = queue.linkedid AND q.cpu_id <> 0);
+		"""
 
+        sql_query += """
 		UPDATE #tmp_cpu_queue_len
 		SET files_count = (SELECT COUNT(*) FROM queue q WHERE q.cpu_id = #tmp_cpu_queue_len.cpu_id AND q.linkedid = #tmp_cpu_queue_len.linkedid);
 
-		DECLARE @selected_cpu_id INT;
-		SELECT TOP 1 @selected_cpu_id = cpu_id FROM #tmp_cpu_queue_len
-		ORDER BY files_count ASC, cpu_id;
+		SELECT cpu_id FROM #tmp_cpu_queue_len
+		WHERE cpu_id = 0 OR NOT EXISTS (
+			SELECT 1 FROM #tmp_cpu_queue_len tmp2
+			WHERE tmp2.linkedid = #tmp_cpu_queue_len.linkedid AND tmp2.cpu_id = 0
+		)
+		ORDER BY files_count ASC, cpu_id
 		"""
 
         cursor.execute(sql_query)
-        result = cursor.fetchone()
+        result = 0
+        for row in cursor.fetchall():
+            result += 1
+            self.cpu_id = int(row[0])
 
-        if result:
-            self.cpu_id = int(result[0])
-            self.logger.info(f"Selected CPU ID: {self.cpu_id}")
-        else:
+        if result == 0:
             self.logger.info("error: unable to get shortest_queue_cpu")
             self.cpu_id = 0
 
