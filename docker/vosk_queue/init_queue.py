@@ -532,22 +532,23 @@ class stt_server:
 		linkedid VARCHAR(20)
 		);
 
-		INSERT INTO #tmp_cpu_queue_len (cpu_id, files_count, linkedid)
-		SELECT DISTINCT cpu_id, 0, linkedid FROM queue
-		UNION ALL
-		SELECT 0, 0, linkedid FROM queue WHERE NOT EXISTS (SELECT 1 FROM queue q WHERE q.linkedid = queue.linkedid AND q.cpu_id <> 0);
+		INSERT INTO #tmp_cpu_queue_len
 		"""
+        for i in self.cpu_cores:
+            if i == 0:
+                sql_query += "SELECT 0 AS cpu_id, 0 AS files_count, linkedid "
+            else:
+                sql_query += "UNION ALL SELECT " + str(i) + ", 0, linkedid "
+        sql_query += "UNION ALL SELECT cpu_id, COUNT(filename) AS files_count, linkedid FROM queue GROUP BY cpu_id, linkedid; "
 
         sql_query += """
-		UPDATE #tmp_cpu_queue_len
-		SET files_count = (SELECT COUNT(*) FROM queue q WHERE q.cpu_id = #tmp_cpu_queue_len.cpu_id AND q.linkedid = #tmp_cpu_queue_len.linkedid);
-
-		SELECT cpu_id FROM #tmp_cpu_queue_len
-		WHERE cpu_id = 0 OR NOT EXISTS (
+		SELECT cpu_id FROM #tmp_cpu_queue_len tmp
+		WHERE NOT EXISTS (
 			SELECT 1 FROM #tmp_cpu_queue_len tmp2
-			WHERE tmp2.linkedid = #tmp_cpu_queue_len.linkedid AND tmp2.cpu_id = 0
+			WHERE tmp.linkedid = tmp2.linkedid AND tmp2.cpu_id <> tmp.cpu_id AND ((tmp.cpu_id = 0 AND tmp2.cpu_id <> 0) OR (tmp.cpu_id <> 0 AND tmp2.cpu_id = 0))
 		)
-		ORDER BY files_count ASC, cpu_id
+		GROUP BY cpu_id
+		ORDER BY MAX(files_count), cpu_id;
 		"""
 
         cursor.execute(sql_query)
