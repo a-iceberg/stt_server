@@ -533,24 +533,28 @@ class stt_server:
 		);
 
 		INSERT INTO #tmp_cpu_queue_len (cpu_id, files_count, linkedid)
-		SELECT cpu_id, COUNT(filename) AS files_count, linkedid
-		FROM queue
-		GROUP BY cpu_id, linkedid
-		HAVING NOT EXISTS (
-			SELECT 1 FROM queue q2
-			WHERE q2.linkedid = queue.linkedid AND q2.cpu_id <> queue.cpu_id AND (q2.cpu_id = 0 OR queue.cpu_id = 0)
-		);
+		SELECT DISTINCT cpu_id, 0, linkedid FROM queue
+		WHERE NOT EXISTS (SELECT 1 FROM queue q WHERE q.linkedid = linkedid AND q.cpu_id <> cpu_id AND (cpu_id = 0 OR q.cpu_id = 0));
 
-		DECLARE @selected_cpu_id INT;
-		SELECT TOP 1 @selected_cpu_id = cpu_id FROM #tmp_cpu_queue_len
-		ORDER BY files_count ASC, cpu_id;
+		INSERT INTO #tmp_cpu_queue_len (cpu_id, files_count, linkedid)
+		SELECT 0, 0, linkedid FROM queue
+		WHERE NOT EXISTS (SELECT 1 FROM queue q WHERE q.linkedid = linkedid AND q.cpu_id <> 0);
+
+		UPDATE #tmp_cpu_queue_len
+		SET files_count = (SELECT COUNT(*) FROM queue WHERE cpu_id = #tmp_cpu_queue_len.cpu_id AND linkedid = #tmp_cpu_queue_len.linkedid);
+
+		SELECT TOP 1 cpu_id FROM #tmp_cpu_queue_len
+		ORDER BY files_count, cpu_id;
 		"""
 
         cursor.execute(sql_query)
-        self.cpu_id = cursor.fetchone()[0] if cursor.rowcount != 0 else 0
+        self.cpu_id = None
+        if cursor.rowcount != 0:
+            self.cpu_id = cursor.fetchone()[0]
 
-        if self.cpu_id == 0:
+        if self.cpu_id is None:
             self.logger.info("error: unable to get shortest_queue_cpu")
+            self.cpu_id = 0
 
     def get_source_id(self, source_name):
         for source in self.sources.items():
