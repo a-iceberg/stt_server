@@ -536,10 +536,10 @@ class stt_server:
         SELECT cpu_id, COUNT(filename) AS files_count, linkedid FROM queue GROUP BY cpu_id, linkedid;
 
         INSERT INTO #tmp_cpu_queue_len (cpu_id, files_count, linkedid)
-        SELECT 0 AS cpu_id, 0 AS files_count, linkedid FROM queue WHERE NOT EXISTS 
+        SELECT DISTINCT 0 AS cpu_id, 0 AS files_count, linkedid FROM queue WHERE NOT EXISTS 
             (SELECT 1 FROM queue q WHERE q.linkedid = queue.linkedid AND q.cpu_id <> 0)
         UNION ALL
-        SELECT cpu_id, 0 AS files_count, linkedid FROM queue WHERE cpu_id <> 0 AND NOT EXISTS 
+        SELECT DISTINCT cpu_id, 0 AS files_count, linkedid FROM queue WHERE cpu_id <> 0 AND NOT EXISTS 
             (SELECT 1 FROM queue q WHERE q.linkedid = queue.linkedid AND q.cpu_id = 0);
 
         SELECT TOP 1 cpu_id FROM #tmp_cpu_queue_len
@@ -555,7 +555,7 @@ class stt_server:
         if row:
             self.cpu_id = row[0]
         else:
-            self.logger.info("error: unable to get shortest_queue_cpu")
+            self.logger.error("Unable to get shortest_queue_cpu, defaulting to 0")
             self.cpu_id = 0
 
     def get_source_id(self, source_name):
