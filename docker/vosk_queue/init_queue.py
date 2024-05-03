@@ -538,27 +538,28 @@ class stt_server:
         GROUP BY cpu_id, linkedid;
 
         INSERT INTO #tmp_cpu_queue_len (cpu_id, files_count, linkedid)
-        SELECT 0, 0, linkedid
-        FROM queue
-        WHERE linkedid NOT IN (
-            SELECT linkedid
+        SELECT 0 AS cpu_id, 0 AS files_count, linkedid
+        FROM queue q
+        WHERE NOT EXISTS (
+            SELECT 1
             FROM queue
-            WHERE cpu_id <> 0
+            WHERE linkedid = q.linkedid AND cpu_id <> 0
         )
         GROUP BY linkedid;
 
         INSERT INTO #tmp_cpu_queue_len (cpu_id, files_count, linkedid)
-        SELECT cpu_id, 0, linkedid
-        FROM queue
-        WHERE cpu_id <> 0 AND linkedid NOT IN (
-            SELECT linkedid
+        SELECT cpu_id, 0 AS files_count, linkedid
+        FROM queue q
+        WHERE cpu_id <> 0 AND NOT EXISTS (
+            SELECT 1
             FROM queue
-            WHERE cpu_id = 0
+            WHERE linkedid = q.linkedid AND cpu_id = 0
         )
         GROUP BY cpu_id, linkedid;
 
         SELECT TOP 1 cpu_id
         FROM #tmp_cpu_queue_len
+        WHERE linkedid = @linkedid
         ORDER BY files_count ASC, cpu_id;
         """
 
