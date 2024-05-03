@@ -519,7 +519,7 @@ class stt_server:
     #         self.logger.info("error: unable to get shortest_queue_cpu")
     #         self.cpu_id = 0
 
-    def set_shortest_queue_cpu(self, linkedid):
+    def set_shortest_queue_cpu(self):
         cursor = self.conn.cursor()
         sql_query = """
         IF OBJECT_ID('tempdb..#tmp_cpu_queue_len') IS NOT NULL
@@ -527,38 +527,34 @@ class stt_server:
 
         CREATE TABLE #tmp_cpu_queue_len
         (
-            cpu_id INT,
-            files_count INT,
-            linkedid VARCHAR(20)
+        cpu_id INT,
+        files_count INT,
+        linkedid VARCHAR(20)
         );
 
-        INSERT INTO #tmp_cpu_queue_len (cpu_id, files_count, linkedid)
-        SELECT cpu_id, COUNT(filename) as files_count, linkedid
+        INSERT INTO #tmp_cpu_queue_len
+        SELECT cpu_id, COUNT(filename) AS files_count, linkedid
         FROM queue
         GROUP BY cpu_id, linkedid;
 
-        SELECT TOP 1 cpu_id
-        FROM #tmp_cpu_queue_len
-        WHERE linkedid = %s
-        AND cpu_id NOT IN (
-            SELECT 0
-            FROM queue
-            WHERE linkedid = %s AND cpu_id <> 0
-            UNION
-            SELECT cpu_id
-            FROM queue
-            WHERE linkedid = %s AND cpu_id = 0
+        WITH cte AS (
+            SELECT cpu_id, files_count, linkedid,
+                ROW_NUMBER() OVER (PARTITION BY linkedid ORDER BY CASE WHEN cpu_id = 0 THEN 0 ELSE 1 END, files_count, cpu_id) AS rn
+            FROM #tmp_cpu_queue_len
         )
-        ORDER BY files_count ASC, cpu_id;
+        SELECT cpu_id
+        FROM cte
+        WHERE rn = 1
+        ORDER BY CASE WHEN cpu_id = 0 THEN 0 ELSE 1 END, files_count, cpu_id
+        OFFSET 0 ROWS FETCH NEXT 1 ROWS ONLY;
         """
-        cursor.execute(sql_query, (linkedid,))
+
+        cursor.execute(sql_query)
         row = cursor.fetchone()
         if row:
             self.cpu_id = row[0]
         else:
-            self.logger.error(
-                "Unable to get shortest_queue_cpu for linkedid: {}".format(linkedid)
-            )
+            self.logger.info("error: unable to get shortest_queue_cpu")
             self.cpu_id = 0
 
     def get_source_id(self, source_name):
