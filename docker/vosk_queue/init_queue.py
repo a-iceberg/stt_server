@@ -527,26 +527,38 @@ class stt_server:
 
         CREATE TABLE #tmp_cpu_queue_len
         (
-        cpu_id INT,
-        files_count INT,
-        linkedid VARCHAR(20)
+            cpu_id INT,
+            files_count INT,
+            linkedid VARCHAR(20)
         );
 
-        INSERT INTO #tmp_cpu_queue_len
-        SELECT cpu_id, COUNT(filename) AS files_count, linkedid FROM queue GROUP BY cpu_id, linkedid;
+        INSERT INTO #tmp_cpu_queue_len (cpu_id, files_count, linkedid)
+        SELECT cpu_id, COUNT(filename) as files_count, linkedid
+        FROM queue
+        GROUP BY cpu_id, linkedid;
 
         INSERT INTO #tmp_cpu_queue_len (cpu_id, files_count, linkedid)
-        SELECT DISTINCT 0 AS cpu_id, 0 AS files_count, linkedid FROM queue WHERE NOT EXISTS 
-            (SELECT 1 FROM queue q WHERE q.linkedid = queue.linkedid AND q.cpu_id <> 0)
-        UNION ALL
-        SELECT DISTINCT cpu_id, 0 AS files_count, linkedid FROM queue WHERE cpu_id <> 0 AND NOT EXISTS 
-            (SELECT 1 FROM queue q WHERE q.linkedid = queue.linkedid AND q.cpu_id = 0);
-
-        SELECT TOP 1 cpu_id FROM #tmp_cpu_queue_len
-        WHERE NOT EXISTS (
-            SELECT 1 FROM #tmp_cpu_queue_len tmp2
-            WHERE tmp2.linkedid = #tmp_cpu_queue_len.linkedid AND tmp2.cpu_id <> #tmp_cpu_queue_len.cpu_id AND ((#tmp_cpu_queue_len.cpu_id = 0 AND tmp2.cpu_id <> 0) OR (#tmp_cpu_queue_len.cpu_id <> 0 AND tmp2.cpu_id = 0))
+        SELECT 0, 0, linkedid
+        FROM queue
+        WHERE linkedid NOT IN (
+            SELECT linkedid
+            FROM queue
+            WHERE cpu_id <> 0
         )
+        GROUP BY linkedid;
+
+        INSERT INTO #tmp_cpu_queue_len (cpu_id, files_count, linkedid)
+        SELECT cpu_id, 0, linkedid
+        FROM queue
+        WHERE cpu_id <> 0 AND linkedid NOT IN (
+            SELECT linkedid
+            FROM queue
+            WHERE cpu_id = 0
+        )
+        GROUP BY cpu_id, linkedid;
+
+        SELECT TOP 1 cpu_id
+        FROM #tmp_cpu_queue_len
         ORDER BY files_count ASC, cpu_id;
         """
 
