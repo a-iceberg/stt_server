@@ -527,35 +527,33 @@ class stt_server:
 
         CREATE TABLE #tmp_cpu_queue_len
         (
-        cpu_id INT,
-        files_count INT,
-        linkedid VARCHAR(20)
+            cpu_id INT,
+            files_count INT,
+            linkedid VARCHAR(20)
         );
 
-        INSERT INTO #tmp_cpu_queue_len
+        INSERT INTO #tmp_cpu_queue_len (cpu_id, files_count, linkedid)
         SELECT cpu_id, COUNT(filename) AS files_count, linkedid
         FROM queue
         GROUP BY cpu_id, linkedid;
 
-        INSERT INTO #tmp_cpu_queue_len (cpu_id, files_count, linkedid)
-        SELECT DISTINCT cpu_cores.cpu_id, 0, queue.linkedid
-        FROM (VALUES (0), (1), (2), (3), (4), (5), (6), (7), (8), (9)) AS cpu_cores(cpu_id)
-        CROSS JOIN (SELECT DISTINCT linkedid FROM queue) AS queue
-        WHERE NOT EXISTS (
-            SELECT 1 FROM #tmp_cpu_queue_len tmp
-            WHERE tmp.linkedid = queue.linkedid AND tmp.cpu_id = cpu_cores.cpu_id
-        );
-
-        SELECT TOP 1 cpu_id
-        FROM #tmp_cpu_queue_len
-        WHERE NOT EXISTS (
-            SELECT 1
-            FROM #tmp_cpu_queue_len tmp
-            WHERE tmp.linkedid = #tmp_cpu_queue_len.linkedid AND tmp.cpu_id <> #tmp_cpu_queue_len.cpu_id AND
-                ((#tmp_cpu_queue_len.cpu_id = 0 AND tmp.cpu_id <> 0) OR (#tmp_cpu_queue_len.cpu_id <> 0 AND tmp.cpu_id = 0))
+        WITH RankedCpus AS (
+            SELECT 
+                cpu_id, 
+                linkedid,
+                files_count,
+                ROW_NUMBER() OVER (PARTITION BY linkedid ORDER BY files_count, cpu_id) AS rn,
+                COUNT(*) OVER (PARTITION BY linkedid) AS count_cpus,
+                DENSE_RANK() OVER (PARTITION BY linkedid ORDER BY cpu_id) AS distinct_cpus
+            FROM #tmp_cpu_queue_len
         )
-        GROUP BY cpu_id
-        ORDER BY SUM(files_count), cpu_id;
+        SELECT cpu_id
+        FROM RankedCpus
+        WHERE rn = 1 AND (
+            (distinct_cpus = 1 AND cpu_id = 0) OR 
+            (distinct_cpus > 1 AND cpu_id <> 0)
+        )
+        ORDER BY files_count, cpu_id;
         """
         try:
             cursor.execute(sql_query)
