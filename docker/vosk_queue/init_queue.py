@@ -537,13 +537,13 @@ class stt_server:
         FROM queue
         GROUP BY cpu_id, linkedid;
 
-        , DistinctCpuCount AS (
+        WITH DistinctCpuCount AS (
             SELECT linkedid, COUNT(DISTINCT cpu_id) AS count_distinct_cpus
             FROM #tmp_cpu_queue_len
             GROUP BY linkedid
-        )
-
-        , RankedCpus AS (
+        ),
+        
+        RankedCpus AS (
             SELECT 
                 t.cpu_id, 
                 t.linkedid,
