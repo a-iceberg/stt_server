@@ -537,31 +537,18 @@ class stt_server:
         FROM queue
         GROUP BY cpu_id, linkedid;
 
-        INSERT INTO #tmp_cpu_queue_len (cpu_id, files_count, linkedid)
-        SELECT 0 AS cpu_id, 0 AS files_count, linkedid
-        FROM queue q
-        WHERE NOT EXISTS (
-            SELECT 1
-            FROM queue
-            WHERE linkedid = q.linkedid AND cpu_id <> 0
-        )
-        GROUP BY linkedid;
-
-        INSERT INTO #tmp_cpu_queue_len (cpu_id, files_count, linkedid)
-        SELECT cpu_id, 0 AS files_count, linkedid
-        FROM queue q
-        WHERE cpu_id <> 0 AND NOT EXISTS (
-            SELECT 1
-            FROM queue
-            WHERE linkedid = q.linkedid AND cpu_id = 0
-        )
-        GROUP BY cpu_id, linkedid;
-
-        DECLARE @linkedid VARCHAR(20) = %s;
-
         SELECT TOP 1 cpu_id
         FROM #tmp_cpu_queue_len
-        WHERE linkedid = @linkedid
+        WHERE linkedid = %s
+        AND cpu_id NOT IN (
+            SELECT 0
+            FROM queue
+            WHERE linkedid = %s AND cpu_id <> 0
+            UNION
+            SELECT cpu_id
+            FROM queue
+            WHERE linkedid = %s AND cpu_id = 0
+        )
         ORDER BY files_count ASC, cpu_id;
         """
         cursor.execute(sql_query, (linkedid,))
