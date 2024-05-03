@@ -542,11 +542,10 @@ class stt_server:
                 ROW_NUMBER() OVER (PARTITION BY linkedid ORDER BY CASE WHEN cpu_id = 0 THEN 0 ELSE 1 END, files_count, cpu_id) AS rn
             FROM #tmp_cpu_queue_len
         )
-        SELECT cpu_id
+        SELECT TOP 1 cpu_id
         FROM cte
         WHERE rn = 1
-        ORDER BY CASE WHEN cpu_id = 0 THEN 0 ELSE 1 END, files_count, cpu_id
-        OFFSET 0 ROWS FETCH NEXT 1 ROWS ONLY;
+        ORDER BY CASE WHEN cpu_id = 0 THEN 0 ELSE 1 END, files_count, cpu_id;
         """
 
         cursor.execute(sql_query)
