@@ -559,7 +559,7 @@ class stt_server:
 
         SELECT TOP 1 cpu_id
         FROM #tmp_cpu_queue_len
-        WHERE linkedid = ?
+        WHERE linkedid = %s
         ORDER BY files_count ASC, cpu_id;
         """
         cursor.execute(sql_query, (linkedid,))
