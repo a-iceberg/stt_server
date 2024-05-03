@@ -537,21 +537,28 @@ class stt_server:
         FROM queue
         GROUP BY cpu_id, linkedid;
 
-        WITH RankedCpus AS (
-            SELECT 
-                cpu_id, 
-                linkedid,
-                files_count,
-                ROW_NUMBER() OVER (PARTITION BY linkedid ORDER BY files_count, cpu_id) AS rn,
-                COUNT(*) OVER (PARTITION BY linkedid) AS count_cpus,
-                DENSE_RANK() OVER (PARTITION BY linkedid ORDER BY cpu_id) AS distinct_cpus
+        WITH DistinctCpuCount AS (
+            SELECT linkedid, COUNT(DISTINCT cpu_id) AS count_distinct_cpus
             FROM #tmp_cpu_queue_len
+            GROUP BY linkedid
+        ),
+        
+        RankedCpus AS (
+            SELECT 
+                t.cpu_id, 
+                t.linkedid,
+                t.files_count,
+                d.count_distinct_cpus,
+                ROW_NUMBER() OVER (PARTITION BY t.linkedid ORDER BY t.files_count, t.cpu_id) AS rn
+            FROM #tmp_cpu_queue_len t
+            JOIN DistinctCpuCount d ON t.linkedid = d.linkedid
         )
+
         SELECT cpu_id
         FROM RankedCpus
         WHERE rn = 1 AND (
-            (distinct_cpus = 1 AND cpu_id = 0) OR 
-            (distinct_cpus > 1)
+            (count_distinct_cpus = 1 AND cpu_id = 0) OR 
+            (count_distinct_cpus > 1 AND cpu_id <> 0)
         )
         ORDER BY files_count, cpu_id;
         """
@@ -563,9 +570,33 @@ class stt_server:
                 self.cpu_id = row[0]
             else:
                 self.logger.error("No suitable cpu_id found for linkedid")
-                self.cpu_id = 0
+                self.cpu_id = self.get_shortest_queue_cpu()
         except Exception as e:
             self.logger.error(f"SQL error occurred: {str(e)}")
+            self.cpu_id = self.get_shortest_queue_cpu()
+
+    def get_shortest_queue_cpu(self):
+        cursor = self.conn.cursor()
+        sql_query = """
+        SELECT TOP 1 cpu_id
+        FROM (
+            SELECT cpu_id, COUNT(*) AS files_count
+            FROM queue
+            WHERE cpu_id <> 0
+            GROUP BY cpu_id
+        ) t
+        ORDER BY files_count, cpu_id;
+        """
+        try:
+            cursor.execute(sql_query)
+            row = cursor.fetchone()
+            if row:
+                return row[0]
+            else:
+                return 0
+        except Exception as e:
+            self.logger.error(f"SQL error occurred: {str(e)}")
+            return 0
 
     def get_source_id(self, source_name):
         for source in self.sources.items():
