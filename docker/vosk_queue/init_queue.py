@@ -527,27 +527,33 @@ class stt_server:
 
         CREATE TABLE #tmp_cpu_queue_len
         (
-        cpu_id INT,
-        files_count INT,
-        linkedid VARCHAR(20)
+            cpu_id INT,
+            files_count INT,
+            linkedid VARCHAR(20)
         );
 
-        INSERT INTO #tmp_cpu_queue_len
+        INSERT INTO #tmp_cpu_queue_len (cpu_id, files_count, linkedid)
         SELECT cpu_id, COUNT(filename) AS files_count, linkedid
         FROM queue
         GROUP BY cpu_id, linkedid;
 
-        WITH cte AS (
-            SELECT cpu_id, files_count, linkedid,
-                ROW_NUMBER() OVER (PARTITION BY linkedid ORDER BY CASE WHEN cpu_id = 0 THEN 0 ELSE 1 END, files_count, cpu_id) AS rn
+        WITH RankedCpus AS (
+            SELECT 
+                cpu_id, 
+                linkedid,
+                files_count,
+                ROW_NUMBER() OVER (PARTITION BY linkedid ORDER BY files_count, cpu_id) AS rn,
+                COUNT(DISTINCT cpu_id) OVER (PARTITION BY linkedid) AS count_distinct_cpus
             FROM #tmp_cpu_queue_len
         )
-        SELECT TOP 1 cpu_id
-        FROM cte
-        WHERE rn = 1
-        ORDER BY CASE WHEN cpu_id = 0 THEN 0 ELSE 1 END, files_count, cpu_id;
+        SELECT cpu_id
+        FROM RankedCpus
+        WHERE rn = 1 AND (
+            (count_distinct_cpus = 1 AND cpu_id = 0) OR 
+            (count_distinct_cpus > 1 AND cpu_id <> 0)
+        )
+        ORDER BY files_count, cpu_id;
         """
-
         try:
             cursor.execute(sql_query)
             row = cursor.fetchone()
