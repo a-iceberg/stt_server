@@ -484,96 +484,40 @@ class stt_server:
 
         return df.values
 
-    # def set_shortest_queue_cpu(self):
-    #     cursor = self.conn.cursor()
-    #     sql_query = '''
-    # 	IF OBJECT_ID('tempdb..#tmp_cpu_queue_len') IS NOT NULL
-    # 	DROP TABLE #tmp_cpu_queue_len;
-
-    # 	CREATE TABLE #tmp_cpu_queue_len
-    # 	(
-    # 	cpu_id INT,
-    # 	files_count int
-    # 	);
-
-    # 	INSERT INTO #tmp_cpu_queue_len
-    # 	'''
-    #     for i in self.cpu_cores:
-    #         if i == 0:
-    #             sql_query += "select 0 as cpu_id, 0 as files_count "
-    #         else:
-    #             sql_query += "union all select " + str(i) + ",0 "
-    #     sql_query += (
-    #         "union all	select cpu_id, count(filename) from queue group by cpu_id; "
-    #     )
-    #     sql_query += "select top 1 cpu_id, max(files_count)  from #tmp_cpu_queue_len group by cpu_id order by max(files_count), cpu_id;"
-    #     cursor.execute(sql_query)
-    #     # self.conn.commit()  # autocommit
-    #     result = 0
-    #     for row in cursor.fetchall():
-    #         result += 1
-    #         self.cpu_id = int(row[0])
-    #         # print('selected', self.cpu_id, 'cpu')
-    #     if result == 0:
-    #         # print('error: unable to get shortest_queue_cpu')
-    #         self.logger.info("error: unable to get shortest_queue_cpu")
-    #         self.cpu_id = 0
-
     def set_shortest_queue_cpu(self):
         cursor = self.conn.cursor()
         sql_query = """
-        IF OBJECT_ID('tempdb..#tmp_cpu_queue_len') IS NOT NULL
-        DROP TABLE #tmp_cpu_queue_len;
+    	IF OBJECT_ID('tempdb..#tmp_cpu_queue_len') IS NOT NULL
+    	DROP TABLE #tmp_cpu_queue_len;
 
-        CREATE TABLE #tmp_cpu_queue_len
-        (
-            cpu_id INT,
-            files_count INT,
-            linkedid VARCHAR(20)
-        );
+    	CREATE TABLE #tmp_cpu_queue_len
+    	(
+    	cpu_id INT,
+    	files_count int
+    	);
 
-        INSERT INTO #tmp_cpu_queue_len (cpu_id, files_count, linkedid)
-        SELECT cpu_id, COUNT(filename) AS files_count, linkedid
-        FROM queue
-        GROUP BY cpu_id, linkedid;
-
-        WITH DistinctCpuCount AS (
-            SELECT linkedid, COUNT(DISTINCT cpu_id) AS count_distinct_cpus
-            FROM #tmp_cpu_queue_len
-            GROUP BY linkedid
-        ),
-        
-        RankedCpus AS (
-            SELECT 
-                t.cpu_id, 
-                t.linkedid,
-                t.files_count,
-                d.count_distinct_cpus,
-                ROW_NUMBER() OVER (PARTITION BY t.linkedid ORDER BY t.files_count, t.cpu_id) AS rn
-            FROM #tmp_cpu_queue_len t
-            JOIN DistinctCpuCount d ON t.linkedid = d.linkedid
-        )
-
-        SELECT cpu_id
-        FROM RankedCpus
-        WHERE rn = 1 AND (
-            (count_distinct_cpus = 1 AND cpu_id = 0) OR 
-            (count_distinct_cpus > 1 AND cpu_id <> 0)
-        )
-        ORDER BY files_count, cpu_id;
-        """
-        try:
-            cursor.execute(sql_query)
-            row = cursor.fetchone()
-            self.logger.info(f"row: {row}")
-            if row:
-                self.cpu_id = row[0]
+    	INSERT INTO #tmp_cpu_queue_len
+    	"""
+        for i in self.cpu_cores:
+            if i == 0:
+                sql_query += "select 0 as cpu_id, 0 as files_count "
             else:
-                self.logger.error("No suitable cpu_id found for linkedid")
-                self.cpu_id = self.get_shortest_queue_cpu()
-        except Exception as e:
-            self.logger.error(f"SQL error occurred: {str(e)}")
-            self.cpu_id = self.get_shortest_queue_cpu()
+                sql_query += "union all select " + str(i) + ",0 "
+        sql_query += (
+            "union all	select cpu_id, count(filename) from queue group by cpu_id; "
+        )
+        sql_query += "select top 1 cpu_id, max(files_count)  from #tmp_cpu_queue_len group by cpu_id order by max(files_count), cpu_id;"
+        cursor.execute(sql_query)
+        # self.conn.commit()  # autocommit
+        result = 0
+        for row in cursor.fetchall():
+            result += 1
+            self.cpu_id = int(row[0])
+            # print('selected', self.cpu_id, 'cpu')
+        if result == 0:
+            # print('error: unable to get shortest_queue_cpu')
+            self.logger.info("error: unable to get shortest_queue_cpu")
+            self.cpu_id = 0
 
     def get_shortest_queue_cpu(self):
         cursor = self.conn.cursor()
