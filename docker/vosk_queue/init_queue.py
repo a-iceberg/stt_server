@@ -557,9 +557,11 @@ class stt_server:
         )
         GROUP BY cpu_id, linkedid;
 
+        DECLARE @linkedid VARCHAR(20) = %s;
+
         SELECT TOP 1 cpu_id
         FROM #tmp_cpu_queue_len
-        WHERE linkedid = %s
+        WHERE linkedid = @linkedid
         ORDER BY files_count ASC, cpu_id;
         """
         cursor.execute(sql_query, (linkedid,))
