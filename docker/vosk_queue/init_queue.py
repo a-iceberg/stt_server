@@ -519,7 +519,7 @@ class stt_server:
     #         self.logger.info("error: unable to get shortest_queue_cpu")
     #         self.cpu_id = 0
 
-    def set_shortest_queue_cpu(self):
+    def set_shortest_queue_cpu(self, linkedid):
         cursor = self.conn.cursor()
         sql_query = """
         IF OBJECT_ID('tempdb..#tmp_cpu_queue_len') IS NOT NULL
@@ -559,16 +559,17 @@ class stt_server:
 
         SELECT TOP 1 cpu_id
         FROM #tmp_cpu_queue_len
-        WHERE linkedid = @linkedid
+        WHERE linkedid = ?
         ORDER BY files_count ASC, cpu_id;
         """
-
-        cursor.execute(sql_query)
+        cursor.execute(sql_query, (linkedid,))
         row = cursor.fetchone()
         if row:
             self.cpu_id = row[0]
         else:
-            self.logger.error("Unable to get shortest_queue_cpu, defaulting to 0")
+            self.logger.error(
+                "Unable to get shortest_queue_cpu for linkedid: {}".format(linkedid)
+            )
             self.cpu_id = 0
 
     def get_source_id(self, source_name):
