@@ -548,13 +548,17 @@ class stt_server:
         ORDER BY CASE WHEN cpu_id = 0 THEN 0 ELSE 1 END, files_count, cpu_id;
         """
 
-        cursor.execute(sql_query)
-        row = cursor.fetchone()
-        if row:
-            self.cpu_id = row[0]
-        else:
-            self.logger.info("error: unable to get shortest_queue_cpu")
-            self.cpu_id = 0
+        try:
+            cursor.execute(sql_query)
+            row = cursor.fetchone()
+            self.logger.info(f"row: {row}")
+            if row:
+                self.cpu_id = row[0]
+            else:
+                self.logger.error("No suitable cpu_id found for linkedid")
+                self.cpu_id = 0
+        except Exception as e:
+            self.logger.error(f"SQL error occurred: {str(e)}")
 
     def get_source_id(self, source_name):
         for source in self.sources.items():
