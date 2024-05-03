@@ -537,21 +537,28 @@ class stt_server:
         FROM queue
         GROUP BY cpu_id, linkedid;
 
-        WITH RankedCpus AS (
-            SELECT 
-                cpu_id, 
-                linkedid,
-                files_count,
-                ROW_NUMBER() OVER (PARTITION BY linkedid ORDER BY files_count, cpu_id) AS rn,
-                COUNT(*) OVER (PARTITION BY linkedid) AS count_cpus,
-                DENSE_RANK() OVER (PARTITION BY linkedid ORDER BY cpu_id) AS distinct_cpus
+        , DistinctCpuCount AS (
+            SELECT linkedid, COUNT(DISTINCT cpu_id) AS count_distinct_cpus
             FROM #tmp_cpu_queue_len
+            GROUP BY linkedid
         )
+
+        , RankedCpus AS (
+            SELECT 
+                t.cpu_id, 
+                t.linkedid,
+                t.files_count,
+                d.count_distinct_cpus,
+                ROW_NUMBER() OVER (PARTITION BY t.linkedid ORDER BY t.files_count, t.cpu_id) AS rn
+            FROM #tmp_cpu_queue_len t
+            JOIN DistinctCpuCount d ON t.linkedid = d.linkedid
+        )
+
         SELECT cpu_id
         FROM RankedCpus
         WHERE rn = 1 AND (
-            (distinct_cpus = 1 AND cpu_id = 0) OR 
-            (distinct_cpus > 1 AND cpu_id <> 0)
+            (count_distinct_cpus = 1 AND cpu_id = 0) OR 
+            (count_distinct_cpus > 1 AND cpu_id <> 0)
         )
         ORDER BY files_count, cpu_id;
         """
