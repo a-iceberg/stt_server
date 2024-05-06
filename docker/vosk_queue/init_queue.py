@@ -553,6 +553,12 @@ class stt_server:
         if self.cpu_id is None:
             self.logger.info("error: unable to get shortest_queue_cpu")
 
+    def get_source_id(self, source_name):
+        for source in self.sources.items():
+            if source[0] == source_name:
+                return source[1]
+        return 0
+
     def get_source_name(self, source_id):
         for source in self.sources.items():
             if source[1] == source_id:
