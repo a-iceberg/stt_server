@@ -519,12 +519,13 @@ class stt_server:
     #         self.logger.info("error: unable to get shortest_queue_cpu")
     #         self.cpu_id = 0
 
-    def set_shortest_queue_cpu(self, linkedid=None):
+    def set_shortest_queue_cpu(self, linkedid):
         cursor = self.conn.cursor()
         cursor.execute("SELECT cpu_id FROM queue WHERE linkedid = %s", (linkedid,))
         linkedid_cpu_id = cursor.fetchone()
 
-        if linkedid_cpu_id is not None:
+        if linkedid_cpu_id:
+            self.logger.info(f"linkedid: {linkedid} cpu_id: {linkedid_cpu_id[0]}")
             if linkedid_cpu_id[0] == 0:
                 self.cpu_id = 0
                 return
