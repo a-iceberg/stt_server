@@ -523,6 +523,7 @@ class stt_server:
         cursor = self.conn.cursor()
         cursor.execute("SELECT cpu_id FROM queue WHERE linkedid = %s", (linkedid,))
         linkedid_cpu_id = cursor.fetchone()
+        self.logger.info(f"cpu_id: {linkedid_cpu_id}")
 
         if linkedid_cpu_id:
             self.logger.info(f"linkedid: {linkedid} cpu_id: {linkedid_cpu_id[0]}")
