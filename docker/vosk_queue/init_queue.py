@@ -519,35 +519,6 @@ class stt_server:
             self.logger.info("error: unable to get shortest_queue_cpu")
             self.cpu_id = 0
 
-    def get_shortest_queue_cpu(self):
-        cursor = self.conn.cursor()
-        sql_query = """
-        SELECT TOP 1 cpu_id
-        FROM (
-            SELECT cpu_id, COUNT(*) AS files_count
-            FROM queue
-            WHERE cpu_id <> 0
-            GROUP BY cpu_id
-        ) t
-        ORDER BY files_count, cpu_id;
-        """
-        try:
-            cursor.execute(sql_query)
-            row = cursor.fetchone()
-            if row:
-                return row[0]
-            else:
-                return 0
-        except Exception as e:
-            self.logger.error(f"SQL error occurred: {str(e)}")
-            return 0
-
-    def get_source_id(self, source_name):
-        for source in self.sources.items():
-            if source[0] == source_name:
-                return source[1]
-        return 0
-
     def get_source_name(self, source_id):
         for source in self.sources.items():
             if source[1] == source_id:
