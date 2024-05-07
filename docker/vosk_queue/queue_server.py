@@ -32,7 +32,7 @@ def main():
                 linkedid,
                 version,
             ) in server_object.get_fs_files_list(complete_files):
-                server_object.set_shortest_queue_cpu()
+                server_object.set_shortest_queue_cpu(linkedid)
                 server_object.add_queue(
                     filepath, filename, rec_date, src, dst, linkedid, version
                 )
@@ -44,7 +44,7 @@ def main():
             print('id', source_id)
             print(
                 incomplete_count,
-                "files sent to queue",
+                "Files sent to queue",
                 server_object.sources[source_id],
             )
 
