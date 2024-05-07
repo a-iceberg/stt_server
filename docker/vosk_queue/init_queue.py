@@ -507,17 +507,17 @@ class stt_server:
     #         "union all	select cpu_id, count(filename) from queue group by cpu_id; "
     #     )
     #     sql_query += "select top 1 cpu_id, max(files_count)  from #tmp_cpu_queue_len group by cpu_id order by max(files_count), cpu_id;"
-    #     cursor.execute(sql_query)
-    #     # self.conn.commit()  # autocommit
-    #     result = 0
-    #     for row in cursor.fetchall():
-    #         result += 1
-    #         self.cpu_id = int(row[0])
-    #         # print('selected', self.cpu_id, 'cpu')
-    #     if result == 0:
-    #         # print('error: unable to get shortest_queue_cpu')
-    #         self.logger.info("error: unable to get shortest_queue_cpu")
-    #         self.cpu_id = 0
+    # cursor.execute(sql_query)
+    # # self.conn.commit()  # autocommit
+    # result = 0
+    # for row in cursor.fetchall():
+    #     result += 1
+    #     self.cpu_id = int(row[0])
+    #     # print('selected', self.cpu_id, 'cpu')
+    # if result == 0:
+    #     # print('error: unable to get shortest_queue_cpu')
+    #     self.logger.info("error: unable to get shortest_queue_cpu")
+    #     self.cpu_id = 0
 
     def set_shortest_queue_cpu(self, linkedid):
         cursor = self.conn.cursor()
@@ -563,9 +563,16 @@ class stt_server:
         """
 
         cursor.execute(sql_query)
-        result = cursor.fetchone()
-        self.cpu_id = result[0] if result else 0
-        self.logger.info(f"self.cpu_id: {self.cpu_id}")
+        rows = cursor.fetchall()
+        result = 0
+        for row in rows:
+            result += 1
+            self.cpu_id = int(row[0])
+            self.logger.info(f"self.cpu_id: {self.cpu_id}")
+
+        if result == 0:
+            self.logger.info("Error: unable to get shortest_queue_cpu")
+            self.cpu_id = 0
 
     def get_source_id(self, source_name):
         for source in self.sources.items():
