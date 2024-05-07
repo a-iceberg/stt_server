@@ -546,20 +546,18 @@ class stt_server:
         """
         for i in self.cpu_cores:
             if i == 0:
-                sql_query += "select 0 as cpu_id, 0 as files_count "
+                sql_query += "SELECT 0 AS cpu_id, 0 AS files_count "
             else:
-                sql_query += "union all select " + str(i) + ", 0 "
+                sql_query += "UNION ALL SELECT " + str(i) + ", 0 "
 
         if linkedid_cpu_id and linkedid_cpu_id[0] != 0:
-            sql_query += "union all select cpu_id, count(filename) from queue WHERE cpu_id != 0 group by cpu_id; "
+            sql_query += "UNION ALL SELECT cpu_id, COUNT(filename) FROM queue WHERE cpu_id != 0 GROUP BY cpu_id; "
         else:
             sql_query += (
-                "union all select cpu_id, count(filename) from queue group by cpu_id; "
+                "UNION ALL SELECT cpu_id, COUNT(filename) FROM queue GROUP BY cpu_id; "
             )
 
-        sql_query += (
-            "SELECT TOP 1 cpu_id FROM #tmp_cpu_queue_len ORDER BY files_count, cpu_id;"
-        )
+        sql_query += "SELECT TOP 1 cpu_id, MAX(files_count) FROM #tmp_cpu_queue_len GROUP BY cpu_id ORDER BY MAX(files_count), cpu_id;"
 
         cursor.execute(sql_query)
         result = cursor.fetchone()
