@@ -541,25 +541,27 @@ class stt_server:
         DECLARE @linkedid_cpu_id INT;
         SELECT @linkedid_cpu_id = cpu_id FROM queue WHERE linkedid = '{linkedid}';
 
-        IF @linkedid_cpu_id = 0
-        BEGIN
-            SELECT @linkedid_cpu_id as cpu_id;
-            RETURN;
-        END
-
-        IF @linkedid_cpu_id IS NOT NULL AND @linkedid_cpu_id != 0
+        IF @linkedid_cpu_id IS NULL
         BEGIN
             UPDATE #tmp_cpu_queue_len
-            SET files_count = (SELECT COUNT(*) FROM queue WHERE cpu_id = #tmp_cpu_queue_len.cpu_id AND cpu_id != 0)
+            SET files_count = (SELECT COUNT(*) FROM queue WHERE queue.cpu_id = #tmp_cpu_queue_len.cpu_id);
+
+            SELECT TOP 1 cpu_id FROM #tmp_cpu_queue_len
+            ORDER BY files_count, cpu_id;
+        END
+        ELSE IF @linkedid_cpu_id = 0
+        BEGIN
+            SELECT 0 as cpu_id;
         END
         ELSE
         BEGIN
             UPDATE #tmp_cpu_queue_len
-            SET files_count = (SELECT COUNT(*) FROM queue WHERE cpu_id = #tmp_cpu_queue_len.cpu_id)
-        END
+            SET files_count = (SELECT COUNT(*) FROM queue WHERE queue.cpu_id = #tmp_cpu_queue_len.cpu_id);
 
-        SELECT TOP 1 cpu_id FROM #tmp_cpu_queue_len
-        ORDER BY files_count, cpu_id;
+            SELECT TOP 1 cpu_id FROM #tmp_cpu_queue_len
+            WHERE cpu_id != 0
+            ORDER BY files_count, cpu_id;
+        END
         """
 
         cursor.execute(sql_query)
