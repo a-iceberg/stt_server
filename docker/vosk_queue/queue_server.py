@@ -42,7 +42,11 @@ def main():
                     break
 
             print('id', source_id)
-            print(incomplete_count, 'files sent to queue', server_object.sources[source_id])
+            print(
+                incomplete_count,
+                "Files sent to queue",
+                server_object.sources[source_id],
+            )
 
         sleep_time = 3
         print(

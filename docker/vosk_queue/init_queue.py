@@ -551,9 +551,8 @@ class stt_server:
             """
 
         cursor.execute(sql_query)
-        self.cpu_id = cursor.fetchone()[0] if cursor.rowcount != 0 else 0
-        if cursor.fetchone():
-            self.logger.info(f"self.cpu_id: {self.cpu_id}")
+        self.cpu_id = cursor.fetchone()[0]
+        self.logger.info(f"self.cpu_id: {self.cpu_id}")
 
     def get_source_id(self, source_name):
         for source in self.sources.items():
