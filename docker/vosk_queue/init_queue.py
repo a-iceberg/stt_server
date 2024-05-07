@@ -522,42 +522,45 @@ class stt_server:
     def set_shortest_queue_cpu(self, linkedid):
         cursor = self.conn.cursor()
 
-        cursor.execute("SELECT cpu_id FROM queue WHERE linkedid = %s", (linkedid,))
-        linkedid_cpu_id = cursor.fetchone()
-        self.logger.info(f"linkedid_cpu_id: {linkedid_cpu_id}")
-
-        if linkedid_cpu_id:
-            self.logger.info(f"linkedid: {linkedid} cpu_id: {linkedid_cpu_id[0]}")
-            if linkedid_cpu_id[0] == 0:
-                self.cpu_id = 0
-                return
-
         sql_query = """
         IF OBJECT_ID('tempdb..#tmp_cpu_queue_len') IS NOT NULL
         DROP TABLE #tmp_cpu_queue_len;
 
         CREATE TABLE #tmp_cpu_queue_len
         (
-        cpu_id INT,
-        files_count int
+            cpu_id INT,
+            files_count INT
         );
 
-        INSERT INTO #tmp_cpu_queue_len
+        INSERT INTO #tmp_cpu_queue_len (cpu_id, files_count)
+        VALUES
         """
-        for i in self.cpu_cores:
-            if i == 0:
-                sql_query += "SELECT 0 AS cpu_id, 0 AS files_count "
-            else:
-                sql_query += "UNION ALL SELECT " + str(i) + ", 0 "
+        sql_query += ", ".join(f"({i}, 0)" for i in self.cpu_cores) + ";"
 
-        if linkedid_cpu_id and linkedid_cpu_id[0] != 0:
-            sql_query += "UNION ALL SELECT cpu_id, COUNT(filename) FROM queue WHERE cpu_id != 0 GROUP BY cpu_id; "
-        else:
-            sql_query += (
-                "UNION ALL SELECT cpu_id, COUNT(filename) FROM queue GROUP BY cpu_id; "
-            )
+        sql_query += f"""
+        DECLARE @linkedid_cpu_id INT;
+        SELECT @linkedid_cpu_id = cpu_id FROM queue WHERE linkedid = '{linkedid}';
 
-        sql_query += "SELECT TOP 1 cpu_id, MAX(files_count) FROM #tmp_cpu_queue_len GROUP BY cpu_id ORDER BY MAX(files_count), cpu_id;"
+        IF @linkedid_cpu_id = 0
+        BEGIN
+            SELECT @linkedid_cpu_id as cpu_id;
+            RETURN;
+        END
+
+        IF @linkedid_cpu_id IS NOT NULL AND @linkedid_cpu_id != 0
+        BEGIN
+            UPDATE #tmp_cpu_queue_len
+            SET files_count = (SELECT COUNT(*) FROM queue WHERE cpu_id = #tmp_cpu_queue_len.cpu_id AND cpu_id != 0)
+        END
+        ELSE
+        BEGIN
+            UPDATE #tmp_cpu_queue_len
+            SET files_count = (SELECT COUNT(*) FROM queue WHERE cpu_id = #tmp_cpu_queue_len.cpu_id)
+        END
+
+        SELECT TOP 1 cpu_id FROM #tmp_cpu_queue_len
+        ORDER BY files_count, cpu_id;
+        """
 
         cursor.execute(sql_query)
         result = cursor.fetchone()
