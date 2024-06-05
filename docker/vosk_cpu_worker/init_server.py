@@ -304,30 +304,49 @@ class stt_server:
 		# VOSK
 		if self.gpu_uri[:3] == 'ws:':
 			self.logger.info('vosk transcriber')
-			async with websockets.connect(self.gpu_uri) as websocket:
+			while True:
+				try:
+					async with websockets.connect(
+						self.gpu_uri,
+						open_timeout=20,
+						ping_interval=40,
+						ping_timeout=40,
+						close_timeout=20
+						) as websocket:
 
-				sentences = []
+						sentences = []
 
-				wf = wave.open(self.temp_file_path + self.temp_file_name, 'rb')
-				await websocket.send(
-					'{ "config" : { "sample_rate" : %d } }' % (wf.getframerate())
-					)
+						wf = wave.open(self.temp_file_path + self.temp_file_name, 'rb')
+						await websocket.send(
+							'{ "config" : { "sample_rate" : %d } }' % (wf.getframerate())
+							)
 
-				buffer_size = int(wf.getframerate() * 0.2)  # 0.2 seconds of audio
-				while True:
-					data = wf.readframes(buffer_size)
+						buffer_size = int(wf.getframerate() * 0.2)  # 0.2 seconds of audio
+						while True:
+							data = wf.readframes(buffer_size)
 
-					if len(data) == 0:
-						break
+							if len(data) == 0:
+								break
 
-					await websocket.send(data)
-					accept = json.loads(await websocket.recv())
-					self.accept_feature_extractor(sentences, accept)
+							await websocket.send(data)
+							try:
+								accept = json.loads(await websocket.recv())
+								self.accept_feature_extractor(sentences, accept)
+							except websockets.exceptions.ConnectionClosedError:
+								self.logger.error("The connection was closed during part of audio file processing")
+								raise
 
-				await websocket.send('{"eof" : 1}')
-				accept = json.loads(await websocket.recv())
-				self.accept_feature_extractor(sentences, accept)
-			
+						await websocket.send('{"eof" : 1}')
+						try:
+							accept = json.loads(await websocket.recv())
+							self.accept_feature_extractor(sentences, accept)
+						except websockets.exceptions.ConnectionClosedError:
+							self.logger.error("The connection was closed during audio file processing")
+							raise
+					break
+				except websockets.exceptions.ConnectionClosedError:
+					self.logger.error("The connection was closed, reconnecting")
+					continue
 			# trans_end = time.time() # datetime.datetime.now()
 			# self.perf_log(2, trans_start, trans_end, duration, linkedid)
 		
