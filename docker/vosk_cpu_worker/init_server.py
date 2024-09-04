@@ -243,8 +243,21 @@ class stt_server:
 					'conf': sum(conf_score)/len(conf_score)
 				}
 			)
+		return sentences
 
-	def accept_feature_extractor_whisper(self, sentences, accept, max_length=900, check_repetitions=False):
+
+	def accept_feature_extractor_whisper(self, sentences, accept, max_length=900, check_repetitions=False, segment_repetitions=False):
+		if segment_repetitions:
+			current_texts = set()
+			segments_to_keep = []
+			for segments_rec in accept["segments"]:
+				segment_text = str(segments_rec["text"]).replace("'", "")[:max_length]
+				if segment_text not in current_texts or len(segment_text) <= 9:
+					segments_to_keep.append(segments_rec)
+					if len(segment_text) > 9:
+						current_texts.add(segment_text)
+			accept["segments"] = segments_to_keep
+
 		for segments_rec in accept["segments"]:
 			segment_text = str(segments_rec["text"]).replace("'", "")[:max_length]
 
@@ -277,6 +290,8 @@ class stt_server:
 					"confidence": conf_score,
 				}
 			)
+		return sentences
+
 
 	async def transcribation_process(
 		self,
@@ -331,7 +346,7 @@ class stt_server:
 							await websocket.send(data)
 							try:
 								accept = json.loads(await websocket.recv())
-								self.accept_feature_extractor(sentences, accept)
+								sentences = self.accept_feature_extractor(sentences, accept)
 							except websockets.exceptions.ConnectionClosedError:
 								self.logger.error("The connection was closed during part of audio file processing")
 								raise
@@ -339,7 +354,7 @@ class stt_server:
 						await websocket.send('{"eof" : 1}')
 						try:
 							accept = json.loads(await websocket.recv())
-							self.accept_feature_extractor(sentences, accept)
+							sentences = self.accept_feature_extractor(sentences, accept)
 						except websockets.exceptions.ConnectionClosedError:
 							self.logger.error("The connection was closed during audio file processing")
 							raise
@@ -376,25 +391,37 @@ class stt_server:
 						if response.status_code == 200:
 							accept = response.json()
 							check_repetitions = False
+							segment_repetitions = False
 
 							if len(accept) > 1 and accept["text"] != "":
+								current_texts = set()
+								for segments_rec in accept["segments"]:
+									segment_text = str(segments_rec["text"]).replace("'", "")[:max_length]
+									if segment_text in current_texts and len(segment_text) > 9:
+										segment_repetitions = True
+										self.logger.warning(f"Found this repeating text segment in the transcription: {segment_text}")
+										break
+									else:
+										current_texts.add(segment_text)
+
 								for segments_rec in accept["segments"]:
 									segment_text = str(segments_rec["text"]).replace("'", "")[:max_length]
 									ds = DiversityStats(segment_text).get_stats()
 									if (len(segment_text) > 99 and ds["mttr"] > 0.1395 and ds["dttr"] < 7.2 and ds["simpson_index"] < 18.3):
 										check_repetitions = True
-										self.logger.warning(f"Found artifacts: {segment_text}")
-#										self.save_file_for_analysis(self.temp_file_path, self.temp_file_name, duration)
+										self.logger.warning(f"Found artifacts in this text segment: {segment_text}")
+# self.save_file_for_analysis(self.temp_file_path, self.temp_file_name, duration)
 										break
 
-								if check_repetitions and attempt < max_attempts - 1:
+								if (check_repetitions or segment_repetitions) and attempt < max_attempts - 1:
 									attempt += 1
 									continue
 								else:
-									self.accept_feature_extractor_whisper(
+									sentences = self.accept_feature_extractor_whisper(
 										sentences,
 										accept,
 										check_repetitions=check_repetitions,
+										segment_repetitions=segment_repetitions
 									)
 									break
 							else:
