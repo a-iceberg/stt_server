@@ -1,5 +1,6 @@
 import datetime
 import pymssql
+import psycopg
 import time
 import os
 import logging
@@ -11,15 +12,22 @@ logger.setLevel(logging.INFO)
 
 def connect_sql():
 
-	con = pymssql.connect(
-		server=os.environ.get('MSSQL_SERVER', ''),
-		user=os.environ.get('MSSQL_LOGIN', ''),
-		password=os.environ.get('MSSQL_PASSWORD', ''),
-		database='voice_ai',
-		tds_version=r'7.0',
-		#autocommit=True			
+	# con = pymssql.connect(
+	# 	server=os.environ.get('MSSQL_SERVER', ''),
+	# 	user=os.environ.get('MSSQL_LOGIN', ''),
+	# 	password=os.environ.get('MSSQL_PASSWORD', ''),
+	# 	database='voice_ai',
+	# 	tds_version=r'7.0'		
+	# )
+
+	con = psycopg.connect(
+		dbname='voice_ai',
+		user=os.environ.get("POSTGRESQL_LOGIN", ""),
+		password=os.environ.get("POSTGRESQL_PASSWORD", ""),
+		host=os.environ.get("POSTGRESQL_SERVER", ""),
+		port=os.environ.get("POSTGRESQL_PORT", "")
 	)
-	logging.info('Connected to MSSQL')
+	logging.info('Connected to SQL')
 	return con
 
 def clean_transcribations(conn, bottom_limit):
@@ -27,7 +35,7 @@ def clean_transcribations(conn, bottom_limit):
 	cursor = conn.cursor()
 	sql_query = "delete from transcribations where record_date<'"+bottom_limit+"';"
 	cursor.execute(sql_query)
-	conn.commit() # autocommit
+	conn.commit()
 	logging.info('transcribations cleaned')
 
 
@@ -36,7 +44,7 @@ def clean_perf_log(conn, bottom_limit):
 	cursor = conn.cursor()
 	sql_query = "delete from perf_log where event_date<'"+bottom_limit+"';"
 	cursor.execute(sql_query)
-	conn.commit() # autocommit
+	conn.commit()
 	logging.info('perf_log cleaned')
 
 def clean_summarization_queue(conn, bottom_limit):
@@ -44,7 +52,7 @@ def clean_summarization_queue(conn, bottom_limit):
 	cursor = conn.cursor()
 	sql_query = "delete from summarization_queue where record_date<'"+bottom_limit+"';"
 	cursor.execute(sql_query)
-	conn.commit() # autocommit
+	conn.commit()
 	logging.info('summarization_queue cleaned')
 
 logging.info('Start')
@@ -61,7 +69,7 @@ while True:
 	logging.info('Deleting before %s', bottom_limit)
 	clean_transcribations(conn, bottom_limit)
 	clean_perf_log(conn, bottom_limit)
-	clean_summarization_queue(conn, bottom_limit)
+	# clean_summarization_queue(conn, bottom_limit)
 	logging.info('waiting for 24h')
 	time.sleep(24 * 60 * 60)
 	

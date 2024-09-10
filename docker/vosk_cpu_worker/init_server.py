@@ -169,27 +169,13 @@ class stt_server:
 		spent_time = (time_end - time_start)
 		current_date = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
 
-		p_cursor = self.p_conn.cursor()
-		cursor = self.conn.cursor()
-
-		p_sql_query = "insert into perf_log("
-		p_sql_query += "event_date, step, time, cpu, file_name, duration, linkedid, source_id"
-		p_sql_query += ") "
-		p_sql_query += "values ("
-		p_sql_query += "'" + current_date + "', "
-		p_sql_query += str(step) + ", "
-		p_sql_query += str(spent_time) + ", "
-		p_sql_query += str(self.cpu_id) + ", "
-		p_sql_query += "'" + self.temp_file_name + "', "
-		p_sql_query += "'" + str(duration) + "', "
-		p_sql_query += "'" + str(linkedid) + "', "
-		p_sql_query += "'" + str(self.source_id) + "');"
+		# cursor = self.conn.cursor()
+		cursor = self.p_conn.cursor()
 
 		sql_query = "insert into perf_log("
-		sql_query += "cores, event_date, step, time, cpu, file_name, duration, linkedid, source_id"
+		sql_query += "event_date, step, time, cpu, file_name, duration, linkedid, source_id"
 		sql_query += ") "
 		sql_query += "values ("
-		sql_query += str(len(self.cpu_cores)) + ", "
 		sql_query += "'" + current_date + "', "
 		sql_query += str(step) + ", "
 		sql_query += str(spent_time) + ", "
@@ -199,27 +185,36 @@ class stt_server:
 		sql_query += "'" + str(linkedid) + "', "
 		sql_query += "'" + str(self.source_id) + "');"
 
-		try:
-			p_cursor.execute(p_sql_query)
-			self.p_conn.commit()
-		except Exception as e:
-			print('Postgre perf_log query error:', str(e), '\n', sql_query)
+		# sql_query = "insert into perf_log("
+		# sql_query += "cores, event_date, step, time, cpu, file_name, duration, linkedid, source_id"
+		# sql_query += ") "
+		# sql_query += "values ("
+		# sql_query += str(len(self.cpu_cores)) + ", "
+		# sql_query += "'" + current_date + "', "
+		# sql_query += str(step) + ", "
+		# sql_query += str(spent_time) + ", "
+		# sql_query += str(self.cpu_id) + ", "
+		# sql_query += "'" + self.temp_file_name + "', "
+		# sql_query += "'" + str(duration) + "', "
+		# sql_query += "'" + str(linkedid) + "', "
+		# sql_query += "'" + str(self.source_id) + "');"
 
 		try:
 			cursor.execute(sql_query)
-			self.conn.commit()
+			self.p_conn.commit()
 		except Exception as e:
 			print('perf_log query error:', str(e), '\n', sql_query)
 
 	def delete_current_queue(self, original_file_name, linkedid):
+		# cursor = self.conn.cursor()
+		cursor = self.p_conn.cursor()
 
-		cursor = self.conn.cursor()
 		"""if self.source_id == self.sources['master']:
 			sql_query = "delete from queue where linkedid = '" + linkedid + "';"
 		else:"""
 		sql_query = "delete from queue where filename = '"+original_file_name+"';"
 		cursor.execute(sql_query)
-		self.conn.commit() # autocommit
+		self.p_conn.commit()
 
 	def delete_source_file(self, original_file_path, original_file_name, linkedid):
 
@@ -674,7 +669,7 @@ class stt_server:
 
 		try:
 			cursor.execute(sql_query)
-			self.conn.commit() # autocommit
+			self.conn.commit()
 		except Exception as e:
 			self.logger.error(str(linkedid)+' query error: '+sql_query+' '+str(e))
 			sys.exit('save_result')
@@ -691,8 +686,9 @@ class stt_server:
 				self.send_to_telegram(msg)
 
 	def get_sql_complete_files(self):
+		cursor = self.p_conn.cursor()
+		# cursor = self.conn.cursor()
 
-		cursor = self.conn.cursor()
 		sql_query = "select distinct filename from queue where"
 		sql_query += " source_id='" + str(self.source_id) + "'"
 		sql_query += " order by filename;"
@@ -704,27 +700,62 @@ class stt_server:
 		return complete_files
 
 	def set_shortest_queue_cpu(self):
-		
-		cursor = self.conn.cursor()
-		sql_query = '''
-		IF OBJECT_ID('tempdb..#tmp_cpu_queue_len') IS NOT NULL
-		DROP TABLE #tmp_cpu_queue_len;
+		cursor = self.p_conn.cursor()
+		# cursor = self.conn.cursor()
 
-		CREATE TABLE #tmp_cpu_queue_len
+		# sql_query = '''
+		# IF OBJECT_ID('tempdb..#tmp_cpu_queue_len') IS NOT NULL
+		# DROP TABLE #tmp_cpu_queue_len;
+
+		# CREATE TABLE #tmp_cpu_queue_len
+		# (
+		# 	cpu_id INT,
+		# 	files_count int
+		# );
+
+		# INSERT INTO #tmp_cpu_queue_len 
+		# '''
+		# for i in self.cpu_cores:
+		# 	if i==0:
+		# 		sql_query += 'select 0 as cpu_id, 0 as files_count '
+		# 	else:
+		# 		sql_query += 'union all select '+str(i)+',0 '
+		# sql_query += 'union all	select cpu_id, count(filename) from queue group by cpu_id; '
+		# sql_query += 'select top 1 cpu_id, max(files_count)  from #tmp_cpu_queue_len group by cpu_id order by max(files_count), cpu_id;'
+
+		sql_query = '''
+		DROP TABLE IF EXISTS tmp_cpu_queue_len;
+
+		CREATE TEMPORARY TABLE tmp_cpu_queue_len
 		(
-		cpu_id INT,
-		files_count int
+			cpu_id INT,
+			files_count INT
 		);
 
-		INSERT INTO #tmp_cpu_queue_len 
+		INSERT INTO tmp_cpu_queue_len (cpu_id, files_count)
 		'''
+		
+		insert_values = []
 		for i in self.cpu_cores:
-			if i==0:
-				sql_query += 'select 0 as cpu_id, 0 as files_count '
+			if i == 0:
+				insert_values.append("(0, 0)")
 			else:
-				sql_query += 'union all select '+str(i)+',0 '
-		sql_query += 'union all	select cpu_id, count(filename) from queue group by cpu_id; '
-		sql_query += 'select top 1 cpu_id, max(files_count)  from #tmp_cpu_queue_len group by cpu_id order by max(files_count), cpu_id;'	
+				insert_values.append(f"({i}, 0)")
+		
+		sql_query += "VALUES " + ", ".join(insert_values)
+		sql_query += '''
+		UNION ALL
+		SELECT cpu_id, COUNT(filename) 
+		FROM queue 
+		GROUP BY cpu_id;
+
+		SELECT cpu_id, MAX(files_count) 
+		FROM tmp_cpu_queue_len 
+		GROUP BY cpu_id 
+		ORDER BY MAX(files_count), cpu_id 
+		LIMIT 1;
+		'''
+
 		cursor.execute(sql_query)
 		#self.conn.commit()  # autocommit
 		result = 0
@@ -774,30 +805,12 @@ class stt_server:
 			#else:
 			#	self.save_file_for_analysis(filepath, filename, file_duration)
 
-			p_cursor = self.p_conn.cursor()
-			cursor = self.conn.cursor()
+			cursor = self.p_conn.cursor()
 			current_date = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-
-			p_sql_query = "insert into queue "
-			p_sql_query += "(filepath, filename, cpu_id, date, "
-			p_sql_query += "duration, record_date, source_id, src, dst, linkedid, version) "
-			p_sql_query += "values ('"
-			p_sql_query += filepath + "','"
-			p_sql_query += filename + "','"
-			p_sql_query += str(self.cpu_id) + "','"
-			p_sql_query += current_date + "','"
-			p_sql_query += str(file_duration) + "',"
-			p_sql_query += rec_date if rec_date == 'Null' else "'"+rec_date+"'"
-			p_sql_query += ",'"
-			p_sql_query += str(self.source_id) + "','"
-			p_sql_query += str(src) + "','"
-			p_sql_query += str(dst) + "','"
-			p_sql_query += str(linkedid) + "',"
-			p_sql_query += str(naming_version) + ");"
 
 			sql_query = "insert into queue "
 			sql_query += "(filepath, filename, cpu_id, date, "
-			sql_query += "duration, record_date, source_id, src, dst, linkedid, version, file_size) "
+			sql_query += "duration, record_date, source_id, src, dst, linkedid, version) "
 			sql_query += "values ('"
 			sql_query += filepath + "','"
 			sql_query += filename + "','"
@@ -810,19 +823,29 @@ class stt_server:
 			sql_query += str(src) + "','"
 			sql_query += str(dst) + "','"
 			sql_query += str(linkedid) + "',"
-			sql_query += str(naming_version) + ","
-			sql_query += str(f_size) + ");"
+			sql_query += str(naming_version) + ");"
 
-			try:
-				p_cursor.execute(p_sql_query)
-				self.p_conn.commit()
-			except Exception as e:
-				print('Postgre add queue error. query: '+sql_query)
-				print(str(e))
+			# sql_query = "insert into queue "
+			# sql_query += "(filepath, filename, cpu_id, date, "
+			# sql_query += "duration, record_date, source_id, src, dst, linkedid, version, file_size) "
+			# sql_query += "values ('"
+			# sql_query += filepath + "','"
+			# sql_query += filename + "','"
+			# sql_query += str(self.cpu_id) + "','"
+			# sql_query += current_date + "','"
+			# sql_query += str(file_duration) + "',"
+			# sql_query += rec_date if rec_date == 'Null' else "'"+rec_date+"'"
+			# sql_query += ",'"
+			# sql_query += str(self.source_id) + "','"
+			# sql_query += str(src) + "','"
+			# sql_query += str(dst) + "','"
+			# sql_query += str(linkedid) + "',"
+			# sql_query += str(naming_version) + ","
+			# sql_query += str(f_size) + ");"
 
 			try:
 				cursor.execute(sql_query)
-				self.conn.commit() # autocommit
+				self.p_conn.commit() # autocommit
 			except Exception as e:
 				print('add queue error. query: '+sql_query)
 				print(str(e))

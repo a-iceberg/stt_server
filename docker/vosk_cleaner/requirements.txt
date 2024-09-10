@@ -1,1 +1,2 @@
 pymssql==2.2.11
+psycopg[binary,pool]==3.2.1

@@ -10,17 +10,26 @@ def main():
 	# print('started', server_object.cpu_id, server_object.gpu_uri)
 	server_object.logger.info(f'CPU {server_object.cpu_id} started: {server_object.gpu_uri}')
 
-	cursor = server_object.conn.cursor()
+	# cursor = server_object.conn.cursor()
+	cursor = server_object.p_conn.cursor()
 
 	while True:
 
 		past_in_minutes = pendulum.now().add(minutes=-6).strftime('%Y-%m-%d %H:%M:%S')
 		server_object.logger.info(f'past_in_minutes: {past_in_minutes}')
-		sql_query = "select top 3 filepath, filename, duration, source_id, "
-		sql_query += "record_date, src, dst, linkedid, file_size, date from queue "
+		# sql_query = "select top 3 filepath, filename, duration, source_id, "
+		# sql_query += "record_date, src, dst, linkedid, date from queue "
+		# sql_query += "where cpu_id='" + str(server_object.cpu_id) + "' "
+		# sql_query += "and record_date < '" + past_in_minutes + "' "
+		# sql_query += "order by record_date desc, filename;"
+
+		sql_query = "select filepath, filename, duration, source_id, "
+		sql_query += "record_date, src, dst, linkedid, date from queue "
 		sql_query += "where cpu_id='" + str(server_object.cpu_id) + "' "
 		sql_query += "and record_date < '" + past_in_minutes + "' "
-		sql_query += "order by record_date desc, filename;"
+		sql_query += "order by record_date desc, filename "
+		sql_query += "limit 3;"
+
 		processed = 0
 		cursor.execute(sql_query)
 		linkedid = ''
@@ -39,8 +48,8 @@ def main():
 			src = row[5]
 			dst = row[6]
 			linkedid = row[7]
-			file_size = row[8]
-			queue_date = row[9]
+			file_size = 0
+			queue_date = row[8]
 
 			files_converted = 0
 
@@ -63,7 +72,7 @@ def main():
 				WHERE linkedid='{linkedid}' 
 				AND record_date BETWEEN '{duplicate_threshold}' AND '{rec_date}' 
 				AND RIGHT(filename, 5) != '{original_file_name[-5:]}' 
-				AND dst LIKE '[0-9][0-9][0-9][0-9]';
+				AND dst ~ '^[0-9]{4}$';
 				"""
 
 				sql_query_transcriptions = f"""
@@ -71,7 +80,7 @@ def main():
 				WHERE linkedid='{linkedid}' 
 				AND record_date BETWEEN '{duplicate_threshold}' AND '{rec_date}' 
 				AND RIGHT(audio_file_name, 5) != '{original_file_name[-5:]}' 
-				AND dst LIKE '[0-9][0-9][0-9][0-9]';
+				AND dst ~ '^[0-9]{4}$';
 				"""
 
 				cursor.execute(sql_query_queue)
