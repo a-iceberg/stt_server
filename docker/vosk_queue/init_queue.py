@@ -1,5 +1,6 @@
 import pymssql
 import pymysql as mysql
+import psycopg
 import datetime
 import os
 import wave
@@ -24,6 +25,9 @@ class stt_server:
         self.cpu_cores = [i for i in range(0, cores_count)]
 
         # self.gpu_uri = os.environ.get('VOSK_SERVER_DEFAULT', '')
+
+        # postgre sql
+        self.p_sql_name = "voice_ai"
 
         # ms sql
         self.sql_name = "voice_ai"
@@ -51,6 +55,7 @@ class stt_server:
         self.temp_file_path = ""
         self.temp_file_name = ""
 
+        self.p_conn = self.connect_p_sql()
         self.conn = self.connect_sql()
         self.mysql_conn = {
             1: self.connect_mysql(1),
@@ -92,6 +97,15 @@ class stt_server:
             # print('send_to_telegram error:', str(e))
             self.logger.info("send_to_telegram error: " + str(e))
 
+    def connect_p_sql(self):
+        return psycopg.connect(
+            dbname=self.p_sql_name,
+            user=os.environ.get("POSTGRESQL_LOGIN", ""),
+            password=os.environ.get("POSTGRESQL_PASSWORD", ""),
+            host=os.environ.get("POSTGRESQL_SERVER", ""),
+            port=os.environ.get("POSTGRESQL_PORT", "")
+        )
+    
     def connect_sql(self):
         return pymssql.connect(
             server=os.environ.get("MSSQL_SERVER", ""),
@@ -108,7 +122,6 @@ class stt_server:
             user=os.environ.get("MYSQL_LOGIN", ""),
             passwd=os.environ.get("MYSQL_PASSWORD", ""),
             db=self.mysql_name[source_id],
-            # tds_version=r'7.0'
             # autocommit = True
             # cursorclass=mysql.cursors.DictCursor,
         )
@@ -243,10 +256,10 @@ class stt_server:
                                     self.original_storage_path[self.source_id]
                                     + filename
                                 )
-                                self.log_deletion(
-                                    self.original_storage_path[self.source_id]
-                                    + filename
-                                )
+                                # self.log_deletion(
+                                #     self.original_storage_path[self.source_id]
+                                #     + filename
+                                # )
                                 # debug ++
                                 # self.send_to_telegram('min. get_fs_files_list. removed: ' + str(filename))
                                 # debug --
@@ -581,8 +594,26 @@ class stt_server:
                 # else:
                 # self.save_file_for_analysis(filepath, filename, file_duration)
 
+            p_cursor = self.p_conn.cursor()
             cursor = self.conn.cursor()
             current_date = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+
+            p_sql_query = "insert into queue "
+            p_sql_query += "(filepath, filename, cpu_id, date, "
+            p_sql_query += "duration, record_date, source_id, src, dst, linkedid, version) "
+            p_sql_query += "values ('"
+            p_sql_query += filepath + "','"
+            p_sql_query += filename + "','"
+            p_sql_query += str(self.cpu_id) + "','"
+            p_sql_query += current_date + "','"
+            p_sql_query += str(file_duration) + "',"
+            p_sql_query += rec_date if rec_date == "Null" else "'" + rec_date + "'"
+            p_sql_query += ",'"
+            p_sql_query += str(self.source_id) + "','"
+            p_sql_query += str(src) + "','"
+            p_sql_query += str(dst) + "','"
+            p_sql_query += str(linkedid) + "',"
+            p_sql_query += str(naming_version) + ");"
 
             sql_query = "insert into queue "
             sql_query += "(filepath, filename, cpu_id, date, "
@@ -603,6 +634,9 @@ class stt_server:
             sql_query += str(f_size) + ");"
 
             try:
+                p_cursor.execute(p_sql_query)
+                self.p_conn.commit()  # autocommit
+
                 cursor.execute(sql_query)
                 self.conn.commit()  # autocommit
             except Exception as e:

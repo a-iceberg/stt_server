@@ -21,6 +21,10 @@ services:
       - WER_FILES_COUNT_LIMIT=0
       - TE_DOCKER_ADDRESS=http://10.2.5.212:2801/te
       - TZ=Europe/Moscow
+      - POSTGRESQL_SERVER=
+      - POSTGRESQL_PORT=
+      - POSTGRESQL_LOGIN=
+      - POSTGRESQL_PASSWORD=
       - MYSQL_SERVER=
       - MYSQL_LOGIN=
       - MYSQL_PASSWORD=
@@ -48,6 +52,10 @@ services:
     environment:
       - WORKERS_COUNT=3
       - TZ=Europe/Moscow
+      - POSTGRESQL_SERVER=
+      - POSTGRESQL_PORT=
+      - POSTGRESQL_LOGIN=
+      - POSTGRESQL_PASSWORD=
       - MYSQL_SERVER=
       - MYSQL_LOGIN=
       - MYSQL_PASSWORD=

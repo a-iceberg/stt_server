@@ -4,3 +4,4 @@ pandas==2.2.0
 requests==2.31.0
 websockets==12.0
 pendulum==3.0.0
+psycopg[binary,pool]==3.2.1
