@@ -635,8 +635,12 @@ class stt_server:
 
             try:
                 p_cursor.execute(p_sql_query)
-                self.p_conn.commit()  # autocommit
+                self.p_conn.commit()
+            except Exception as e:
+                self.logger.info("Postgre add queue error. query: " + sql_query)
+                self.logger.info(str(e))
 
+            try:
                 cursor.execute(sql_query)
                 self.conn.commit()  # autocommit
             except Exception as e:

@@ -202,7 +202,10 @@ class stt_server:
 		try:
 			p_cursor.execute(p_sql_query)
 			self.p_conn.commit()
+		except Exception as e:
+			print('Postgre perf_log query error:', str(e), '\n', sql_query)
 
+		try:
 			cursor.execute(sql_query)
 			self.conn.commit()
 		except Exception as e:
@@ -664,8 +667,12 @@ class stt_server:
 
 		try:
 			p_cursor.execute(p_sql_query)
-			self.p_conn.commit() # autocommit
+			self.p_conn.commit()
+		except Exception as e:
+			self.logger.error(str(linkedid)+' Postgre query error: '+sql_query+' '+str(e))
+			sys.exit('save_result')
 
+		try:
 			cursor.execute(sql_query)
 			self.conn.commit() # autocommit
 		except Exception as e:
@@ -808,8 +815,12 @@ class stt_server:
 
 			try:
 				p_cursor.execute(p_sql_query)
-				self.p_conn.commit() # autocommit
+				self.p_conn.commit()
+			except Exception as e:
+				print('Postgre add queue error. query: '+sql_query)
+				print(str(e))
 
+			try:
 				cursor.execute(sql_query)
 				self.conn.commit() # autocommit
 			except Exception as e:
