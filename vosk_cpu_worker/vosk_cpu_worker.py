@@ -6,22 +6,14 @@ from init_server import stt_server
 
 def main():
 	server_object = stt_server()
-
-	# print('started', server_object.cpu_id, server_object.gpu_uri)
 	server_object.logger.info(f'CPU {server_object.cpu_id} started: {server_object.gpu_uri}')
 
-	# cursor = server_object.conn.cursor()
 	cursor = server_object.p_conn.cursor()
 
 	while True:
 
 		past_in_minutes = pendulum.now().add(minutes=-6).strftime('%Y-%m-%d %H:%M:%S')
 		server_object.logger.info(f'past_in_minutes: {past_in_minutes}')
-		# sql_query = "select top 3 filepath, filename, duration, source_id, "
-		# sql_query += "record_date, src, dst, linkedid, date from queue "
-		# sql_query += "where cpu_id='" + str(server_object.cpu_id) + "' "
-		# sql_query += "and record_date < '" + past_in_minutes + "' "
-		# sql_query += "order by record_date desc, filename;"
 
 		sql_query = "select filepath, filename, duration, source_id, "
 		sql_query += "record_date, src, dst, linkedid, date from queue "
@@ -34,12 +26,10 @@ def main():
 		cursor.execute(sql_query)
 		linkedid = ''
 		fetched = cursor.fetchall()
-		# print('fetched', len(fetched))
 		server_object.logger.info(f'fetched: {len(fetched)}')
+
 		for row in fetched:
-
 			queue_start = time.time()
-
 			original_file_path = row[0]
 			original_file_name = row[1]
 			original_file_duration = row[2]
@@ -120,20 +110,14 @@ def main():
 					)
 					files_converted += 1				
 				else:
-					"""print(
-						'id: '+str(server_object.source_id)+' file not found', 
-						server_object.temp_file_path + server_object.temp_file_name
-						)"""
 					server_object.logger.info(
 						f'id: {server_object.source_id} file not found {server_object.temp_file_path + server_object.temp_file_name}'
 					)
-				server_object.delete_current_queue(original_file_name, linkedid)
-				# print('files_converted', files_converted)			
+				server_object.delete_current_queue(original_file_name, linkedid)		
 				server_object.logger.info(f'files_converted: {files_converted}')
 				server_object.delete_source_file(original_file_path, original_file_name, linkedid)
 
 			else:
-				# print(original_file_name, 'duration', original_file_duration)
 				server_object.logger.info(f'{original_file_name} duration {original_file_duration}')
 				trans_date = datetime.datetime.now().strftime('%Y-%m-%dT%H:%M:%S')
 				server_object.save_result(
@@ -161,10 +145,8 @@ def main():
 			server_object.perf_log(0, queue_start, queue_end, original_file_duration, linkedid)
 
 			processed += 1
-			# print(' === processed:', processed, '/', len(fetched), 'files_converted:', files_converted, '===')
 			server_object.logger.info(f'processed: {processed}/{len(fetched)} files_converted: {files_converted}')
 
-		# print(server_object.cpu_id,datetime.datetime.now().strftime('%Y-%m-%dT%H:%M:%S'), 'queue reached..')
 		server_object.logger.info(f'{server_object.cpu_id} {datetime.datetime.now().strftime("%Y-%m-%dT%H:%M:%S")} queue reached..')
 		if processed == 0:
 			time.sleep(10)

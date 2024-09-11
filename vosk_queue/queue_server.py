@@ -5,21 +5,16 @@ import logging
 
 logging.basicConfig(level=logging.INFO)
 
-
 def main():
     logging.info('Starting')
     batch_size = 1000
-
     server_object = stt_server()
 
     # Clean queue
     server_object.clean_queue()
 
     while True:
-
         for source_id in server_object.sources: # ['call', 'master']
-
-            # if source_id == 'call': # debug
             server_object.source_id = server_object.get_source_id(source_id)
             complete_files = server_object.get_sql_complete_files()
             incomplete_count = 0
@@ -54,7 +49,6 @@ def main():
 			'sleeping '+str(sleep_time)+'s..'
 		)
         time.sleep(sleep_time)
-
 
 if __name__ == '__main__':
 	main()

@@ -1,5 +1,5 @@
 # Call centre transcribation service
-Additional mysql and mssql databases and tables configure required.  
+Additional mysql, mssql and postgresql databases and tables configure required.  
 - Works with [Kaldi Vosk](https://hub.docker.com/r/alphacep/kaldi-vosk-server)   
 - Inside docker container   
 - Scalable   
@@ -7,13 +7,12 @@ Additional mysql and mssql databases and tables configure required.
 - [GPU](https://github.com/sskorol/vosk-api-gpu) and CPU support   
 ### Installation
 ```
-git clone https://github.com/format37/call_centre_stt_server.git
-cd call_centre_stt_server/docker
+git clone https://github.com/a-iceberg/stt_server.git
 ```
-Configure your server:
+You have to mount folders after each restart of the server.  
+Mount folders:
 ```
-mv docker-compose-default.yml docker-compose.yml
-nano docker-compose.yml
+sh mount.sh
 ```
 Run:
 ```

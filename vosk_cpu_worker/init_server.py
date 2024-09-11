@@ -1,4 +1,3 @@
-#from vosk import Model, KaldiRecognizer, SetLogLevel
 import json
 import pymssql
 import pymysql as mysql
@@ -8,14 +7,12 @@ import os
 import wave
 import contextlib
 import re
-import pandas as pd
 import sys
 import time
 import requests
 from shutil import copyfile
 import asyncio
 import websockets
-import socket
 import urllib
 import glob
 import uuid
@@ -26,10 +23,7 @@ from ruts import DiversityStats
 
 
 class stt_server:
-
 	def __init__(self):
-
-		# settings ++
 		self.cpu_id = self.get_worker_id()
 		cores_count = int(os.environ.get('WORKERS_COUNT', '0'))
 		self.cpu_cores = [i for i in range(0, cores_count)]
@@ -43,8 +37,8 @@ class stt_server:
 			os.environ.get('VOSK_SERVER_DEFAULT', '')
 			)
 		
-		message = str(datetime.datetime.now())+'\n'
-		message += 'New vosk worker: '+str(self.cpu_id)+' # '+self.gpu_uri
+		# message = str(datetime.datetime.now())+'\n'
+		# message += 'New vosk worker: '+str(self.cpu_id)+' # '+self.gpu_uri
 		# self.send_to_telegram(message)
 
 		# postgre sql
@@ -52,12 +46,6 @@ class stt_server:
 
 		# ms sql
 		self.sql_name = 'voice_ai'
-
-		# mysql
-		self.mysql_name = {
-			1: 'MICO_96',
-			2: 'asterisk',
-		}
 
 		self.source_id = 0
 		self.sources = {
@@ -71,36 +59,29 @@ class stt_server:
 		}
 		self.saved_for_analysis_path = 'audio/wer/'
 		self.confidence_of_file = 0
-		# settings --
 
 		self.temp_file_path = ''
 		self.temp_file_name = ''
 
 		self.p_conn = self.connect_p_sql()	
 		self.conn = self.connect_sql()
-		"""self.mysql_conn = {
-			1: self.connect_mysql(1),
-			2: self.connect_mysql(2),
-		}"""
 
 		self.send_to_telegram('cpu '+str(self.cpu_id)+' started')
 
-	def log_deletion(self, filename):
-		current_date = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-		connector = mysql.connect(
-			host = '10.2.4.87',
-			user = 'root',
-			passwd = 'root'
-		)
-		connector.autocommit(True)
-		cursor = connector.cursor()
-		cursor.execute("use ml")
-		cursor.execute("INSERT INTO deletions(date, filename) VALUES ('"+current_date+"', '"+filename+"');")
+	# def log_deletion(self, filename):
+	# 	current_date = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+	# 	connector = mysql.connect(
+	# 		host = '10.2.4.87',
+	# 		user = 'root',
+	# 		passwd = 'root'
+	# 	)
+	# 	connector.autocommit(True)
+	# 	cursor = connector.cursor()
+	# 	cursor.execute("use ml")
+	# 	cursor.execute("INSERT INTO deletions(date, filename) VALUES ('"+current_date+"', '"+filename+"');")
 
 	def get_worker_id(self):
-
 		workers_count = int(os.environ.get('WORKERS_COUNT', '0'))
-		# hostname = str(socket.gethostname())
 		# generate unique id
 		unique_id = str(uuid.uuid4())
 
@@ -116,7 +97,6 @@ class stt_server:
 		for i in range(0, len(filenames)):
 			if filenames[i] == unique_id:
 				break
-
 		return i
 
 	def send_to_telegram(self, message):
@@ -143,33 +123,19 @@ class stt_server:
 		)
 
 	def connect_sql(self):
-
 		return pymssql.connect(
 			server=os.environ.get('MSSQL_SERVER', ''),
 			user=os.environ.get('MSSQL_LOGIN', ''),
 			password=os.environ.get('MSSQL_PASSWORD', ''),
 			database=self.sql_name,
 			tds_version=r'7.0'
-			#autocommit=True
 		)		
-
-	"""def connect_mysql(self, source_id):
-
-		return mysql.connect(
-			host=os.environ.get('MYSQL_SERVER', ''),
-			user=os.environ.get('MYSQL_LOGIN', ''),
-			passwd=os.environ.get('MYSQL_PASSWORD', ''),
-			db=self.mysql_name[source_id],
-			# autocommit = True
-			# cursorclass=mysql.cursors.DictCursor,
-		)"""
 
 	def perf_log(self, step, time_start, time_end, duration, linkedid):
 		print('perf_log', step)
 		spent_time = (time_end - time_start)
 		current_date = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
 
-		# cursor = self.conn.cursor()
 		cursor = self.p_conn.cursor()
 
 		sql_query = "insert into perf_log("
@@ -185,20 +151,6 @@ class stt_server:
 		sql_query += "'" + str(linkedid) + "', "
 		sql_query += "'" + str(self.source_id) + "');"
 
-		# sql_query = "insert into perf_log("
-		# sql_query += "cores, event_date, step, time, cpu, file_name, duration, linkedid, source_id"
-		# sql_query += ") "
-		# sql_query += "values ("
-		# sql_query += str(len(self.cpu_cores)) + ", "
-		# sql_query += "'" + current_date + "', "
-		# sql_query += str(step) + ", "
-		# sql_query += str(spent_time) + ", "
-		# sql_query += str(self.cpu_id) + ", "
-		# sql_query += "'" + self.temp_file_name + "', "
-		# sql_query += "'" + str(duration) + "', "
-		# sql_query += "'" + str(linkedid) + "', "
-		# sql_query += "'" + str(self.source_id) + "');"
-
 		try:
 			cursor.execute(sql_query)
 			self.p_conn.commit()
@@ -206,27 +158,17 @@ class stt_server:
 			print('perf_log query error:', str(e), '\n', sql_query)
 
 	def delete_current_queue(self, original_file_name, linkedid):
-		# cursor = self.conn.cursor()
 		cursor = self.p_conn.cursor()
 
-		"""if self.source_id == self.sources['master']:
-			sql_query = "delete from queue where linkedid = '" + linkedid + "';"
-		else:"""
 		sql_query = "delete from queue where filename = '"+original_file_name+"';"
 		cursor.execute(sql_query)
 		self.p_conn.commit()
 
 	def delete_source_file(self, original_file_path, original_file_name, linkedid):
-
-		#if self.source_id == self.sources['call']:
 		myfile = original_file_path + original_file_name
 		try:			
 			os.remove(myfile)
-			# self.log_deletion(myfile)
 			print('succesfully removed', myfile)
-			# debug ++
-			# self.send_to_telegram('delete_source_file removed: ' + str(myfile))
-			# debug --
 		except OSError as e:  ## if failed, report it back to the user ##
 			print("Error: %s - %s." % (e.filename, e.strerror))
 			self.send_to_telegram('delete_source_file error:\n' + str(e))
@@ -251,7 +193,6 @@ class stt_server:
 		cursor = self.conn.cursor()
 		cursor.execute(query)
 
-
 	def accept_feature_extractor(self, sentences, accept):
 		if len(accept) > 1 and accept['text'] != '':
 			accept_text = str(accept['text'])
@@ -275,7 +216,6 @@ class stt_server:
 				}
 			)
 		return sentences
-
 
 	def accept_feature_extractor_whisper(self, sentences, accept, max_length=900, check_repetitions=False, segment_repetitions=False):
 		if segment_repetitions:
@@ -322,7 +262,6 @@ class stt_server:
 				}
 			)
 		return sentences
-
 
 	async def transcribation_process(
 		self,
@@ -393,8 +332,6 @@ class stt_server:
 				except websockets.exceptions.ConnectionClosedError:
 					self.logger.error("The connection was closed, reconnecting")
 					continue
-			# trans_end = time.time() # datetime.datetime.now()
-			# self.perf_log(2, trans_start, trans_end, duration, linkedid)
 		
 		# WHISPER
 		else:
@@ -441,7 +378,7 @@ class stt_server:
 									if (len(segment_text) > 99 and ds["mttr"] > 0.1395 and ds["dttr"] < 7.2 and ds["simpson_index"] < 18.3):
 										check_repetitions = True
 										self.logger.warning(f"Found artifacts in this text segment: {segment_text}")
-# self.save_file_for_analysis(self.temp_file_path, self.temp_file_name, duration)
+										# self.save_file_for_analysis(self.temp_file_path, self.temp_file_name, duration)
 										break
 
 								if (check_repetitions or segment_repetitions) and attempt < max_attempts - 1:
@@ -495,7 +432,6 @@ class stt_server:
 			confidences = [sentences[i]['conf'] for i in range(len(sentences))]
 		return len(sentences), phrases, confidences
 
-
 	def transcribe_to_sql(
 		self, 
 		duration, 
@@ -508,14 +444,9 @@ class stt_server:
 		file_size, 
 		queue_date
 		):
-
-		file_saved_for_analysis = False
-
 		transcribation_date = datetime.datetime.now().strftime('%Y-%m-%dT%H:%M:%S')
 		
 		phrases_count = 0
-		# If server address starting from "ws://" then use vosk
-		# if self.gpu_uri[:3] == 'ws:':
 		phrases_count, phrases, confidences = asyncio.get_event_loop().run_until_complete(
 			self.transcribation_process(
 				duration, 
@@ -535,10 +466,6 @@ class stt_server:
 			self.confidence_of_file = sum(confidences)/len(confidences)
 		else:
 			self.confidence_of_file = 0
-		
-		# save for analysis if phrases count < 3 and duration > 300
-#		if phrases_count < 3 and duration > 300 and not file_saved_for_analysis:
-#			self.save_file_for_analysis(self.temp_file_path, self.temp_file_name, duration)
 
 		if phrases_count == 0:
 			self.save_result(
@@ -671,7 +598,7 @@ class stt_server:
 			cursor.execute(sql_query)
 			self.conn.commit()
 		except Exception as e:
-			self.logger.error(str(linkedid)+' query error: '+sql_query+' '+str(e))
+			self.logger.error(str(linkedid)+' MS SQL query error: '+sql_query+' '+str(e))
 			sys.exit('save_result')
 
 	def remove_temporary_file(self):
@@ -679,7 +606,6 @@ class stt_server:
 			print('removing',self.temp_file_path + self.temp_file_name)
 			try:
 				os.remove(self.temp_file_path + self.temp_file_name)
-				# self.log_deletion(self.temp_file_path + self.temp_file_name)
 			except Exception as e:
 				msg = 'remove_temporary_file error:\n' + str(e)
 				print(msg)
@@ -687,16 +613,15 @@ class stt_server:
 
 	def get_sql_complete_files(self):
 		cursor = self.p_conn.cursor()
-		# cursor = self.conn.cursor()
 
 		sql_query = "select distinct filename from queue where"
 		sql_query += " source_id='" + str(self.source_id) + "'"
 		sql_query += " order by filename;"
 		cursor.execute(sql_query)
+
 		complete_files = []
 		for row in cursor.fetchall():
 			complete_files.append(row[0])
-
 		return complete_files
 
 	def set_shortest_queue_cpu(self):
@@ -757,12 +682,10 @@ class stt_server:
 		'''
 
 		cursor.execute(sql_query)
-		#self.conn.commit()  # autocommit
 		result = 0
 		for row in cursor.fetchall():
 			result += 1
 			self.cpu_id = int(row[0])
-			# print('selected', self.cpu_id, 'cpu')
 		if result == 0:
 			print('error: unable to get shortest_queue_cpu')
 			self.cpu_id = 0
@@ -780,7 +703,6 @@ class stt_server:
 		return 0
 
 	def add_queue(self, filepath, filename, rec_date, src, dst, linkedid, naming_version):
-
 		try:
 			file_stat = os.stat(filepath + filename)
 			f_size = file_stat.st_size
@@ -799,11 +721,7 @@ class stt_server:
 				message += 's[' + str(f_size) + ']  '
 				message += 'd[' + str(file_duration) + ']  '
 				message += str(filename)
-				# self.save_file_for_analysis(filepath, filename, file_duration)
 				print(message)
-				# self.send_to_telegram(message)
-			#else:
-			#	self.save_file_for_analysis(filepath, filename, file_duration)
 
 			cursor = self.p_conn.cursor()
 			current_date = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
@@ -825,24 +743,6 @@ class stt_server:
 			sql_query += str(linkedid) + "',"
 			sql_query += str(naming_version) + ");"
 
-			# sql_query = "insert into queue "
-			# sql_query += "(filepath, filename, cpu_id, date, "
-			# sql_query += "duration, record_date, source_id, src, dst, linkedid, version, file_size) "
-			# sql_query += "values ('"
-			# sql_query += filepath + "','"
-			# sql_query += filename + "','"
-			# sql_query += str(self.cpu_id) + "','"
-			# sql_query += current_date + "','"
-			# sql_query += str(file_duration) + "',"
-			# sql_query += rec_date if rec_date == 'Null' else "'"+rec_date+"'"
-			# sql_query += ",'"
-			# sql_query += str(self.source_id) + "','"
-			# sql_query += str(src) + "','"
-			# sql_query += str(dst) + "','"
-			# sql_query += str(linkedid) + "',"
-			# sql_query += str(naming_version) + ","
-			# sql_query += str(f_size) + ");"
-
 			try:
 				cursor.execute(sql_query)
 				self.p_conn.commit() # autocommit
@@ -852,11 +752,8 @@ class stt_server:
 		else:
 			message = 'queue skipped: t[' + str(time.time() - file_stat.st_mtime) + ']  '
 			message += 's[' + str(file_stat.st_size) + ']  '
-			# message += 'd[' + str(file_duration) + ']  '
 			message += str(filename)
-			# self.save_file_for_analysis(filepath, filename, file_duration)
 			print(message)
-			# self.send_to_telegram(message)
 
 	def calculate_file_length(self, filepath, filename):
 		file_duration = 0
@@ -871,7 +768,6 @@ class stt_server:
 		return file_duration
 
 	def wer_file_exist(self):
-		
 		wav_count = len(glob.glob(self.saved_for_analysis_path + '/*.wav'))
 		files_count_limit = int(os.environ.get('WER_FILES_COUNT_LIMIT', '0'))
 		
