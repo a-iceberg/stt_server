@@ -6,9 +6,8 @@ COPY requirements.txt /worker
 
 RUN mkdir /worker/files
 RUN bash -c 'apt-get install -y software-properties-common;add-apt-repository ppa:mc3man/trusty-media -y;apt-get update -y;apt-get install ffmpeg -y'
-RUN pip3 install -r requirements.txt --no-cache-dir
+RUN pip3 install -r requirements.txt
 
-# Set the timezone.
 ENV TZ=Europe/Moscow
 RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
 

@@ -4,7 +4,7 @@ WORKDIR /app
 
 COPY requirements.txt /app
 
-RUN pip3 install -r requirements.txt --no-cache-dir
+RUN pip3 install -r requirements.txt
 
 COPY queue_server.py /app
 COPY init_queue.py /app
