@@ -159,15 +159,15 @@ class stt_server:
 
     def get_fs_files_list(self, queue):
         fd_list = []
+        filepath = self.original_storage_path[self.source_id]
 
         if self.source_id == self.sources["master"]:
             files_list = []
-            os_walk = os.walk(self.original_storage_path[self.source_id])
+            os_walk = os.walk(filepath)
             self.logger.info(
-                f"master folder {self.original_storage_path[self.source_id]} Files in folder: {len(queue)}"
+                f"master folder {filepath} Files in folder: {len(queue)}"
             )
             for dirpath, dirnames, filenames in os_walk:
-                # append if '.wav' in filename or '.WAV' in filename
                 for filename in filenames:
                     if ".wav" in filename or ".WAV" in filename:
                         files_list.append(filename)
@@ -179,22 +179,20 @@ class stt_server:
             for filename in files_list:
                 if not filename in queue:
                     if os.environ.get("SAVE_FOR_ANALYSIS", "0") == "1":
-                        # debug ++
                         dst_file = (
                             self.saved_for_analysis_path + "debug/master/" + filename
                         )
                         if not os.path.exists(dst_file):
                             self.copy_file(
-                                self.original_storage_path[self.source_id] + filename,
+                                filepath + filename,
                                 self.saved_for_analysis_path + "debug/master/",
                             )
                     try:
                         file_stat = os.stat(
-                            self.original_storage_path[self.source_id] + filename
+                            filepath + filename
                         )
                         file_age = time.time() - file_stat.st_mtime
                     except Exception as e:
-                        # print("get_fs_files_list / file_stat Error:", str(e))
                         self.logger.info(
                             "get_fs_files_list / file_stat Error: " + str(e)
                         )
@@ -203,7 +201,7 @@ class stt_server:
                         try:
                             if file_age > 3600:
                                 os.remove(
-                                    self.original_storage_path[self.source_id]
+                                    filepath
                                     + filename
                                 )
                                 self.logger.info(
@@ -220,7 +218,7 @@ class stt_server:
                             continue
                         except (
                             OSError
-                        ) as e:  ## if failed, report it back to the user ##
+                        ) as e:
                             self.logger.info(
                                 "Error: %s - %s." % (e.filename, e.strerror)
                             )
@@ -239,7 +237,6 @@ class stt_server:
                             linkedid = re.findall(r"g.*h", filename)[0][1:][:-1]
                             version = 1
                         except Exception as e:
-                            # print("Error:", str(e))
                             self.logger.info("Error: " + str(e))
 
                     if version == 0:
@@ -282,16 +279,18 @@ class stt_server:
                             files_withoud_cdr_data += 1
 
                     if not rec_date == "Null":
-
+                        file_stat = os.stat(filepath + filename)
+                        f_size = file_stat.st_size
                         fd_list.append(
                             {
-                                "filepath": self.original_storage_path[self.source_id],
+                                "filepath": filepath,
                                 "filename": filename,
                                 "rec_date": rec_date,
                                 "src": src,
                                 "dst": dst,
                                 "linkedid": linkedid,
                                 "version": version,
+                                "file_size": f_size
                             }
                         )
                         files_extracted += 1
@@ -304,13 +303,12 @@ class stt_server:
             )
 
         elif self.source_id == self.sources["call"]:
-            os_walk = os.walk(self.original_storage_path[self.source_id])
+            os_walk = os.walk(filepath)
             self.logger.info(
-                f"call path {self.original_storage_path[self.source_id]} Files in folder: {len(queue)}"
+                f"call path {filepath} Files in folder: {len(queue)}"
             )
             for root, dirs, files in os_walk:
                 for filename in files:
-                    # continue if filename is not .wav and not .WAV
                     if not filename.endswith(".wav") and not filename.endswith(".WAV"):
                         continue
 
@@ -324,9 +322,7 @@ class stt_server:
                                 self.saved_for_analysis_path + "debug/removed.csv", "a"
                             ) as f:
                                 f.write(root + ";" + filename + "\n")
-                            # print('removed', root + '/' + filename)
                             self.logger.info("removed " + root + "/" + filename)
-                            # remove file
                             os.remove(os.path.join(root, filename))
                         continue
 
@@ -385,15 +381,19 @@ class stt_server:
                                     filename, date_y, date_m, date_d
                                 )  # cycled query
 
+                                filepath = root + "/"
+                                file_stat = os.stat(filepath + filename)
+                                f_size = file_stat.st_size
                                 fd_list.append(
                                     {
-                                        "filepath": root + "/",
+                                        "filepath": filepath,
                                         "filename": filename,
                                         "rec_date": rec_date,
                                         "src": src,
                                         "dst": dst,
                                         "linkedid": linkedid,
                                         "version": 0,
+                                        "file_size": f_size
                                     }
                                 )
                         else:
@@ -417,6 +417,7 @@ class stt_server:
                 "dst",
                 "linkedid",
                 "version",
+                "file_size"
             ],
         )
         df.sort_values(["rec_date", "filename"], ascending=True, inplace=True)
@@ -510,7 +511,7 @@ class stt_server:
             END IF;
 
             CREATE TEMPORARY TABLE IF NOT EXISTS result_table (cpu_id INT);
-            TRUNCATE result_table; -- очищаем таблицу перед вставкой новых данных
+            TRUNCATE result_table;
             INSERT INTO result_table VALUES (result_cpu_id);
         END $$;
         """
@@ -547,7 +548,15 @@ class stt_server:
         return 0
 
     def add_queue(
-        self, filepath, filename, rec_date, src, dst, linkedid, naming_version
+        self,
+        filepath,
+        filename,
+        rec_date,
+        src,
+        dst,
+        linkedid,
+        naming_version,
+        file_size
     ):
         try:
             file_stat = os.stat(filepath + filename)
@@ -559,7 +568,7 @@ class stt_server:
             self.logger.info("file stat error: " + str(e))
             self.send_to_telegram(str(e))
 
-        if time.time() - st_mtime > 600:
+        if time.time() - st_mtime > 600 and f_size == file_size and file_size > 0:
             file_duration = self.calculate_file_length(filepath, filename)
 
             if file_duration == 0:

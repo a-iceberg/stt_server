@@ -26,10 +26,11 @@ def main():
                 dst,
                 linkedid,
                 version,
+                file_size
             ) in server_object.get_fs_files_list(complete_files):
                 server_object.set_shortest_queue_cpu(linkedid)
                 server_object.add_queue(
-                    filepath, filename, rec_date, src, dst, linkedid, version
+                    filepath, filename, rec_date, src, dst, linkedid, version, file_size
                 )
                 incomplete_count += 1
                 if incomplete_count > batch_size:
