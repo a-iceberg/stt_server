@@ -381,7 +381,9 @@ class stt_server:
                                 )  # cycled query
 
                                 filepath = root + "/"
-                                file_stat = os.stat(filepath + filename)
+                                file_stat = os.stat(
+                                    os.path.join(root, filename)
+                                )
                                 f_size = file_stat.st_size
                                 fd_list.append(
                                     {
