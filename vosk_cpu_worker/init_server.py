@@ -1,6 +1,4 @@
 import json
-import pymssql
-import pymysql as mysql
 import psycopg
 import datetime
 import os
@@ -36,27 +34,9 @@ class stt_server:
 			'VOSK_SERVER_WORKER_'+str(self.cpu_id), 
 			os.environ.get('VOSK_SERVER_DEFAULT', '')
 			)
-		
-		# message = str(datetime.datetime.now())+'\n'
-		# message += 'New vosk worker: '+str(self.cpu_id)+' # '+self.gpu_uri
-		# self.send_to_telegram(message)
-
-		# postgre sql
 		self.p_sql_name = "voice_ai"
-
-		# ms sql
-		self.sql_name = 'voice_ai'
-
 		self.source_id = 0
-		self.sources = {
-			'call': 1,
-			'master': 2,
-		}
 
-		self.original_storage_path = {
-			1: 'audio/stereo/', # call centre records path
-			2: 'audio/mono/' # masters records path
-		}
 		self.saved_for_analysis_path = 'audio/wer/'
 		self.confidence_of_file = 0
 
@@ -64,21 +44,7 @@ class stt_server:
 		self.temp_file_name = ''
 
 		self.p_conn = self.connect_p_sql()	
-		self.conn = self.connect_sql()
-
 		self.send_to_telegram('cpu '+str(self.cpu_id)+' started')
-
-	# def log_deletion(self, filename):
-	# 	current_date = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-	# 	connector = mysql.connect(
-	# 		host = '10.2.4.87',
-	# 		user = 'root',
-	# 		passwd = 'root'
-	# 	)
-	# 	connector.autocommit(True)
-	# 	cursor = connector.cursor()
-	# 	cursor.execute("use ml")
-	# 	cursor.execute("INSERT INTO deletions(date, filename) VALUES ('"+current_date+"', '"+filename+"');")
 
 	def get_worker_id(self):
 		workers_count = int(os.environ.get('WORKERS_COUNT', '0'))
@@ -120,15 +86,6 @@ class stt_server:
 			password=os.environ.get("POSTGRESQL_PASSWORD", ""),
 			host=os.environ.get("POSTGRESQL_SERVER", ""),
 			port=os.environ.get("POSTGRESQL_PORT", "")
-		)
-
-	def connect_sql(self):
-		return pymssql.connect(
-			server=os.environ.get('MSSQL_SERVER', ''),
-			user=os.environ.get('MSSQL_LOGIN', ''),
-			password=os.environ.get('MSSQL_PASSWORD', ''),
-			database=self.sql_name,
-			tds_version=r'7.0'
 		)		
 
 	def perf_log(self, step, time_start, time_end, duration, linkedid):
@@ -172,26 +129,6 @@ class stt_server:
 		except OSError as e:  ## if failed, report it back to the user ##
 			print("Error: %s - %s." % (e.filename, e.strerror))
 			self.send_to_telegram('delete_source_file error:\n' + str(e))
-
-	def summarization_add_queue_deprecated(self, linkedid, record_date, side, phrases_count, text, version, source_id):
-		current_date = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-		text_length = len(text)
-		query = "insert into summarization_queue"
-		query += "(linkedid, record_date, append_date, side, phrases_count, text, text_length, version, source_id) "
-		query += " values("
-		query += "'"+str(linkedid)+"',"
-		query += "'"+str(record_date)+"',"
-		query += "'"+str(current_date)+"',"
-		query += str(side)+","
-		query += "'"+str(phrases_count)+"',"
-		query += "'"+str(text)+"',"
-		query += "'"+str(text_length)+"',"
-		query += "'"+str(version)+"',"
-		query += "'"+str(source_id)+"'"
-		query += ");"
-
-		cursor = self.conn.cursor()
-		cursor.execute(query)
 
 	def accept_feature_extractor(self, sentences, accept):
 		if len(accept) > 1 and accept['text'] != '':
@@ -271,15 +208,13 @@ class stt_server:
 		rec_date, 
 		src, 
 		dst, 
-		linkedid, 
-		file_size, 
+		linkedid,
 		queue_date,
 		transcribation_date,
 		max_length=900
 		):
 		trans_start = time.time()		
-		logger_text = ' size: ' + str(file_size)
-		logger_text += ' file: ' + self.temp_file_path + self.temp_file_name			
+		logger_text = ' file: ' + self.temp_file_path + self.temp_file_name			
 
 		self.logger.info(logger_text)
 
@@ -418,7 +353,6 @@ class stt_server:
 				src,
 				dst,
 				linkedid,
-				file_size,
 				queue_date,
 				transcriber
 				)
@@ -440,8 +374,7 @@ class stt_server:
 		rec_date, 
 		src, 
 		dst, 
-		linkedid, 
-		file_size, 
+		linkedid,
 		queue_date
 		):
 		transcribation_date = datetime.datetime.now().strftime('%Y-%m-%dT%H:%M:%S')
@@ -455,8 +388,7 @@ class stt_server:
 				rec_date, 
 				src, 
 				dst, 
-				linkedid, 
-				file_size, 
+				linkedid,
 				queue_date,
 				transcribation_date
 				)
@@ -481,7 +413,6 @@ class stt_server:
 				src,
 				dst,
 				linkedid,
-				file_size,
 				queue_date,
 				0
 			)
@@ -500,7 +431,6 @@ class stt_server:
 			src,
 			dst,
 			linkedid,
-			file_size,
 			queue_date,
 			transcriber
 		):
@@ -510,7 +440,6 @@ class stt_server:
 			rec_date = 'Null'
 		
 		p_cursor = self.p_conn.cursor()
-		cursor = self.conn.cursor()
 		
 		# Transcribation_date should be After transcribation
 		transcribation_date = datetime.datetime.now().strftime('%Y-%m-%dT%H:%M:%S')
@@ -550,231 +479,12 @@ class stt_server:
 		p_sql_query += " ,'" + str(queue_date) + "',"
 		p_sql_query += " " + str(transcriber) + ");"
 
-		sql_query = "insert into transcribations("
-		sql_query += " cpu_id,"
-		sql_query += " duration,"
-		sql_query += " audio_file_name,"
-		sql_query += " transcribation_date,"
-		sql_query += " text,"
-		sql_query += " start,"
-		sql_query += " end_time,"
-		sql_query += " side,"
-		sql_query += " conf,"
-		sql_query += " linkedid,"
-		sql_query += " src,"
-		sql_query += " dst,"
-		sql_query += " record_date,"
-		sql_query += " source_id,"
-		sql_query += " file_size,"
-		sql_query += " queue_date,"
-		sql_query += " model)"
-		sql_query += " values ("
-		sql_query += " " + str(self.cpu_id) + ","
-		sql_query += " " + str(duration) + ","
-		sql_query += " '" + original_file_name + "',"
-		sql_query += " '" + transcribation_date + "',"
-		sql_query += " '" + accept_text + "',"
-		sql_query += " '" + str(accept_start) + "',"
-		sql_query += " '" + str(accept_end) + "',"
-		sql_query += " '" + str(side) + "',"
-		sql_query += " '" + str(conf_mid) + "',"
-		sql_query += " '" + str(linkedid) + "',"
-		sql_query += " '" + str(src) + "',"
-		sql_query += " '" + str(dst) + "',"
-		sql_query += " " + str(rec_date) if str(rec_date) == 'Null' else "'" + str(rec_date) + "'"
-		sql_query += " ,'" + str(self.source_id)+"'"
-		sql_query += " ,'" + str(0 if file_size is None else file_size) + "',"
-		sql_query += " '" + str(queue_date) + "',"
-		sql_query += " " + str(transcriber) + ");"
-
 		try:
 			p_cursor.execute(p_sql_query)
 			self.p_conn.commit()
 		except Exception as e:
 			self.logger.error(str(linkedid)+' Postgre query error: '+sql_query+' '+str(e))
 			sys.exit('save_result')
-
-		try:
-			cursor.execute(sql_query)
-			self.conn.commit()
-		except Exception as e:
-			self.logger.error(str(linkedid)+' MS SQL query error: '+sql_query+' '+str(e))
-			sys.exit('save_result')
-
-	def remove_temporary_file(self):
-		if self.source_id == self.sources['call']:
-			print('removing',self.temp_file_path + self.temp_file_name)
-			try:
-				os.remove(self.temp_file_path + self.temp_file_name)
-			except Exception as e:
-				msg = 'remove_temporary_file error:\n' + str(e)
-				print(msg)
-				self.send_to_telegram(msg)
-
-	def get_sql_complete_files(self):
-		cursor = self.p_conn.cursor()
-
-		sql_query = "select distinct filename from queue where"
-		sql_query += " source_id='" + str(self.source_id) + "'"
-		sql_query += " order by filename;"
-		cursor.execute(sql_query)
-
-		complete_files = []
-		for row in cursor.fetchall():
-			complete_files.append(row[0])
-		return complete_files
-
-	def set_shortest_queue_cpu(self):
-		cursor = self.p_conn.cursor()
-		# cursor = self.conn.cursor()
-
-		# sql_query = '''
-		# IF OBJECT_ID('tempdb..#tmp_cpu_queue_len') IS NOT NULL
-		# DROP TABLE #tmp_cpu_queue_len;
-
-		# CREATE TABLE #tmp_cpu_queue_len
-		# (
-		# 	cpu_id INT,
-		# 	files_count int
-		# );
-
-		# INSERT INTO #tmp_cpu_queue_len 
-		# '''
-		# for i in self.cpu_cores:
-		# 	if i==0:
-		# 		sql_query += 'select 0 as cpu_id, 0 as files_count '
-		# 	else:
-		# 		sql_query += 'union all select '+str(i)+',0 '
-		# sql_query += 'union all	select cpu_id, count(filename) from queue group by cpu_id; '
-		# sql_query += 'select top 1 cpu_id, max(files_count)  from #tmp_cpu_queue_len group by cpu_id order by max(files_count), cpu_id;'
-
-		sql_query = '''
-		DROP TABLE IF EXISTS tmp_cpu_queue_len;
-
-		CREATE TEMPORARY TABLE tmp_cpu_queue_len
-		(
-			cpu_id INT,
-			files_count INT
-		);
-
-		INSERT INTO tmp_cpu_queue_len (cpu_id, files_count)
-		'''
-		
-		insert_values = []
-		for i in self.cpu_cores:
-			if i == 0:
-				insert_values.append("(0, 0)")
-			else:
-				insert_values.append(f"({i}, 0)")
-		
-		sql_query += "VALUES " + ", ".join(insert_values)
-		sql_query += '''
-		UNION ALL
-		SELECT cpu_id, COUNT(filename) 
-		FROM queue 
-		GROUP BY cpu_id;
-
-		SELECT cpu_id, MAX(files_count) 
-		FROM tmp_cpu_queue_len 
-		GROUP BY cpu_id 
-		ORDER BY MAX(files_count), cpu_id 
-		LIMIT 1;
-		'''
-
-		cursor.execute(sql_query)
-		result = 0
-		for row in cursor.fetchall():
-			result += 1
-			self.cpu_id = int(row[0])
-		if result == 0:
-			print('error: unable to get shortest_queue_cpu')
-			self.cpu_id = 0
-
-	def get_source_id(self, source_name):
-		for source in self.sources.items():
-			if source[0] == source_name:
-				return source[1]
-		return 0
-
-	def get_source_name(self, source_id):
-		for source in self.sources.items():
-			if source[1] == source_id:
-				return source[0]
-		return 0
-
-	def add_queue(self, filepath, filename, rec_date, src, dst, linkedid, naming_version):
-		try:
-			file_stat = os.stat(filepath + filename)
-			f_size = file_stat.st_size
-			st_mtime = file_stat.st_mtime
-		except Exception as e:
-			f_size = -1
-			st_mtime = 0
-			print('file stat error:', str(e))
-			self.send_to_telegram(str(e))
-
-		if time.time() - st_mtime > 600:
-			file_duration = self.calculate_file_length(filepath, filename)
-
-			if file_duration == 0:
-				message = 'zero file in queue: t[' + str(time.time() - st_mtime) + ']  '
-				message += 's[' + str(f_size) + ']  '
-				message += 'd[' + str(file_duration) + ']  '
-				message += str(filename)
-				print(message)
-
-			cursor = self.p_conn.cursor()
-			current_date = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-
-			sql_query = "insert into queue "
-			sql_query += "(filepath, filename, cpu_id, date, "
-			sql_query += "duration, record_date, source_id, src, dst, linkedid, version) "
-			sql_query += "values ('"
-			sql_query += filepath + "','"
-			sql_query += filename + "','"
-			sql_query += str(self.cpu_id) + "','"
-			sql_query += current_date + "','"
-			sql_query += str(file_duration) + "',"
-			sql_query += rec_date if rec_date == 'Null' else "'"+rec_date+"'"
-			sql_query += ",'"
-			sql_query += str(self.source_id) + "','"
-			sql_query += str(src) + "','"
-			sql_query += str(dst) + "','"
-			sql_query += str(linkedid) + "',"
-			sql_query += str(naming_version) + ");"
-
-			try:
-				cursor.execute(sql_query)
-				self.p_conn.commit() # autocommit
-			except Exception as e:
-				print('add queue error. query: '+sql_query)
-				print(str(e))
-		else:
-			message = 'queue skipped: t[' + str(time.time() - file_stat.st_mtime) + ']  '
-			message += 's[' + str(file_stat.st_size) + ']  '
-			message += str(filename)
-			print(message)
-
-	def calculate_file_length(self, filepath, filename):
-		file_duration = 0
-		try:
-			fname = filepath + filename
-			with contextlib.closing(wave.open(fname, 'r')) as f:
-				frames = f.getnframes()
-				rate = f.getframerate()
-				file_duration = frames / float(rate)
-		except Exception as e:
-			print('file length calculate error:', str(e))
-		return file_duration
-
-	def wer_file_exist(self):
-		wav_count = len(glob.glob(self.saved_for_analysis_path + '/*.wav'))
-		files_count_limit = int(os.environ.get('WER_FILES_COUNT_LIMIT', '0'))
-		
-		if files_count_limit == 0:
-			return True
-		else:
-			return wav_count>files_count_limit
 
 	def save_file_for_analysis(self, file_path, file_name, duration):
 		if int(os.environ.get('SAVE_FOR_ANALYSIS', '0'))==1:	

@@ -11,8 +11,7 @@ def main():
 	cursor = server_object.p_conn.cursor()
 
 	while True:
-
-		past_in_minutes = pendulum.now().add(minutes=-6).strftime('%Y-%m-%d %H:%M:%S')
+		past_in_minutes = pendulum.now().add(minutes=-15).strftime('%Y-%m-%d %H:%M:%S')
 		server_object.logger.info(f'past_in_minutes: {past_in_minutes}')
 
 		sql_query = "select filepath, filename, duration, source_id, "
@@ -38,7 +37,6 @@ def main():
 			src = row[5]
 			dst = row[6]
 			linkedid = row[7]
-			file_size = 0
 			queue_date = row[8]
 
 			files_converted = 0
@@ -46,7 +44,6 @@ def main():
 			if not os.path.isfile(original_file_path + original_file_name):
 				msg = 'File not found: ' + original_file_path + original_file_name
 				msg += '\nRemoving from queue..'
-				# print(msg)
 				server_object.logger.info(msg)
 				server_object.delete_current_queue(original_file_name, linkedid)
 
@@ -105,7 +102,6 @@ def main():
 						src,
 						dst,
 						linkedid,
-						file_size,
 						queue_date
 					)
 					files_converted += 1				
@@ -133,7 +129,6 @@ def main():
 					src,
 					dst,
 					linkedid,
-					file_size,
 					queue_date,
 					0
 				)

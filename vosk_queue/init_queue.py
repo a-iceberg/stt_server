@@ -81,8 +81,7 @@ class stt_server:
             host=os.environ.get("MYSQL_SERVER", ""),
             user=os.environ.get("MYSQL_LOGIN", ""),
             passwd=os.environ.get("MYSQL_PASSWORD", ""),
-            db=self.mysql_name[source_id],
-            # cursorclass=mysql.cursors.DictCursor
+            db=self.mysql_name[source_id]
         )
 
     def linkedid_by_filename(self, filename, date_y, date_m, date_d):
@@ -425,49 +424,6 @@ class stt_server:
 
     def set_shortest_queue_cpu(self, linkedid):
         cursor = self.p_conn.cursor()
-
-        # sql_query = """
-        # IF OBJECT_ID('tempdb..#tmp_cpu_queue_len') IS NOT NULL
-        # DROP TABLE #tmp_cpu_queue_len;
-
-        # CREATE TABLE #tmp_cpu_queue_len
-        # (
-        #     cpu_id INT,
-        #     files_count INT
-        # );
-
-        # INSERT INTO #tmp_cpu_queue_len (cpu_id, files_count)
-        # VALUES
-        # """
-        # sql_query += ", ".join(f"({i}, 0)" for i in self.cpu_cores) + ";"
-
-        # sql_query += f"""
-        # DECLARE @linkedid_cpu_id INT;
-        # SELECT @linkedid_cpu_id = cpu_id FROM queue WHERE linkedid = '{linkedid}';
-
-        # IF @linkedid_cpu_id IS NULL
-        # BEGIN
-        #     UPDATE #tmp_cpu_queue_len
-        #     SET files_count = (SELECT COUNT(*) FROM queue WHERE queue.cpu_id = #tmp_cpu_queue_len.cpu_id);
-
-        #     SELECT TOP 1 cpu_id FROM #tmp_cpu_queue_len
-        #     ORDER BY files_count, cpu_id;
-        # END
-        # ELSE IF @linkedid_cpu_id = 0
-        # BEGIN
-        #     SELECT 0 as cpu_id;
-        # END
-        # ELSE
-        # BEGIN
-        #     UPDATE #tmp_cpu_queue_len
-        #     SET files_count = (SELECT COUNT(*) FROM queue WHERE queue.cpu_id = #tmp_cpu_queue_len.cpu_id);
-
-        #     SELECT TOP 1 cpu_id FROM #tmp_cpu_queue_len
-        #     WHERE cpu_id != 0
-        #     ORDER BY files_count, cpu_id;
-        # END
-        # """
-
         cursor.execute("DROP TABLE IF EXISTS tmp_cpu_queue_len;")
         cursor.execute("""
         CREATE TEMPORARY TABLE tmp_cpu_queue_len (
@@ -517,9 +473,7 @@ class stt_server:
         """
         cursor.execute(main_query)
         self.p_conn.commit()
-
         cursor.execute("SELECT cpu_id FROM result_table;")
-        # cursor.execute(sql_query)
 
         rows = cursor.fetchall()
         result = 0
@@ -568,7 +522,7 @@ class stt_server:
             self.logger.info("file stat error: " + str(e))
             self.send_to_telegram(str(e))
 
-        if time.time() - st_mtime > 600 and f_size == file_size and file_size > 0:
+        if time.time() - st_mtime > 300 and f_size == file_size and file_size > 0:
             file_duration = self.calculate_file_length(filepath, filename)
 
             if file_duration == 0:
@@ -619,7 +573,6 @@ class stt_server:
 
     def clean_queue(self):
         cursor = self.p_conn.cursor()
-
         sql_query = "delete from queue;"
         cursor.execute(sql_query)
         self.p_conn.commit()

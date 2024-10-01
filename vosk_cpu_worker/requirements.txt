@@ -1,12 +1,8 @@
-pymysql==1.1.1
-pymssql==2.2.11
 psycopg[binary,pool]==3.2.1
 pandas==1.5.3
 requests==2.31.0
 websockets==12.0
 pendulum==3.0.0
-urllib3==2.2.0
-cryptography==42.0.2
 httpx==0.26.0
 aiohttp==3.9.3
 ruts==0.8.1

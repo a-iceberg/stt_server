@@ -1,7 +1,5 @@
 pymysql==1.1.1
-pymssql==2.2.11
-pandas==2.2.0
+numpy==1.26.4
+pandas==1.5.3
 requests==2.31.0
-websockets==12.0
-pendulum==3.0.0
 psycopg[binary,pool]==3.2.1
