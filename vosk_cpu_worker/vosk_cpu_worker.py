@@ -11,7 +11,7 @@ def main():
 	cursor = server_object.p_conn.cursor()
 
 	while True:
-		past_in_minutes = pendulum.now().add(minutes=-15).strftime('%Y-%m-%d %H:%M:%S')
+		past_in_minutes = pendulum.now().add(minutes=-5).strftime('%Y-%m-%d %H:%M:%S')
 		server_object.logger.info(f'past_in_minutes: {past_in_minutes}')
 
 		sql_query = "select filepath, filename, duration, source_id, "

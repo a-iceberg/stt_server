@@ -524,7 +524,7 @@ class stt_server:
             self.logger.info("file stat error: " + str(e))
             self.send_to_telegram(str(e))
 
-        if time.time() - st_mtime > 300 and f_size == file_size and file_size > 0:
+        if time.time() - st_mtime > 60 and f_size == file_size and file_size > 0:
             file_duration = self.calculate_file_length(filepath, filename)
 
             if file_duration == 0:
