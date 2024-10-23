@@ -279,6 +279,14 @@ class stt_server:
 				file = {"file": (os.path.basename(file_path), open(file_path, "rb"), "audio/wav")}
 				attempt = 0
 				max_attempts = 2
+				hallucinations = [
+					"Не пиши этот промпт",
+					"Продолжение следует",
+					"Спасибо за внимание",
+					"Добро пожаловать на наш",
+					"Дима Торзок",
+					"DimaTorzok"
+				]
 
 				try:
 					while attempt < max_attempts:
@@ -295,11 +303,16 @@ class stt_server:
 							accept = response.json()
 							check_repetitions = False
 							segment_repetitions = False
+							hallu = False
 
 							if len(accept) > 1 and accept["text"] != "":
 								current_texts = set()
 								for segments_rec in accept["segments"]:
 									segment_text = str(segments_rec["text"]).replace("'", "")[:max_length]
+									if any(sub in segment_text for sub in hallucinations):
+										hallu = True
+										self.logger.warning(f"Found hallucination in this text segment: {segment_text}")
+										break
 									if segment_text in current_texts and len(segment_text) > 9:
 										segment_repetitions = True
 										self.logger.warning(f"Found this repeating text segment in the transcription: {segment_text}")
@@ -316,7 +329,7 @@ class stt_server:
 										# self.save_file_for_analysis(self.temp_file_path, self.temp_file_name, duration)
 										break
 
-								if (check_repetitions or segment_repetitions) and attempt < max_attempts - 1:
+								if (check_repetitions or segment_repetitions or hallu) and attempt < max_attempts - 1:
 									attempt += 1
 									continue
 								else:
@@ -334,7 +347,7 @@ class stt_server:
 				except Exception as e:
 					self.logger.warning("Whisper connection error: " + str(e))
 
-		trans_end = time.time() # datetime.datetime.now()
+		trans_end = time.time()
 		self.perf_log(2, trans_start, trans_end, duration, linkedid)
 
 		# save to sql
