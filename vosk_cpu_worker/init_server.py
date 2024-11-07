@@ -183,21 +183,31 @@ class stt_server:
 					last_repetition_end_index = max(end_indices)
 					segment_text = segment_text[:last_repetition_end_index+1]
 
-			segment_start = segments_rec["start"]
-			segment_end = segments_rec["end"]
-			try:
-				conf_score = float(segments_rec["confidence"])
-			except:
-				conf_score = 0
-				print("Conf_score did not calculated")
-			sentences.append(
-				{
-					"text": segment_text,
-					"start": segment_start,
-					"end": segment_end,
-					"confidence": conf_score,
-				}
-			)
+			str_lenght = len(segment_text.replace(" ", ""))
+			cur_length = 0
+			for word in segments_rec["words"]:
+				text = str(word["text"]).replace("'", "")
+
+				if text in segment_text:
+					cur_length += len(text)
+					if cur_length <= str_lenght:
+						segment_start = word["start"]
+						segment_end = word["end"]
+						try:
+							conf_score = float(word["confidence"])
+						except:
+							conf_score = 0
+							self.logger.warning(
+								"Conf_score did not calculated"
+							)
+						sentences.append(
+							{
+								"text": text,
+								"start": segment_start,
+								"end": segment_end,
+								"confidence": conf_score,
+							}
+						)
 		return sentences
 
 	async def transcribation_process(
@@ -360,7 +370,7 @@ class stt_server:
 				sentences[i]['end'],
 				side,
 				transcribation_date,
-				str(conf),
+				conf,
 				original_file_name,
 				rec_date,
 				src,
