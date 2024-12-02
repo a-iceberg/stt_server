@@ -34,7 +34,7 @@ class stt_server:
 			'VOSK_SERVER_WORKER_'+str(self.cpu_id), 
 			os.environ.get('VOSK_SERVER_DEFAULT', '')
 			)
-		self.p_sql_name = "voice_ai"
+		self.sql_name = "voice_ai"
 		self.source_id = 0
 
 		self.saved_for_analysis_path = 'audio/wer/'
@@ -43,7 +43,7 @@ class stt_server:
 		self.temp_file_path = ''
 		self.temp_file_name = ''
 
-		self.p_conn = self.connect_p_sql()	
+		self.conn = self.connect_sql()
 		self.send_to_telegram('cpu '+str(self.cpu_id)+' started')
 
 	def get_worker_id(self):
@@ -79,21 +79,21 @@ class stt_server:
 			self.logger.info('send_to_telegram error: '+str(e))
 			self.logger.info('message: '+message)
 
-	def connect_p_sql(self):
+	def connect_sql(self):
 		return psycopg.connect(
-			dbname=self.p_sql_name,
+			dbname=self.sql_name,
 			user=os.environ.get("POSTGRESQL_LOGIN", ""),
 			password=os.environ.get("POSTGRESQL_PASSWORD", ""),
 			host=os.environ.get("POSTGRESQL_SERVER", ""),
-			port=os.environ.get("POSTGRESQL_PORT", "")
-		)		
+			port=os.environ.get("POSTGRESQL_PORT", ""),
+			options='-c client_encoding=UTF8'
+		)
 
 	def perf_log(self, step, time_start, time_end, duration, linkedid):
 		print('perf_log', step)
 		spent_time = (time_end - time_start)
 		current_date = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-
-		cursor = self.p_conn.cursor()
+		cursor = self.conn.cursor()
 
 		sql_query = "insert into perf_log("
 		sql_query += "event_date, step, time, cpu, file_name, duration, linkedid, source_id"
@@ -110,16 +110,16 @@ class stt_server:
 
 		try:
 			cursor.execute(sql_query)
-			self.p_conn.commit()
+			self.conn.commit()
 		except Exception as e:
 			print('perf_log query error:', str(e), '\n', sql_query)
 
 	def delete_current_queue(self, original_file_name, linkedid):
-		cursor = self.p_conn.cursor()
+		cursor = self.conn.cursor()
 
 		sql_query = "delete from queue where filename = '"+original_file_name+"';"
 		cursor.execute(sql_query)
-		self.p_conn.commit()
+		self.conn.commit()
 
 	def delete_source_file(self, original_file_path, original_file_name, linkedid):
 		myfile = original_file_path + original_file_name
@@ -462,49 +462,50 @@ class stt_server:
 			self.logger.error(str(linkedid)+' save_result - wrong rec_date: '+str(rec_date)+' converting to Null..')
 			rec_date = 'Null'
 		
-		p_cursor = self.p_conn.cursor()
+		cursor = self.conn.cursor()
 		
 		# Transcribation_date should be After transcribation
 		transcribation_date = datetime.datetime.now().strftime('%Y-%m-%dT%H:%M:%S')
 
-		p_sql_query = "insert into transcribations("
-		p_sql_query += " cpu_id,"
-		p_sql_query += " duration,"
-		p_sql_query += " audio_file_name,"
-		p_sql_query += " transcribation_date,"
-		p_sql_query += " text,"
-		p_sql_query += " start,"
-		p_sql_query += " end_time,"
-		p_sql_query += " side,"
-		p_sql_query += " conf,"
-		p_sql_query += " linkedid,"
-		p_sql_query += " src,"
-		p_sql_query += " dst,"
-		p_sql_query += " record_date,"
-		p_sql_query += " source_id,"
-		p_sql_query += " queue_date,"
-		p_sql_query += " model)"
-		p_sql_query += " values ("
-		p_sql_query += " " + str(self.cpu_id) + ","
-		p_sql_query += " " + str(duration) + ","
-		p_sql_query += " '" + original_file_name + "',"
-		p_sql_query += " '" + transcribation_date + "',"
-		p_sql_query += " '" + accept_text + "',"
-		p_sql_query += " '" + str(accept_start) + "',"
-		p_sql_query += " '" + str(accept_end) + "',"
-		p_sql_query += " '" + str(side) + "',"
-		p_sql_query += " '" + str(conf_mid) + "',"
-		p_sql_query += " '" + str(linkedid) + "',"
-		p_sql_query += " '" + str(src) + "',"
-		p_sql_query += " '" + str(dst) + "',"
-		p_sql_query += " " + str(rec_date) if str(rec_date) == 'Null' else "'" + str(rec_date) + "'"
-		p_sql_query += " ,'" + str(self.source_id)+"'"
-		p_sql_query += " ,'" + str(queue_date) + "',"
-		p_sql_query += " " + str(transcriber) + ");"
+		sql_query = "insert into transcribations("
+		sql_query += " cpu_id,"
+		sql_query += " duration,"
+		sql_query += " audio_file_name,"
+		sql_query += " transcribation_date,"
+		sql_query += " text,"
+		sql_query += " start,"
+		sql_query += " end_time,"
+		sql_query += " side,"
+		sql_query += " conf,"
+		sql_query += " linkedid,"
+		sql_query += " src,"
+		sql_query += " dst,"
+		sql_query += " record_date,"
+		sql_query += " source_id,"
+		sql_query += " queue_date,"
+		sql_query += " model)"
+		sql_query += " values ("
+		sql_query += " " + str(self.cpu_id) + ","
+		sql_query += " " + str(duration) + ","
+		sql_query += " '" + original_file_name + "',"
+		sql_query += " '" + transcribation_date + "',"
+		sql_query += " '" + accept_text + "',"
+		sql_query += " '" + str(accept_start) + "',"
+		sql_query += " '" + str(accept_end) + "',"
+		sql_query += " '" + str(side) + "',"
+		sql_query += " '" + str(conf_mid) + "',"
+		sql_query += " '" + str(linkedid) + "',"
+		sql_query += " '" + str(src) + "',"
+		sql_query += " '" + str(dst) + "',"
+		sql_query += " " + str(rec_date) if str(rec_date) == 'Null' else "'" + str(rec_date) + "'"
+		sql_query += " ,'" + str(self.source_id)+"'"
+		sql_query += " ,'" + str(queue_date) + "',"
+		sql_query += " " + str(transcriber) + ");"
 
 		try:
-			p_cursor.execute(p_sql_query)
-			self.p_conn.commit()
+			cursor.execute(sql_query)
+			self.conn.commit()
+
 		except Exception as e:
 			self.logger.error(str(linkedid)+' Postgre query error: '+sql_query+' '+str(e))
 			sys.exit('save_result')

@@ -1,11 +1,10 @@
 FROM python:3.11-slim
-
 WORKDIR /worker
 
 COPY requirements.txt /worker
-
 RUN mkdir /worker/files
-RUN bash -c 'apt-get install -y software-properties-common;add-apt-repository ppa:mc3man/trusty-media -y;apt-get update -y;apt-get install ffmpeg -y'
+
+RUN apt-get update && apt-get install ffmpeg -y && rm -rf /var/lib/apt/lists/*
 RUN pip3 install -r requirements.txt
 
 ENV TZ=Europe/Moscow

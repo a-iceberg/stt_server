@@ -8,7 +8,7 @@ def main():
 	server_object = stt_server()
 	server_object.logger.info(f'CPU {server_object.cpu_id} started: {server_object.gpu_uri}')
 
-	cursor = server_object.p_conn.cursor()
+	cursor = server_object.conn.cursor()
 
 	while True:
 		past_in_minutes = pendulum.now().add(minutes=-5).strftime('%Y-%m-%d %H:%M:%S')
