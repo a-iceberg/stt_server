@@ -290,12 +290,12 @@ class stt_server:
 				attempt = 0
 				max_attempts = 2
 				hallucinations = [
-					"Не пиши этот промпт",
-					"Продолжение следует",
-					"Спасибо за внимание",
-					"Добро пожаловать на наш",
-					"Дима Торзок",
-					"DimaTorzok"
+					"не пиши эту инструкцию",
+					"продолжение следует",
+					"спасибо за внимание",
+					"добро пожаловать на наш",
+					"дима торзок",
+					"dimatorzok"
 				]
 
 				try:
@@ -319,7 +319,7 @@ class stt_server:
 								current_texts = set()
 								for segments_rec in accept["segments"]:
 									segment_text = str(segments_rec["text"]).replace("'", "")[:max_length]
-									if any(sub in segment_text for sub in hallucinations):
+									if any(sub in segment_text.lower() for sub in hallucinations):
 										hallu = True
 										self.logger.warning(f"Found hallucination in this text segment: {segment_text}")
 										break
