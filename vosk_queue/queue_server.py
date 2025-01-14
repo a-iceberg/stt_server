@@ -44,7 +44,7 @@ def main():
                 server_object.sources[source_id],
             )
 
-        sleep_time = 3
+        sleep_time = 5
         print(
 			datetime.datetime.now().strftime('%Y-%m-%dT%H:%M:%S'),
 			'sleeping '+str(sleep_time)+'s..'
