@@ -10,6 +10,9 @@ import time
 import shutil
 import logging
 import requests
+import soundfile
+
+from soundfile import SoundFile
 
 
 class stt_server:
@@ -486,7 +489,7 @@ class stt_server:
         if result == 0:
             self.logger.info("Error: unable to get shortest_queue_cpu")
             self.cpu_id = 0
-        
+
         cursor.execute("DROP TABLE IF EXISTS tmp_cpu_queue_len;")
         cursor.execute("DROP TABLE IF EXISTS result_table;")
         self.p_conn.commit()
@@ -563,14 +566,24 @@ class stt_server:
 
     def calculate_file_length(self, filepath, filename):
         file_duration = 0
+        fname = filepath + filename
         try:
-            fname = filepath + filename
             with contextlib.closing(wave.open(fname, "r")) as f:
                 frames = f.getnframes()
                 rate = f.getframerate()
                 file_duration = frames / float(rate)
-        except Exception as e:
-            self.logger.info("file length calculate error: " + fname + " " + str(e))
+        except wave.Error as e:
+            self.logger.info("Wave error: " + fname + " " + str(e))
+            try:
+                data, samplerate = soundfile.read(fname)
+                soundfile.write(fname, data, samplerate)
+
+                with SoundFile(fname, "r", samplerate) as f:
+                    frames = f.frames
+                    rate = f.samplerate
+                    file_duration = frames / float(rate)
+            except Exception as e:
+                self.logger.info("File length calculate error: " + fname + " " + str(e))
         return file_duration
 
     def clean_queue(self):

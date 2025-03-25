@@ -35,7 +35,7 @@ services:
       - VOSK_SERVER_WORKER_0=
 
   vosk_queue:
-    restart: on-failure[:2]
+    restart: on-failure
     deploy:
       mode: replicated
       replicas: 1
