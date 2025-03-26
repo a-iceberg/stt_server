@@ -578,7 +578,7 @@ class stt_server:
                 data, samplerate = soundfile.read(fname)
                 soundfile.write(fname, data, samplerate)
 
-                with SoundFile(fname, "r", samplerate) as f:
+                with SoundFile(fname, "r") as f:
                     frames = f.frames
                     rate = f.samplerate
                     file_duration = frames / float(rate)
