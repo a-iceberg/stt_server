@@ -28,7 +28,7 @@ def main():
                 version,
                 file_size
             ) in server_object.get_fs_files_list(complete_files):
-                server_object.set_shortest_queue_cpu(linkedid)
+                server_object.set_shortest_queue_cpu()
                 server_object.add_queue(
                     filepath, filename, rec_date, src, dst, linkedid, version, file_size
                 )
@@ -44,7 +44,7 @@ def main():
                 server_object.sources[source_id],
             )
 
-        sleep_time = 5
+        sleep_time = 3
         print(
 			datetime.datetime.now().strftime('%Y-%m-%dT%H:%M:%S'),
 			'sleeping '+str(sleep_time)+'s..'

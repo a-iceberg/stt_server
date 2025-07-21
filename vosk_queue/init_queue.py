@@ -88,6 +88,7 @@ class stt_server:
         )
 
     def linkedid_by_filename(self, filename, date_y, date_m, date_d):
+        original_filename = filename
         filename = filename.replace("rxtx-in.wav", ".wav")
         filename = filename.replace("rxtx-out.wav", ".wav")
         filename = filename.replace("in_", "")
@@ -102,27 +103,20 @@ class stt_server:
             str(date_toto), "%Y-%m-%d %H:%M:%S"
         ).strftime("%Y-%m-%dT%H:%M:%S")
 
+        uniqueid_match = re.findall(r"\d*\.\d*", original_filename)
+        if not uniqueid_match:
+            uniqueid = ''
+        else:
+            uniqueid = uniqueid_match[0]
+
         mysql_conn = self.connect_mysql(self.source_id)
         with mysql_conn:
-            query = (
-                """
-			select				
-				linkedid,
-				SUBSTRING(dstchannel, 5, 4),
-				src
-				from PT1C_cdr_MICO as PT1C_cdr_MICO
-				where 
-					calldate>'"""
-                + date_from
-                + """' and 
-					calldate<'"""
-                + date_toto
-                + """' and 
-					PT1C_cdr_MICO.recordingfile LIKE '%"""
-                + filename
-                + """%' 
-					limit 1;"""
-            )
+            query = f"""
+            SELECT linkedid, SUBSTRING(dstchannel, 5, 4), src
+            FROM PT1C_cdr_MICO
+            WHERE  calldate > '{date_from}' AND calldate < '{date_toto}' AND (uniqueid = '{uniqueid}' OR recordingfile LIKE '%{filename}%')
+            LIMIT 1;
+            """
 
             cursor = mysql_conn.cursor()
             cursor.execute(query)
@@ -160,26 +154,26 @@ class stt_server:
             f.write(text + "\n")
 
     def get_fs_files_list(self, queue):
-        fd_list = []
+        queue_set = set(queue)
         filepath = self.original_storage_path[self.source_id]
 
         if self.source_id == self.sources["master"]:
-            files_list = []
-            os_walk = os.walk(filepath)
-            self.logger.info(
-                f"master folder {filepath} Files in folder: {len(queue)}"
-            )
-            for dirpath, dirnames, filenames in os_walk:
-                for filename in filenames:
-                    if ".wav" in filename or ".WAV" in filename:
-                        files_list.append(filename)
-
             files_extracted = 0
             files_withoud_cdr_data = 0
 
-            # get record date
-            for filename in files_list:
-                if not filename in queue:
+            os_walk = os.walk(filepath)
+            self.logger.info(
+                f"master folder {filepath} Files in folder: {len(queue_set)}"
+            )
+            for dirpath, dirnames, filenames in os_walk:
+                for filename in sorted(filenames):
+                    if not filename.endswith((".wav", ".WAV")):
+                        continue
+            
+                    if filename in queue_set:
+                        continue
+
+                    # get record date
                     if os.environ.get("SAVE_FOR_ANALYSIS", "0") == "1":
                         dst_file = (
                             self.saved_for_analysis_path + "debug/master/" + filename
@@ -283,17 +277,15 @@ class stt_server:
                     if not rec_date == "Null":
                         file_stat = os.stat(filepath + filename)
                         f_size = file_stat.st_size
-                        fd_list.append(
-                            {
-                                "filepath": filepath,
-                                "filename": filename,
-                                "rec_date": rec_date,
-                                "src": src,
-                                "dst": dst,
-                                "linkedid": linkedid,
-                                "version": version,
-                                "file_size": f_size
-                            }
+                        yield (
+                            filepath,
+                            filename,
+                            rec_date,
+                            src,
+                            dst,
+                            linkedid,
+                            version,
+                            f_size
                         )
                         files_extracted += 1
 
@@ -307,127 +299,105 @@ class stt_server:
         elif self.source_id == self.sources["call"]:
             os_walk = os.walk(filepath)
             self.logger.info(
-                f"call path {filepath} Files in folder: {len(queue)}"
+                f"call path {filepath} Files in folder: {len(queue_set)}"
             )
             for root, dirs, files in os_walk:
-                for filename in files:
-                    if not filename.endswith(".wav") and not filename.endswith(".WAV"):
+                for filename in sorted(files):
+                    if not filename.endswith((".wav", ".WAV")):
                         continue
 
-                    if (
-                        filename[-11:] != "rxtx-in.wav"
-                        and filename[-12:] != "rxtx-out.wav"
-                    ):
-                        if "wav" in filename or "WAV" in filename:
-                            # log information about removed file and his path
-                            with open(
-                                self.saved_for_analysis_path + "debug/removed.csv", "a"
-                            ) as f:
-                                f.write(root + ";" + filename + "\n")
-                            self.logger.info("removed " + root + "/" + filename)
-                            os.remove(os.path.join(root, filename))
+                    if not (filename.endswith("rxtx-in.wav") or filename.endswith("rxtx-out.wav")):
+                        # log information about removed file and his path
+                        with open(
+                            self.saved_for_analysis_path + "debug/removed.csv", "a"
+                        ) as f:
+                            f.write(root + ";" + filename + "\n")
+                        self.logger.info("removed " + root + "/" + filename)
+                        os.remove(os.path.join(root, filename))
                         continue
 
-                    file_in_queue = filename in queue
+                    if filename in queue_set:
+                        continue
+
                     if os.environ.get("SAVE_FOR_ANALYSIS", "0") == "1":
                         self.log("call check file " + filename)
                         try:
-                            if not file_in_queue:
-                                dst_file = (
-                                    self.saved_for_analysis_path
-                                    + "debug/call/"
-                                    + filename
+                            dst_file = (
+                                self.saved_for_analysis_path
+                                + "debug/call/"
+                                + filename
+                            )
+                            if not os.path.exists(dst_file):
+                                self.copy_file(
+                                    os.path.join(root, filename),
+                                    self.saved_for_analysis_path + "debug/call/",
                                 )
-                                if not os.path.exists(dst_file):
-                                    self.copy_file(
-                                        os.path.join(root, filename),
-                                        self.saved_for_analysis_path + "debug/call/",
-                                    )
-                                else:
-                                    self.log(
-                                        "copying canceled. file exists: " + dst_file
-                                    )
+                            else:
+                                self.log(
+                                    "copying canceled. file exists: " + dst_file
+                                )
                         except Exception as e:
                             self.log("call debug error: " + str(e))
 
-                    if not file_in_queue and filename[-4:] == ".wav":
-                        rec_source_date = re.findall(
-                            r"\d{4}-\d{2}-\d{2}-\d{2}-\d{2}-\d{2}", filename
+                    rec_source_date = re.findall(
+                        r"\d{4}-\d{2}-\d{2}-\d{2}-\d{2}-\d{2}", filename
+                    )
+                    if len(rec_source_date) and len(rec_source_date[0]):
+                        rec_date = (
+                            rec_source_date[0][:10]
+                            + " "
+                            + rec_source_date[0][11:].replace("-", ":")
                         )
-                        if len(rec_source_date) and len(rec_source_date[0]):
-                            rec_date = (
-                                rec_source_date[0][:10]
-                                + " "
-                                + rec_source_date[0][11:].replace("-", ":")
+
+                        if (
+                            len(
+                                re.findall(
+                                    r"\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}", rec_date
+                                )
                             )
-
-                            if (
-                                len(
-                                    re.findall(
-                                        r"\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}", rec_date
-                                    )
-                                )
-                                == 0
-                            ):
-                                rec_date = "Null"
-                                self.logger.info(
-                                    "0 Unable to extract date: " + root + " " + filename
-                                )
-
-                            date_string = re.findall(r"\d{4}-\d{2}-\d{2}", filename)
-                            if len(date_string):
-                                date_y = date_string[0][:4]
-                                date_m = date_string[0][5:-3]
-                                date_d = date_string[0][-2:]
-                                linkedid, dst, src = self.linkedid_by_filename(
-                                    filename, date_y, date_m, date_d
-                                )  # cycled query
-
-                                filepath = root + "/"
-                                file_stat = os.stat(
-                                    os.path.join(root, filename)
-                                )
-                                f_size = file_stat.st_size
-                                fd_list.append(
-                                    {
-                                        "filepath": filepath,
-                                        "filename": filename,
-                                        "rec_date": rec_date,
-                                        "src": src,
-                                        "dst": dst,
-                                        "linkedid": linkedid,
-                                        "version": 0,
-                                        "file_size": f_size
-                                    }
-                                )
-                        else:
+                            == 0
+                        ):
+                            rec_date = "Null"
                             self.logger.info(
-                                "1 Unable to extract date: " + root + " " + filename
-                            )
-                            self.send_to_telegram(
-                                "1 Unable to extract date: "
-                                + str(root)
-                                + " "
-                                + str(filename)
+                                "0 Unable to extract date: " + root + " " + filename
                             )
 
-        df = pd.DataFrame(
-            fd_list,
-            columns=[
-                "filepath",
-                "filename",
-                "rec_date",
-                "src",
-                "dst",
-                "linkedid",
-                "version",
-                "file_size"
-            ],
-        )
-        df.sort_values(["rec_date", "filename"], ascending=True, inplace=True)
-        return df.values
+                        date_string = re.findall(r"\d{4}-\d{2}-\d{2}", filename)
+                        if len(date_string):
+                            date_y = date_string[0][:4]
+                            date_m = date_string[0][5:-3]
+                            date_d = date_string[0][-2:]
+                            linkedid, dst, src = self.linkedid_by_filename(
+                                filename, date_y, date_m, date_d
+                            )  # cycled query
 
-    def set_shortest_queue_cpu(self, linkedid):
+                            filepath = root + "/"
+                            file_stat = os.stat(
+                                os.path.join(root, filename)
+                            )
+                            f_size = file_stat.st_size
+                            yield (
+                                filepath,
+                                filename,
+                                rec_date,
+                                src,
+                                dst,
+                                linkedid,
+                                0,
+                                f_size
+                            )
+                    else:
+                        self.logger.info(
+                            "1 Unable to extract date: " + root + " " + filename
+                        )
+                        self.send_to_telegram(
+                            "1 Unable to extract date: "
+                            + str(root)
+                            + " "
+                            + str(filename)
+                        )
+
+    def set_shortest_queue_cpu(self):
         cursor = self.p_conn.cursor()
         cursor.execute("DROP TABLE IF EXISTS tmp_cpu_queue_len;")
         cursor.execute("""
@@ -446,30 +416,14 @@ class stt_server:
         main_query = f"""
         DO $$
         DECLARE
-            linkedid_cpu_id INT;
             result_cpu_id INT;
-            linkedid_param VARCHAR := '{linkedid}';
         BEGIN
-            SELECT cpu_id INTO linkedid_cpu_id FROM queue WHERE linkedid = linkedid_param;
+            UPDATE tmp_cpu_queue_len
+            SET files_count = (SELECT COUNT(*) FROM queue WHERE queue.cpu_id = tmp_cpu_queue_len.cpu_id);
 
-            IF linkedid_cpu_id IS NULL THEN
-                UPDATE tmp_cpu_queue_len
-                SET files_count = (SELECT COUNT(*) FROM queue WHERE queue.cpu_id = tmp_cpu_queue_len.cpu_id);
-
-                SELECT cpu_id INTO result_cpu_id FROM tmp_cpu_queue_len
-                ORDER BY files_count, cpu_id
-                LIMIT 1;
-            ELSIF linkedid_cpu_id = 0 THEN
-                result_cpu_id := 0;
-            ELSE
-                UPDATE tmp_cpu_queue_len
-                SET files_count = (SELECT COUNT(*) FROM queue WHERE queue.cpu_id = tmp_cpu_queue_len.cpu_id);
-
-                SELECT cpu_id INTO result_cpu_id FROM tmp_cpu_queue_len
-                WHERE cpu_id != 0
-                ORDER BY files_count, cpu_id
-                LIMIT 1;
-            END IF;
+            SELECT cpu_id INTO result_cpu_id FROM tmp_cpu_queue_len
+            ORDER BY files_count, cpu_id
+            LIMIT 1;
 
             CREATE TEMPORARY TABLE IF NOT EXISTS result_table (cpu_id INT);
             TRUNCATE result_table;
