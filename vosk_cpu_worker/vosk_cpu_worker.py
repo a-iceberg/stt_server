@@ -19,7 +19,7 @@ def main():
 		sql_query += "where cpu_id='" + str(server_object.cpu_id) + "' "
 		sql_query += "and record_date < '" + past_in_minutes + "' "
 		sql_query += "order by record_date desc, filename "
-		sql_query += "limit 3;"
+		sql_query += "limit 6;"
 
 		processed = 0
 		cursor.execute(sql_query)
