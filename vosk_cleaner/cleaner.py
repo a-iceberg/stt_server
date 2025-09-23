@@ -47,14 +47,16 @@ logging.info('waiting for 15 min')
 time.sleep(15 * 60)
 
 while True:
-	bottom_limit = str((datetime.datetime.now() - datetime.timedelta(days=183)).strftime('%Y-%m-%dT%H:%M:%S'))
-	bottom_limit_calls = str((datetime.datetime.now() - datetime.timedelta(days=366)).strftime('%Y-%m-%dT%H:%M:%S'))
-	logging.info('Deleting before %s', bottom_limit)
+    bottom_limit = str(
+        (datetime.datetime.now() - datetime.timedelta(days=366)).strftime(
+            "%Y-%m-%dT%H:%M:%S"
+        )
+    )
+    logging.info("Deleting before %s", bottom_limit)
 
-	clean_calls(conn, bottom_limit_calls)
-	clean_transcribations(conn, bottom_limit)
-	clean_perf_log(conn, bottom_limit)
-	logging.info('waiting for 24h')
+    clean_calls(conn, bottom_limit)
+    clean_transcribations(conn, bottom_limit)
+    clean_perf_log(conn, bottom_limit)
+    logging.info("waiting for 24h")
 
-	time.sleep(24 * 60 * 60)
-	
+    time.sleep(24 * 60 * 60)
