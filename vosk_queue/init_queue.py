@@ -481,7 +481,7 @@ class stt_server:
             self.logger.info("file stat error: " + str(e))
             self.send_to_telegram(str(e))
 
-        if time.time() - st_mtime > 30 and f_size == file_size and file_size > 0:
+        if time.time() - st_mtime > 1200 and f_size == file_size and file_size > 0:
             file_duration = self.calculate_file_length(filepath, filename)
 
             if file_duration == 0:
@@ -522,7 +522,7 @@ class stt_server:
         file_duration = 0
         fname = filepath + filename
         try:
-            with contextlib.closing(wave.open(fname, "r")) as f:
+            with contextlib.closing(wave.open(fname, "rb")) as f:
                 frames = f.getnframes()
                 rate = f.getframerate()
                 file_duration = frames / float(rate)
