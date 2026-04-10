@@ -278,6 +278,66 @@ class stt_server:
                     self.logger.error("The connection was closed, reconnecting")
                     continue
 
+        # GIGAAM+TONE
+        elif '9999' in self.gpu_uri:
+            self.logger.info("gigaam+tone transcriber")
+            transcriber = 2
+            sentences = []
+            file_path = self.temp_file_path + self.temp_file_name
+            async with httpx.AsyncClient(timeout=None) as client:
+                file = {"file": (os.path.basename(file_path), open(file_path, "rb"), "audio/wav")}
+                hallucinations = [
+                    "звонит телефон",
+                    "звонок в дверь",
+                    "телефонный звонок",
+                    "продолжение следует",
+                    "спасибо за внимание",
+                    "добро пожаловать на наш",
+                    "дима торзок",
+                    "dimatorzok"
+                ]
+                try:
+                    data = {
+                        "source_id": self.source_id
+                    }
+                    response = await client.post(
+                        self.gpu_uri, files=file, data=data
+                    )
+                    if response.status_code == 200:
+                        accept = response.json()
+                        check_repetitions = False
+                        segment_repetitions = False
+                        if len(accept) > 1 and accept["text"] != "":
+                            current_texts = set()
+                            for segments_rec in accept["segments"]:
+                                segment_text = str(segments_rec["text"]).replace("'", "")[:max_length]
+                                if any(sub in segment_text.lower() for sub in hallucinations):
+                                    self.logger.warning(f"Found hallucination in this text segment: {segment_text}")
+                                    break
+                                if segment_text in current_texts and len(segment_text) > 9:
+                                    segment_repetitions = True
+                                    self.logger.warning(f"Found this repeating text segment in the transcription: {segment_text}")
+                                    break
+                                else:
+                                    current_texts.add(segment_text)
+                            for segments_rec in accept["segments"]:
+                                segment_text = str(segments_rec["text"]).replace("'", "")[:max_length]
+                                ds = DiversityStats(segment_text).get_stats()
+                                if (len(segment_text) > 99 and ds["mttr"] > 0.1395 and ds["dttr"] < 7.2 and ds["simpson_index"] < 18.3):
+                                    check_repetitions = True
+                                    self.logger.warning(f"Found artifacts in this text segment: {segment_text}")
+                                    break
+                            sentences = self.accept_feature_extractor_whisper(
+                                sentences,
+                                accept,
+                                check_repetitions=check_repetitions,
+                                segment_repetitions=segment_repetitions
+                            )
+                    else:
+                        self.logger.error(f"Error in file processing: {response.text}")
+                except Exception as e:
+                    self.logger.warning("GigaAM connection error: " + str(e))
+
         # WHISPER
         else:
             self.logger.info("whisper transcriber")
