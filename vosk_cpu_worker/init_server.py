@@ -194,7 +194,10 @@ class stt_server:
                         segment_start = word["start"]
                         segment_end = word["end"]
                         try:
-                            conf_score = float(word["confidence"])
+                            if "confidence" in word:
+                                conf_score = float(word["confidence"])
+                            else:
+                                conf_score = 0
                         except:
                             conf_score = 0
                             self.logger.warning(
