@@ -10,8 +10,11 @@ def main():
 
 	cursor = server_object.conn.cursor()
 
+	lookbehind_seconds = int(os.environ.get('WORKER_LOOKBEHIND_SECONDS', '60'))
+	idle_sleep_seconds = int(os.environ.get('WORKER_IDLE_SLEEP', '3'))
+
 	while True:
-		past_in_minutes = pendulum.now().add(minutes=-5).strftime('%Y-%m-%d %H:%M:%S')
+		past_in_minutes = pendulum.now().add(seconds=-lookbehind_seconds).strftime('%Y-%m-%d %H:%M:%S')
 		server_object.logger.info(f'past_in_minutes: {past_in_minutes}')
 
 		sql_query = "select filepath, filename, duration, source_id, "
@@ -144,7 +147,7 @@ def main():
 
 		server_object.logger.info(f'{server_object.cpu_id} {datetime.datetime.now().strftime("%Y-%m-%dT%H:%M:%S")} queue reached..')
 		if processed == 0:
-			time.sleep(10)
+			time.sleep(idle_sleep_seconds)
 
 if __name__ == "__main__":
 	main()

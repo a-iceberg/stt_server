@@ -24,6 +24,9 @@ class stt_server:
         cores_count = int(os.environ.get("WORKERS_COUNT", "0"))
         self.cpu_cores = [i for i in range(0, cores_count)]
 
+        self.file_stable_seconds = int(os.environ.get("FILE_STABLE_SECONDS", "60"))
+        self.pending_sizes = {}
+
         # postgre sql
         self.p_sql_name = "voice_ai"
 
@@ -481,7 +484,18 @@ class stt_server:
             self.logger.info("file stat error: " + str(e))
             self.send_to_telegram(str(e))
 
-        if time.time() - st_mtime > 1200 and f_size == file_size and file_size > 0:
+        age = time.time() - st_mtime
+        prev_size = self.pending_sizes.get(filename)
+        self.pending_sizes[filename] = f_size
+        is_stable = (
+            age > self.file_stable_seconds
+            and prev_size == f_size
+            and f_size == file_size
+            and file_size > 0
+        )
+
+        if is_stable:
+            self.pending_sizes.pop(filename, None)
             file_duration = self.calculate_file_length(filepath, filename)
 
             if file_duration == 0:

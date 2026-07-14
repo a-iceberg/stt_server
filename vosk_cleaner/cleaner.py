@@ -52,10 +52,16 @@ while True:
             "%Y-%m-%dT%H:%M:%S"
         )
     )
+    transcribations_bottom_limit = str(
+        (datetime.datetime.now() - datetime.timedelta(days=183)).strftime(
+            "%Y-%m-%dT%H:%M:%S"
+        )
+    )
     logging.info("Deleting before %s", bottom_limit)
-
+    logging.info("Deleting before %s", transcribations_bottom_limit)
+    
     clean_calls(conn, bottom_limit)
-    clean_transcribations(conn, bottom_limit)
+    clean_transcribations(conn, transcribations_bottom_limit)
     clean_perf_log(conn, bottom_limit)
     logging.info("waiting for 24h")
 

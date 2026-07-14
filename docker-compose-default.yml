@@ -22,6 +22,8 @@ services:
       - PYTHONUNBUFFERED=0
       - WORKERS_COUNT=10
       - SAVE_FOR_ANALYSIS=0
+      - WORKER_LOOKBEHIND_SECONDS=30
+      - WORKER_IDLE_SLEEP=3
       - TRANSCRIBE_MAX_TRY_COUNT=100
       - TE_DOCKER_ADDRESS=
       - TZ=Europe/Moscow
@@ -52,6 +54,7 @@ services:
         max-file: "3"
     environment:
       - WORKERS_COUNT=10
+      - FILE_STABLE_SECONDS=60
       - TZ=Europe/Moscow
       - POSTGRESQL_SERVER=
       - POSTGRESQL_PORT=
