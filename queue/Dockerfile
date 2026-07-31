@@ -8,6 +8,8 @@ RUN pip3 install -r requirements.txt
 
 COPY queue_server.py /app
 COPY init_queue.py /app
+COPY celery_client.py /app
+COPY clean.py /app
 
 ENTRYPOINT ["python3"]
 CMD ["queue_server.py"]

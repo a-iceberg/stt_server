@@ -14,6 +14,12 @@ import soundfile
 
 from soundfile import SoundFile
 
+from celery_client import pending_tasks, send_transcribe_task
+
+# Celery decides which worker takes a file, so the row inserted by the producer
+# carries no worker id until a worker picks it up and stamps its own cpu_id.
+UNASSIGNED_CPU_ID = -1
+
 
 class stt_server:
     def __init__(self):
@@ -21,11 +27,19 @@ class stt_server:
         self.logger = logging.getLogger(__name__)
         self.logger.setLevel(logging.INFO)
 
-        cores_count = int(os.environ.get("WORKERS_COUNT", "0"))
-        self.cpu_cores = [i for i in range(0, cores_count)]
-
         self.file_stable_seconds = int(os.environ.get("FILE_STABLE_SECONDS", "60"))
         self.pending_sizes = {}
+
+        # A call is queued only once it is this old: the second safety gate that
+        # used to live in the worker's SQL query.
+        self.lookbehind_seconds = int(os.environ.get("ENQUEUE_LOOKBEHIND_SECONDS", "30"))
+
+        # Rows whose task disappeared (broker flushed, worker killed before a
+        # retry) are released after this delay so the file gets queued again.
+        # Must stay above the worst-case task lifetime including retries.
+        self.stuck_row_minutes = int(os.environ.get("STUCK_ROW_MINUTES", "30"))
+        self.stuck_alert_interval = int(os.environ.get("STUCK_ALERT_INTERVAL", "3600"))
+        self.last_stuck_alert = 0.0
 
         # postgre sql
         self.p_sql_name = "voice_ai"
@@ -59,17 +73,20 @@ class stt_server:
         }
 
     def send_to_telegram(self, message):
+        token = os.environ.get("TELEGRAM_BOT_TOKEN", "")
+        chat_id = os.environ.get("TELEGRAM_CHAT", "")
+        if not token or not chat_id:
+            self.logger.warning("alert: " + message)
+            return
         try:
             current_date = str(datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
-            token = os.environ.get("TELEGRAM_BOT_TOKEN", "")
-            chat_id = os.environ.get("TELEGRAM_CHAT", "")
             session = requests.Session()
             get_request = "https://api.telegram.org/bot" + token
             get_request += "/sendMessage?chat_id=" + chat_id
             get_request += (
-                "&parse_mode=Markdown&text=" + current_date + " vosk_queue: " + message
+                "&parse_mode=Markdown&text=" + current_date + " queue: " + message
             )
-            session.get(get_request)
+            session.get(get_request, timeout=(2, 5))
         except Exception as e:
             self.logger.info("send_to_telegram error: " + str(e))
 
@@ -400,56 +417,54 @@ class stt_server:
                             + str(filename)
                         )
 
-    def set_shortest_queue_cpu(self):
-        cursor = self.p_conn.cursor()
-        cursor.execute("DROP TABLE IF EXISTS tmp_cpu_queue_len;")
-        cursor.execute("""
-        CREATE TEMPORARY TABLE tmp_cpu_queue_len (
-            cpu_id INT,
-            files_count INT
-        );
-        """)
-        self.p_conn.commit()
+    def release_stuck_rows(self):
+        """Frees files whose registry row outlived its Celery task.
 
-        insert_query = "INSERT INTO tmp_cpu_queue_len (cpu_id, files_count) VALUES " + \
-                    ", ".join(f"({i}, 0)" for i in self.cpu_cores) + ";"
-        cursor.execute(insert_query)
-        self.p_conn.commit()
+        Deleting the row is enough: the recording is still on the share, so the
+        next scan queues it again. Rows without a record_date are left alone,
+        they were never queued in the first place.
 
-        main_query = f"""
-        DO $$
-        DECLARE
-            result_cpu_id INT;
-        BEGIN
-            UPDATE tmp_cpu_queue_len
-            SET files_count = (SELECT COUNT(*) FROM queue WHERE queue.cpu_id = tmp_cpu_queue_len.cpu_id);
-
-            SELECT cpu_id INTO result_cpu_id FROM tmp_cpu_queue_len
-            ORDER BY files_count, cpu_id
-            LIMIT 1;
-
-            CREATE TEMPORARY TABLE IF NOT EXISTS result_table (cpu_id INT);
-            TRUNCATE result_table;
-            INSERT INTO result_table VALUES (result_cpu_id);
-        END $$;
+        A row is only stuck once its task is gone from the broker, so a backlog
+        pauses the release: otherwise every waiting file would be queued a
+        second time and the backlog would keep growing.
         """
-        cursor.execute(main_query)
-        self.p_conn.commit()
-        cursor.execute("SELECT cpu_id FROM result_table;")
+        try:
+            waiting = pending_tasks()
+        except Exception as e:
+            self.logger.info("release_stuck_rows: no queue length, skipping: " + str(e))
+            return 0
 
-        rows = cursor.fetchall()
-        result = 0
-        for row in rows:
-            result += 1
-            self.cpu_id = int(row[0])
+        if waiting:
+            return 0
 
-        if result == 0:
-            self.logger.info("Error: unable to get shortest_queue_cpu")
-            self.cpu_id = 0
+        cursor = self.p_conn.cursor()
+        try:
+            cursor.execute(
+                """
+                delete from queue
+                where record_date is not null
+                and date < now() - (%s * interval '1 minute')
+                returning filename;
+                """,
+                (self.stuck_row_minutes,),
+            )
+            released = [row[0] for row in cursor.fetchall()]
+            self.p_conn.commit()
+        except Exception as e:
+            self.p_conn.rollback()
+            self.logger.info("release_stuck_rows error: " + str(e))
+            return 0
 
-        cursor.execute("DROP TABLE IF EXISTS tmp_cpu_queue_len;")
-        cursor.execute("DROP TABLE IF EXISTS result_table;")
-        self.p_conn.commit()
+        if released:
+            self.logger.info(
+                f"released {len(released)} stuck queue rows: {released[:10]}"
+            )
+            if time.time() - self.last_stuck_alert > self.stuck_alert_interval:
+                self.last_stuck_alert = time.time()
+                self.send_to_telegram(
+                    f"released {len(released)} stuck queue rows, requeueing"
+                )
+        return len(released)
 
     def get_source_id(self, source_name):
         for source in self.sources.items():
@@ -494,43 +509,98 @@ class stt_server:
             and file_size > 0
         )
 
-        if is_stable:
-            self.pending_sizes.pop(filename, None)
-            file_duration = self.calculate_file_length(filepath, filename)
+        if not is_stable:
+            return False
 
-            if file_duration == 0:
-                message = "zero file in queue: t[" + str(time.time() - st_mtime) + "]  "
-                message += "s[" + str(f_size) + "]  "
-                message += "d[" + str(file_duration) + "]  "
-                message += str(filename)
-                self.logger.info(message)
+        if not self.is_old_enough(rec_date):
+            return False
 
-            cursor = self.p_conn.cursor()
-            current_date = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        self.pending_sizes.pop(filename, None)
+        file_duration = self.calculate_file_length(filepath, filename)
 
-            sql_query = "insert into queue "
-            sql_query += "(filepath, filename, cpu_id, date, "
-            sql_query += "duration, record_date, source_id, src, dst, linkedid, version) "
-            sql_query += "values ('"
-            sql_query += filepath + "','"
-            sql_query += filename + "','"
-            sql_query += str(self.cpu_id) + "','"
-            sql_query += current_date + "','"
-            sql_query += str(file_duration) + "',"
-            sql_query += rec_date if rec_date == "Null" else "'" + rec_date + "'"
-            sql_query += ",'"
-            sql_query += str(self.source_id) + "','"
-            sql_query += str(src) + "','"
-            sql_query += str(dst) + "','"
-            sql_query += str(linkedid) + "',"
-            sql_query += str(naming_version) + ");"
+        if file_duration == 0:
+            message = "zero file in queue: t[" + str(time.time() - st_mtime) + "]  "
+            message += "s[" + str(f_size) + "]  "
+            message += "d[" + str(file_duration) + "]  "
+            message += str(filename)
+            self.logger.info(message)
 
-            try:
-                cursor.execute(sql_query)
-                self.p_conn.commit()
-            except Exception as e:
-                self.logger.info("add queue error. query: " + sql_query)
-                self.logger.info(str(e))
+        cursor = self.p_conn.cursor()
+        current_date = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+
+        sql_query = "insert into queue "
+        sql_query += "(filepath, filename, cpu_id, date, "
+        sql_query += "duration, record_date, source_id, src, dst, linkedid, version) "
+        sql_query += "values ('"
+        sql_query += filepath + "','"
+        sql_query += filename + "','"
+        sql_query += str(UNASSIGNED_CPU_ID) + "','"
+        sql_query += current_date + "','"
+        sql_query += str(file_duration) + "',"
+        sql_query += rec_date if rec_date == "Null" else "'" + rec_date + "'"
+        sql_query += ",'"
+        sql_query += str(self.source_id) + "','"
+        sql_query += str(src) + "','"
+        sql_query += str(dst) + "','"
+        sql_query += str(linkedid) + "',"
+        sql_query += str(naming_version) + ");"
+
+        try:
+            cursor.execute(sql_query)
+            self.p_conn.commit()
+        except Exception as e:
+            self.p_conn.rollback()
+            self.logger.info("add queue error. query: " + sql_query)
+            self.logger.info(str(e))
+            return False
+
+        # Files without a usable record_date stay parked in the registry exactly
+        # as before: the old worker query filtered them out and never ran them.
+        if rec_date == "Null":
+            self.logger.info("parked without record_date, not queued: " + filename)
+            return False
+
+        payload = {
+            "filepath": filepath,
+            "filename": filename,
+            "duration": file_duration,
+            "source_id": int(self.source_id),
+            "record_date": rec_date,
+            "src": str(src),
+            "dst": str(dst),
+            "linkedid": str(linkedid),
+            "queue_date": current_date,
+        }
+
+        try:
+            send_transcribe_task(payload)
+        except Exception as e:
+            # Without a task the row would block this file forever, so undo it.
+            self.logger.info("send task error: " + str(e))
+            self.send_to_telegram("unable to queue " + filename + ": " + str(e))
+            self.delete_queue_row(filename)
+            return False
+
+        return True
+
+    def is_old_enough(self, rec_date):
+        if rec_date == "Null":
+            return True
+        try:
+            recorded_at = datetime.datetime.strptime(rec_date, "%Y-%m-%d %H:%M:%S")
+        except (TypeError, ValueError):
+            return True
+        age = (datetime.datetime.now() - recorded_at).total_seconds()
+        return age >= self.lookbehind_seconds
+
+    def delete_queue_row(self, filename):
+        cursor = self.p_conn.cursor()
+        try:
+            cursor.execute("delete from queue where filename = %s;", (filename,))
+            self.p_conn.commit()
+        except Exception as e:
+            self.p_conn.rollback()
+            self.logger.info("delete_queue_row error: " + str(e))
 
     def calculate_file_length(self, filepath, filename):
         file_duration = 0

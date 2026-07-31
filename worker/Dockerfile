@@ -10,8 +10,9 @@ RUN pip3 install -r requirements.txt
 ENV TZ=Europe/Moscow
 RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
 
-COPY vosk_cpu_worker.py /worker
 COPY init_server.py /worker
+COPY celery_app.py /worker
+COPY worker_slot.py /worker
+COPY tasks.py /worker
 
-ENTRYPOINT ["python3"]
-CMD ["vosk_cpu_worker.py"]
+CMD ["celery", "-A", "tasks", "worker", "--loglevel=INFO", "-Q", "transcribe"]

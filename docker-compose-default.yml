@@ -1,31 +1,80 @@
-version: '3.8'
 services:
-  vosk_cpu_worker:
+  redis:
+    image: redis:7-alpine
+    container_name: stt_redis
     restart: unless-stopped
-    deploy:
-      mode: replicated
-      replicas: 10
+    network_mode: "host"
+    command: >
+      redis-server
+      --bind 127.0.0.1
+      --port 6379
+      --appendonly yes
+      --appendfsync everysec
+      --save ""
+      --maxmemory-policy noeviction
+    volumes:
+      - ./redis_data:/data
+      - /etc/localtime:/etc/localtime:ro
+      - /etc/timezone:/etc/timezone:ro
+    logging:
+      options:
+        max-size: "10m"
+        max-file: "3"
+    healthcheck:
+      test: ["CMD", "redis-cli", "-h", "127.0.0.1", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+
+  # One worker pool per recognition backend. Both pools consume the same queue,
+  # so a file goes to whichever process is free; the pool size caps how many
+  # requests each backend receives, and WORKER_CPU_SLOTS keeps the cpu_id values
+  # that reports are built on.
+  worker_5090:
+    restart: unless-stopped
+    build: worker
+    container_name: stt_worker_5090
+    network_mode: "host"
+    depends_on:
+      redis:
+        condition: service_healthy
+    command:
+      - celery
+      - -A
+      - tasks
+      - worker
+      - --loglevel=INFO
+      - --concurrency=8
+      - -Q
+      - transcribe
+      - -n
+      - worker_5090@%h
     logging:
       options:
         max-size: "10m"
         max-file: "3"
     volumes:
       - /mnt/share/audio_call/saved_for_analysis/debug/wer/:/worker/audio/wer
+      - /mnt/share/audio_call/saved_for_analysis/debug/failed/:/worker/audio/failed
       - /mnt/share/audio_call/PATH_TO_YOUR_FILES/:/worker/audio/stereo
       - /mnt/share/audio_master/PATH_TO_YOUR_FILES/:/worker/audio/mono
-      - ./vosk_cpu_worker/id_garden:/worker/id_garden
       - /etc/localtime:/etc/localtime:ro
       - /etc/timezone:/etc/timezone:ro
-    build: vosk_cpu_worker
-    network_mode: "host"
     environment:
-      - PYTHONUNBUFFERED=0
-      - WORKERS_COUNT=10
+      - PYTHONUNBUFFERED=1
+      - CELERY_BROKER_URL=redis://127.0.0.1:6379/0
+      - CELERY_QUEUE=transcribe
+      - STT_SERVER_URI=
+      - WORKER_CPU_SLOTS=0,1,2,3,6,7,8,9
+      - FAILED_FILES_PATH=audio/failed/
       - SAVE_FOR_ANALYSIS=0
-      - WORKER_LOOKBEHIND_SECONDS=30
-      - WORKER_IDLE_SLEEP=3
-      - TRANSCRIBE_MAX_TRY_COUNT=100
-      - TE_DOCKER_ADDRESS=
+      - TASK_SOFT_TIME_LIMIT=300
+      - TASK_TIME_LIMIT=360
+      - BROKER_VISIBILITY_TIMEOUT=900
+      - TASK_MAX_RETRIES=3
+      - TASK_RETRY_BACKOFF=30
+      - TASK_RETRY_BACKOFF_MAX=300
+      - WORKER_MAX_TASKS_PER_CHILD=200
       - TZ=Europe/Moscow
       - POSTGRESQL_SERVER=
       - POSTGRESQL_PORT=
@@ -33,28 +82,86 @@ services:
       - POSTGRESQL_PASSWORD=
       - TELEGRAM_CHAT=
       - TELEGRAM_BOT_TOKEN=
-      - VOSK_SERVER_DEFAULT=
-      - VOSK_SERVER_WORKER_0=
 
-  vosk_queue:
+  worker_1080:
+    restart: unless-stopped
+    build: worker
+    container_name: stt_worker_1080
+    network_mode: "host"
+    depends_on:
+      redis:
+        condition: service_healthy
+    command:
+      - celery
+      - -A
+      - tasks
+      - worker
+      - --loglevel=INFO
+      - --concurrency=4
+      - -Q
+      - transcribe
+      - -n
+      - worker_1080@%h
+    logging:
+      options:
+        max-size: "10m"
+        max-file: "3"
+    volumes:
+      - /mnt/share/audio_call/saved_for_analysis/debug/wer/:/worker/audio/wer
+      - /mnt/share/audio_call/saved_for_analysis/debug/failed/:/worker/audio/failed
+      - /mnt/share/audio_call/PATH_TO_YOUR_FILES/:/worker/audio/stereo
+      - /mnt/share/audio_master/PATH_TO_YOUR_FILES/:/worker/audio/mono
+      - /etc/localtime:/etc/localtime:ro
+      - /etc/timezone:/etc/timezone:ro
+    environment:
+      - PYTHONUNBUFFERED=1
+      - CELERY_BROKER_URL=redis://127.0.0.1:6379/0
+      - CELERY_QUEUE=transcribe
+      - STT_SERVER_URI=
+      - WORKER_CPU_SLOTS=4,5,10,11
+      - FAILED_FILES_PATH=audio/failed/
+      - SAVE_FOR_ANALYSIS=0
+      - TASK_SOFT_TIME_LIMIT=300
+      - TASK_TIME_LIMIT=360
+      - BROKER_VISIBILITY_TIMEOUT=900
+      - TASK_MAX_RETRIES=3
+      - TASK_RETRY_BACKOFF=30
+      - TASK_RETRY_BACKOFF_MAX=300
+      - WORKER_MAX_TASKS_PER_CHILD=200
+      - TZ=Europe/Moscow
+      - POSTGRESQL_SERVER=
+      - POSTGRESQL_PORT=
+      - POSTGRESQL_LOGIN=
+      - POSTGRESQL_PASSWORD=
+      - TELEGRAM_CHAT=
+      - TELEGRAM_BOT_TOKEN=
+
+  queue:
     restart: on-failure
-    deploy:
-      mode: replicated
-      replicas: 1
+    build: queue
+    container_name: stt_queue
+    network_mode: "host"
+    depends_on:
+      redis:
+        condition: service_healthy
     volumes:
       - /mnt/share/audio_call/PATH_TO_YOUR_FILES/:/app/audio/stereo
       - /mnt/share/audio_master/PATH_TO_YOUR_FILES/:/app/audio/mono
       - /mnt/share/audio_call/saved_for_analysis/:/app/audio/saved_for_analysis
       - /etc/localtime:/etc/localtime:ro
       - /etc/timezone:/etc/timezone:ro
-    build: vosk_queue
     logging:
       options:
         max-size: "10m"
         max-file: "3"
     environment:
-      - WORKERS_COUNT=10
+      - PYTHONUNBUFFERED=1
+      - CELERY_BROKER_URL=redis://127.0.0.1:6379/0
+      - CELERY_QUEUE=transcribe
       - FILE_STABLE_SECONDS=60
+      - ENQUEUE_LOOKBEHIND_SECONDS=30
+      - SCAN_INTERVAL_SECONDS=3
+      - STUCK_ROW_MINUTES=30
       - TZ=Europe/Moscow
       - POSTGRESQL_SERVER=
       - POSTGRESQL_PORT=
@@ -66,15 +173,39 @@ services:
       - TELEGRAM_CHAT=
       - TELEGRAM_BOT_TOKEN=
       - SAVE_FOR_ANALYSIS=0
-  vosk_cleaner:
+
+  flower:
     restart: unless-stopped
-    deploy:
-      mode: replicated
-      replicas: 1
+    build: worker
+    container_name: stt_flower
+    network_mode: "host"
+    depends_on:
+      redis:
+        condition: service_healthy
+    command:
+      - sh
+      - -c
+      - celery -A tasks flower --address=0.0.0.0 --port=5555 --basic-auth=$$FLOWER_BASIC_AUTH
+    logging:
+      options:
+        max-size: "10m"
+        max-file: "3"
     volumes:
       - /etc/localtime:/etc/localtime:ro
       - /etc/timezone:/etc/timezone:ro
-    build: vosk_cleaner
+    environment:
+      - CELERY_BROKER_URL=redis://127.0.0.1:6379/0
+      - CELERY_QUEUE=transcribe
+      - FLOWER_BASIC_AUTH=user:password
+      - TZ=Europe/Moscow
+
+  cleaner:
+    restart: unless-stopped
+    build: cleaner
+    container_name: stt_cleaner
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - /etc/timezone:/etc/timezone:ro
     logging:
       options:
         max-size: "10m"

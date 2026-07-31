@@ -160,5 +160,6 @@ cython_debug/
 #.idea/
 
 **/archive/
-**/id_garden/
 docker-compose.yml
+docker-compose.legacy.yml
+redis_data/
