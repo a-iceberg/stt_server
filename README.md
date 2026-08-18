@@ -27,6 +27,7 @@ Queue depth, task duration and failures: `http://<server>:5555`, credentials are
 Logs and performance monitoring available in [Portainer](https://www.portainer.io)
 ### Queue maintenance
 Recordings that failed every retry are kept in the folder mounted as `FAILED_FILES_PATH` instead of being deleted.  
+A recording sometimes reaches the share before the PBX publishes its CDR row, and such a transcription is stored without `linkedid`, `src` and `dst`. The producer looks those rows up again every `LINKEDID_BACKFILL_INTERVAL` seconds, going `LINKEDID_BACKFILL_HOURS` back.  
 Drop all pending tasks and clear the queue table:
 ```
 sudo docker-compose -p call_centre_stt_server run --rm queue clean.py

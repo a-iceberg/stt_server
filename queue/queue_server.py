@@ -16,6 +16,7 @@ def main():
 
     while True:
         server_object.release_stuck_rows()
+        server_object.backfill_missing_linkedid()
 
         for source_id in server_object.sources:  # ['call', 'master']
             server_object.source_id = server_object.get_source_id(source_id)

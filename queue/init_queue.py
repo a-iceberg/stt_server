@@ -30,16 +30,16 @@ class stt_server:
         self.file_stable_seconds = int(os.environ.get("FILE_STABLE_SECONDS", "60"))
         self.pending_sizes = {}
 
-        # A call is queued only once it is this old: the second safety gate that
-        # used to live in the worker's SQL query.
         self.lookbehind_seconds = int(os.environ.get("ENQUEUE_LOOKBEHIND_SECONDS", "30"))
 
-        # Rows whose task disappeared (broker flushed, worker killed before a
-        # retry) are released after this delay so the file gets queued again.
-        # Must stay above the worst-case task lifetime including retries.
         self.stuck_row_minutes = int(os.environ.get("STUCK_ROW_MINUTES", "30"))
         self.stuck_alert_interval = int(os.environ.get("STUCK_ALERT_INTERVAL", "3600"))
         self.last_stuck_alert = 0.0
+
+        self.backfill_interval = int(os.environ.get("LINKEDID_BACKFILL_INTERVAL", "300"))
+        self.backfill_hours = int(os.environ.get("LINKEDID_BACKFILL_HOURS", "24"))
+        self.backfill_limit = int(os.environ.get("LINKEDID_BACKFILL_LIMIT", "500"))
+        self.last_backfill = 0.0
 
         # postgre sql
         self.p_sql_name = "voice_ai"
@@ -465,6 +465,74 @@ class stt_server:
                     f"released {len(released)} stuck queue rows, requeueing"
                 )
         return len(released)
+
+    def backfill_missing_linkedid(self):
+        if time.time() - self.last_backfill < self.backfill_interval:
+            return 0
+        self.last_backfill = time.time()
+
+        source_id = self.sources["call"]
+        cursor = self.p_conn.cursor()
+        try:
+            cursor.execute(
+                """
+                select distinct audio_file_name from transcribations
+                where source_id = %s
+                and (linkedid is null or linkedid = '')
+                and record_date > now() - (%s * interval '1 hour')
+                limit %s;
+                """,
+                (source_id, self.backfill_hours, self.backfill_limit),
+            )
+            pending = [row[0] for row in cursor.fetchall()]
+        except Exception as e:
+            self.p_conn.rollback()
+            self.logger.info("backfill_missing_linkedid select error: " + str(e))
+            return 0
+
+        if not pending:
+            return 0
+
+        previous_source_id = self.source_id
+        self.source_id = source_id
+        filled = 0
+        try:
+            for filename in pending:
+                date_string = re.findall(r"\d{4}-\d{2}-\d{2}", filename)
+                if not date_string:
+                    continue
+
+                linkedid, dst, src = self.linkedid_by_filename(
+                    filename,
+                    date_string[0][:4],
+                    date_string[0][5:-3],
+                    date_string[0][-2:],
+                )
+                if not linkedid:
+                    continue
+
+                cursor.execute(
+                    """
+                    update transcribations
+                    set linkedid = %s, src = %s, dst = %s
+                    where audio_file_name = %s
+                    and (linkedid is null or linkedid = '');
+                    """,
+                    (linkedid, src, dst, filename),
+                )
+                filled += 1
+            self.p_conn.commit()
+        except Exception as e:
+            self.p_conn.rollback()
+            self.logger.info("backfill_missing_linkedid error: " + str(e))
+            filled = 0
+        finally:
+            self.source_id = previous_source_id
+
+        self.logger.info(
+            f"linkedid backfill: filled {filled} of {len(pending)} files"
+        )
+        return filled
 
     def get_source_id(self, source_name):
         for source in self.sources.items():
